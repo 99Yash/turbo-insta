@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
@@ -15,17 +18,21 @@ export const postRouter = createTRPCRouter({
   create: publicProcedure
     .input(z.object({ name: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
-      // simulate a slow db call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      await ctx.db.insert(posts).values({
+      return await ctx.db.insert(posts).values({
         name: input.name,
       });
     }),
 
-  getLatest: publicProcedure.query(({ ctx }) => {
-    return ctx.db.query.posts.findFirst({
-      orderBy: (posts, { desc }) => [desc(posts.createdAt)],
-    });
+  getLatest: publicProcedure.query(async ({ ctx }) => {
+    try {
+      return await ctx.db.query.posts.findFirst({
+        orderBy: (posts, { desc }) => [desc(posts.createdAt)],
+      });
+    } catch (e) {
+      throw new TRPCError({
+        code: getTRPCErrorFromUnknown(e).code,
+        message: getTRPCErrorFromUnknown(e).message,
+      });
+    }
   }),
 });
