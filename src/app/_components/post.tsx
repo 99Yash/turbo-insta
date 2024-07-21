@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
+import { Button } from "~/components/ui/button";
+import { Loading } from "~/components/ui/icons";
+import { Input } from "~/components/ui/input";
 
 import { api } from "~/trpc/react";
 
@@ -13,13 +17,16 @@ export function LatestPost() {
     onSuccess: async () => {
       await utils.post.invalidate();
       setName("");
+      toast.success("Post created successfully");
     },
   });
 
   return (
     <div className="w-full max-w-xs">
       {latestPost ? (
-        <p className="truncate">Your most recent post: {latestPost.name}</p>
+        <p className="truncate text-sm font-medium">
+          Your most recent post: {latestPost.name}
+        </p>
       ) : (
         <p>You have no posts yet.</p>
       )}
@@ -28,22 +35,18 @@ export function LatestPost() {
           e.preventDefault();
           createPost.mutate({ name });
         }}
-        className="flex flex-col gap-2"
+        className="mt-2 flex flex-col gap-2"
       >
-        <input
+        <Input
+          autoFocus
           type="text"
           placeholder="Title"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full rounded-full px-4 py-2 text-black"
         />
-        <button
-          type="submit"
-          className="rounded-full bg-white/10 px-10 py-3 font-semibold transition hover:bg-white/20"
-          disabled={createPost.isPending}
-        >
-          {createPost.isPending ? "Submitting..." : "Submit"}
-        </button>
+        <Button type="submit" disabled={createPost.isPending}>
+          {createPost.isPending ? <Loading /> : "Submit"}
+        </Button>
       </form>
     </div>
   );

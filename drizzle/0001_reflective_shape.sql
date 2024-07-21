@@ -1,0 +1,1 @@
+ALTER TABLE "turbo-insta_post" ALTER COLUMN "id" SET DATA TYPE varchar;
