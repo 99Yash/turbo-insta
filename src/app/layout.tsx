@@ -2,7 +2,9 @@ import "~/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
+import { Toaster as Sonner } from "sonner";
 import TailwindIndicator from "~/components/tailwind-indicator";
+import { ThemeProvider } from "~/components/theme-provider";
 import { TRPCReactProvider } from "~/trpc/react";
 import { cn } from "../lib/utils";
 
@@ -23,9 +25,17 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("scroll-smooth antialiased", inter.variable)}>
       <head />
-      <body>
+      <body className="min-h-screen">
         <TRPCReactProvider>
-          {children}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange={false}
+          >
+            {children}
+          </ThemeProvider>
+          <Sonner />
           <TailwindIndicator />
         </TRPCReactProvider>
       </body>

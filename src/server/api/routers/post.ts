@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import { z } from "zod";
 
@@ -18,6 +16,13 @@ export const postRouter = createTRPCRouter({
   create: publicProcedure
     .input(z.object({ name: z.string().min(1) }))
     .mutation(async ({ ctx, input }) => {
+      const promise = new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(input.name);
+        }, 1000);
+      });
+      await promise;
+
       return await ctx.db.insert(posts).values({
         name: input.name,
       });
