@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Loading } from "~/components/ui/icons";
 import { Input } from "~/components/ui/input";
@@ -16,6 +17,7 @@ export function LatestPost() {
     onSuccess: async () => {
       await utils.post.invalidate();
       setName("");
+      toast.success("Post created successfully");
     },
   });
 
@@ -36,6 +38,7 @@ export function LatestPost() {
         className="mt-2 flex flex-col gap-2"
       >
         <Input
+          autoFocus
           type="text"
           placeholder="Title"
           value={name}

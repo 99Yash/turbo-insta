@@ -2,9 +2,9 @@ import "~/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Toaster as Sonner } from "sonner";
 import TailwindIndicator from "~/components/tailwind-indicator";
 import { ThemeProvider } from "~/components/theme-provider";
+import { Toaster as Sonner } from "~/components/ui/sonner";
 import { TRPCReactProvider } from "~/trpc/react";
 import { cn } from "../lib/utils";
 
