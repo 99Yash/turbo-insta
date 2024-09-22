@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
+import { FloatingLabelInput } from "~/components/ui/floating-input";
 import { Loading } from "~/components/ui/icons";
-import { Input } from "~/components/ui/input";
 
 import { api } from "~/trpc/react";
 
@@ -37,14 +37,14 @@ export function LatestPost() {
         }}
         className="mt-2 flex flex-col gap-2"
       >
-        <Input
+        <FloatingLabelInput
           autoFocus
           type="text"
-          placeholder="Title"
+          label="Title"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
-        <Button type="submit" disabled={createPost.isPending}>
+        <Button type="submit" disabled={createPost.isPending || !name}>
           {createPost.isPending ? <Loading /> : "Submit"}
         </Button>
       </form>
