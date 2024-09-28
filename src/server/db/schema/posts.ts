@@ -18,3 +18,6 @@ export const posts = pgTable(
     nameIndex: index("name_idx").on(example.name),
   }),
 );
+
+export type Post = typeof posts.$inferSelect;
+export type NewPost = typeof posts.$inferInsert;
