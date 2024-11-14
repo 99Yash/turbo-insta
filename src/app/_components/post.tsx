@@ -5,11 +5,14 @@ import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { FloatingLabelInput } from "~/components/ui/floating-input";
 import { Loading } from "~/components/ui/icons";
+import { getErrorMessage } from "~/lib/utils";
 
 import { api } from "~/trpc/react";
 
 export function LatestPost() {
-  const [latestPost] = api.post.getLatest.useSuspenseQuery();
+  const [latestPost] = api.post.getLatest.useSuspenseQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
 
   const utils = api.useUtils();
   const [name, setName] = useState("");
@@ -18,6 +21,9 @@ export function LatestPost() {
       await utils.post.getLatest.invalidate();
       setName("");
       toast.success("Post created successfully");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 
