@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from "clsx";
+import { customAlphabet } from "nanoid";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
 
@@ -15,4 +16,23 @@ export function getErrorMessage(err: unknown) {
   } else {
     return unknownError;
   }
+}
+
+export function generateId(
+  prefix?: string,
+  { length = 12, separator = "_" } = {},
+) {
+  const id = customAlphabet(
+    "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+    length,
+  )();
+  return prefix ? `${prefix}${separator}${id}` : id;
+}
+
+export function slugify(str: string) {
+  return str
+    .toLowerCase()
+    .replace(/ /g, "-")
+    .replace(/[^\w-]+/g, "")
+    .replace(/--+/g, "-");
 }
