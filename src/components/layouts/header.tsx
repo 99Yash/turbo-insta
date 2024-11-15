@@ -1,5 +1,6 @@
 import { User } from "@clerk/nextjs/server";
 import { siteConfig } from "~/config/site";
+import { AuthDropdown } from "./auth-dropdown";
 import { MainNav } from "./main-nav";
 
 export function SiteHeader({ user }: { user: User | null }) {
@@ -10,9 +11,7 @@ export function SiteHeader({ user }: { user: User | null }) {
         {/* <MobileNav items={siteConfig.mainNav} /> */}
         <div className="flex flex-1 items-center justify-end space-x-4">
           <nav className="flex items-center space-x-2">
-            {/* <ProductsCombobox />
-            <CartSheet />
-            <AuthDropdown user={user} /> */}
+            <AuthDropdown user={user} />
           </nav>
         </div>
       </div>
