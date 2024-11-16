@@ -12,7 +12,7 @@ const links = {
 };
 
 export const siteConfig = {
-  name: "Turbo Insta",
+  name: "Repligram",
   description:
     "Instagram built with Next.js, React, TypeScript, Tailwind CSS, and Clerk.",
   url: "https://skateshop.sadmn.com",
