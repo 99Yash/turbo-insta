@@ -1,6 +1,7 @@
 import "~/styles/globals.css";
 
 import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/react";
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
 import TailwindIndicator from "~/components/tailwind-indicator";
@@ -41,6 +42,7 @@ export default function RootLayout({
               {children}
             </ThemeProvider>
             <Sonner />
+            <Analytics />
             <TailwindIndicator />
           </TRPCReactProvider>
         </body>
