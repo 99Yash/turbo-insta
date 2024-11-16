@@ -21,7 +21,7 @@ const createContext = cache(() => {
 
   return createTRPCContext({
     headers: heads,
-    session: getAuth(new NextRequest(getBaseUrl(), { headers: headers() })),
+    auth: getAuth(new NextRequest(getBaseUrl(), { headers: headers() })),
   });
 });
 
