@@ -49,12 +49,12 @@ export const Icons = {
       <path
         d="M197.704 191.245C174.935 189.307 123.001 202.111 97.4219 269.547"
         stroke="white"
-        stroke-width="5.81345"
+        strokeWidth="5.81345"
       />
       <path
         d="M250.029 359.519H328.32C355.894 361.005 414.884 350.903 430.246 298.614"
         stroke="white"
-        stroke-width="5.81345"
+        strokeWidth="5.81345"
       />
     </svg>
   ),
