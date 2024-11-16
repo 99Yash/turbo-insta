@@ -1,5 +1,5 @@
 import { slugify } from "~/lib/utils";
-import { FooterItem, MainNavItem } from "~/types";
+import { type FooterItem, type MainNavItem } from "~/types";
 import { productConfig } from "./product";
 
 export type SiteConfig = typeof siteConfig;
@@ -13,9 +13,8 @@ const links = {
 
 export const siteConfig = {
   name: "Repligram",
-  description:
-    "Instagram built with Next.js, React, TypeScript, Tailwind CSS, and Clerk.",
-  url: "https://skateshop.sadmn.com",
+  description: `Create an account or log in to Repligram - Share what you're into with the people who get you.`,
+  url: "https://repligram.vercel.app",
   ogImage: "https://skateshop.sadmn.com/opengraph-image.png",
   links,
   mainNav: [
