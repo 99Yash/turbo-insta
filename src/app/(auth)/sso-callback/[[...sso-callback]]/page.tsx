@@ -1,7 +1,6 @@
-import { AuthenticateWithRedirectCallback } from "@clerk/nextjs"
-
-import { Icons } from "@/components/icons"
-import { Shell } from "@/components/shell"
+import { AuthenticateWithRedirectCallback } from "@clerk/nextjs";
+import { Icons } from "~/components/icons";
+import { Shell } from "~/components/shell";
 
 export default function SSOCallbackPage() {
   return (
@@ -9,5 +8,5 @@ export default function SSOCallbackPage() {
       <Icons.spinner className="size-16 animate-spin" aria-hidden="true" />
       <AuthenticateWithRedirectCallback />
     </Shell>
-  )
+  );
 }
