@@ -36,6 +36,7 @@ const config = {
       },
     ],
     "@typescript-eslint/no-empty-object-type": "off",
+    "@typescript-eslint/consistent-indexed-object-style": "off",
     "drizzle/enforce-delete-with-where": [
       "error",
       {
