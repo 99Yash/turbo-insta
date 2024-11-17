@@ -1,5 +1,5 @@
-import { SQL } from "drizzle-orm";
-import { Icons } from "~/components/icons";
+import { type SQL } from "drizzle-orm";
+import { type Icons } from "~/components/icons";
 
 export interface NavItem {
   title: string;
