@@ -1,5 +1,5 @@
 import type { User } from "@clerk/nextjs/server";
-import { ExitIcon } from "@radix-ui/react-icons";
+import { ExitIcon, PersonIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -77,7 +77,15 @@ export async function AuthDropdown({
               ))}
             </div>
           }
-        ></React.Suspense>
+        />
+        <DropdownMenuItem asChild>
+          <Link href={`/${user.id}`}>
+            <PersonIcon className="mr-2 size-4" aria-hidden="true" />
+            Profile
+            <DropdownMenuShortcut>⌘P</DropdownMenuShortcut>
+          </Link>
+        </DropdownMenuItem>
+
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link href="/signout">
