@@ -13,7 +13,6 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { Skeleton } from "~/components/ui/skeleton";
 import { cn, getUserEmail } from "~/lib/utils";
 
 interface AuthDropdownProps
@@ -69,15 +68,7 @@ export async function AuthDropdown({
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <React.Suspense
-          fallback={
-            <div className="flex flex-col space-y-1.5 p-1">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-6 w-full rounded-sm" />
-              ))}
-            </div>
-          }
-        />
+
         <DropdownMenuItem asChild>
           <Link href={`/${user.id}`}>
             <PersonIcon className="mr-2 size-4" aria-hidden="true" />
