@@ -3,9 +3,9 @@
 import { PlusIcon, UploadIcon } from "@radix-ui/react-icons";
 import * as React from "react";
 import { useUpload } from "~/hooks/use-upload";
+import { FileUploader } from "../file-uploader";
 import { Button } from "../ui/button";
 import { Modal } from "../ui/modal";
-import { FileUploader } from "../utils/file-uploader";
 
 export function Create() {
   const [open, setOpen] = React.useState(false);
