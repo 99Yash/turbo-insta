@@ -1,5 +1,5 @@
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
-import { User } from "@clerk/nextjs/server";
+import { type User } from "@clerk/nextjs/server";
 import { type ClassValue, clsx } from "clsx";
 import { customAlphabet } from "nanoid";
 import { toast } from "sonner";
@@ -55,4 +55,57 @@ export function showErrorToast(err: unknown) {
   console.log({ errorMessage });
 
   return toast.error(errorMessage);
+}
+
+export function isImageUrl(url: string | null): boolean {
+  if (!url) return false;
+  const imageExtensions = [
+    "jpg",
+    "jpeg",
+    "png",
+    "gif",
+    "bmp",
+    "webp",
+    "svg",
+    "avif",
+  ];
+
+  try {
+    const parsedUrl = new URL(url);
+    const pathname = parsedUrl.pathname.toLowerCase();
+
+    return imageExtensions.some((ext) => pathname.endsWith(`.${ext}`));
+  } catch (error) {
+    return false;
+  }
+}
+
+export function truncate(str: string, length: number) {
+  return str.length > length ? `${str.substring(0, length)}...` : str;
+}
+
+export function isFileWithPreview(
+  file: File,
+): file is File & { preview: string } {
+  return "preview" in file && typeof file.preview === "string";
+}
+
+export function getMoreRecentDate(date1: Date, date2: Date) {
+  return date1.getTime() > date2.getTime() ? date1 : date2;
+}
+
+export function formatBytes(
+  bytes: number,
+  decimals = 0,
+  sizeType: "accurate" | "normal" = "normal",
+) {
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  const accurateSizes = ["Bytes", "KiB", "MiB", "GiB", "TiB"];
+  if (bytes === 0) return "0 Byte";
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return `${(bytes / Math.pow(1024, i)).toFixed(decimals)} ${
+    sizeType === "accurate"
+      ? (accurateSizes[i] ?? "Bytest")
+      : (sizes[i] ?? "Bytes")
+  }`;
 }

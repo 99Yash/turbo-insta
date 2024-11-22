@@ -16,7 +16,7 @@ interface UseUploadProps
 
 export function useUpload(
   endpoint: keyof RepligramFileRouter,
-  { defaultUploadedFiles = [], ...props }: UseUploadProps,
+  { defaultUploadedFiles = [], ...props }: UseUploadProps = {},
 ) {
   const [uploadedFiles, setUploadedFiles] =
     React.useState<StoredFile[]>(defaultUploadedFiles);
