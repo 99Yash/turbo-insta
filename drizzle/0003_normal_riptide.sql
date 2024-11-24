@@ -1,0 +1,1 @@
+ALTER TABLE "posts" ADD COLUMN "user_id" varchar(32) NOT NULL;

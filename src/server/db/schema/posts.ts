@@ -14,6 +14,7 @@ export const posts = pgTable(
     updatedAt: timestamp("updated_at")
       .default(sql`current_timestamp`)
       .$onUpdate(() => new Date()),
+    userId: varchar("user_id", { length: 32 }).notNull(), // clerk user id
   },
   (example) => ({
     titleIndex: index("title_idx").on(example.title),
