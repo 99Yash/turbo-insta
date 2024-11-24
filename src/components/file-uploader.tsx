@@ -10,7 +10,7 @@ import { Cross2Icon, UploadIcon } from "@radix-ui/react-icons";
 import { Progress } from "@radix-ui/react-progress";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { useControllableState } from "~/hooks/use-controllable-state";
-import { cn, formatBytes, isFileWithPreview } from "~/lib/utils";
+import { cn, formatBytes, isFileWithPreview, isImageUrl } from "~/lib/utils";
 import { Button } from "./ui/button";
 
 interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -293,9 +293,9 @@ function FileCard({ file, progress, onRemove }: FileCardProps) {
   return (
     <div className="relative flex items-center space-x-4">
       <div className="flex flex-1 space-x-4">
-        {isFileWithPreview(file) ? (
+        {isImageUrl(file.name) ? (
           <Image
-            src={file.preview}
+            src={isFileWithPreview(file) ? file.preview : `/images/pin.png`}
             alt={file.name}
             width={48}
             height={48}
