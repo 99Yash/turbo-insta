@@ -15,6 +15,13 @@
       "when": 1721390732346,
       "tag": "0001_reflective_shape",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1732414825536,
+      "tag": "0002_clumsy_virginia_dare",
+      "breakpoints": true
     }
   ]
 }

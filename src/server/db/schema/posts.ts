@@ -8,14 +8,14 @@ export const posts = pgTable(
     id: varchar("id")
       .$defaultFn(() => generateId())
       .primaryKey(),
-    name: varchar("name", { length: 256 }),
+    title: varchar("title", { length: 256 }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .default(sql`current_timestamp`)
       .$onUpdate(() => new Date()),
   },
   (example) => ({
-    nameIndex: index("name_idx").on(example.name),
+    titleIndex: index("title_idx").on(example.title),
   }),
 );
 

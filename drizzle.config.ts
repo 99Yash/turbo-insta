@@ -8,7 +8,7 @@ export default {
   dbCredentials: {
     url: env.DATABASE_URL,
   },
-  tablesFilter: ["turbo-insta_*"],
+  tablesFilter: ["*"],
   verbose: true, // Print all statements
   // Always ask for confirmation
   strict: true,
