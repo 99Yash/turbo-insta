@@ -7,11 +7,11 @@ import Dropzone, {
 import { toast } from "sonner";
 
 import { Cross2Icon, UploadIcon } from "@radix-ui/react-icons";
-import { Progress } from "@radix-ui/react-progress";
-import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { useControllableState } from "~/hooks/use-controllable-state";
 import { cn, formatBytes, isFileWithPreview, isImageUrl } from "~/lib/utils";
 import { Button } from "./ui/button";
+import { Progress } from "./ui/progress";
+import { ScrollArea } from "./ui/scroll-area";
 
 interface FileUploaderProps extends React.HTMLAttributes<HTMLDivElement> {
   /**

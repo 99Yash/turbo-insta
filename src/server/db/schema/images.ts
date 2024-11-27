@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import { index, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
 import { generateId } from "~/lib/utils";
 import { posts } from "./posts";
@@ -22,5 +23,12 @@ export const images = pgTable(
   }),
 );
 
-export type Post = typeof images.$inferSelect;
-export type NewPost = typeof images.$inferInsert;
+export const imageRelations = relations(images, ({ one, many }) => ({
+  post: one(posts, {
+    fields: [images.postId],
+    references: [posts.id],
+  }),
+}));
+
+export type Image = typeof images.$inferSelect;
+export type NewImage = typeof images.$inferInsert;

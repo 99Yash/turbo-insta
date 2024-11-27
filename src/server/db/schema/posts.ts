@@ -21,8 +21,8 @@ export const posts = pgTable(
   }),
 );
 
-export const postsWithImages = relations(posts, (post) => ({
-  images: post.many(images),
+export const postRelations = relations(posts, ({ one, many }) => ({
+  images: many(images),
 }));
 
 export type Post = typeof posts.$inferSelect;
