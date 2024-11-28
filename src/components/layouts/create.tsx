@@ -32,7 +32,6 @@ type Inputs = z.infer<typeof createPostSchema>;
 
 export function Create() {
   const [open, setOpen] = React.useState(false);
-  const [files, setFiles] = React.useState<File[]>();
 
   const { uploadFiles, progresses, isUploading, uploadedFiles } =
     useUpload("postImage");
@@ -56,14 +55,14 @@ export function Create() {
 
       await createPostMutation.mutateAsync({
         title: data.title,
-        files: data.files.map((file) => file.name),
+        files: data.files.map((file) => file.name), //uploadedFiles.map((file) => file.name) could be sanitized, so this is fine
       });
 
       toast.success("Post created successfully!", {
         id: t,
       });
       setOpen(false);
-      form.reset()
+      form.reset();
     } catch (error) {
       showErrorToast(error);
     }
