@@ -52,6 +52,8 @@ export function useUpload(
       setUploadedFiles((prev) =>
         prev ? [...prev, ...formattedRes] : formattedRes,
       );
+
+      return formattedRes;
     } catch (err) {
       showErrorToast(err);
     } finally {

@@ -1,0 +1,1 @@
+ALTER TABLE "images" ADD COLUMN "file_key" varchar(256);

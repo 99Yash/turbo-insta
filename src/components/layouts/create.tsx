@@ -36,7 +36,11 @@ export function Create() {
   const { uploadFiles, progresses, isUploading, uploadedFiles } =
     useUpload("postImage");
 
-  const createPostMutation = api.post.create.useMutation({});
+  const createPostMutation = api.post.create.useMutation({
+    onError: (error) => {
+      showErrorToast(error);
+    },
+  });
 
   const form = useForm<Inputs>({
     resolver: zodResolver(createPostSchema),
@@ -45,27 +49,30 @@ export function Create() {
   const isSubmitting = form.formState.isSubmitting;
 
   async function onSubmit(data: Inputs) {
-    try {
-      const t = toast.loading("Uploading files...");
+    const t = toast.loading("Uploading files...");
 
-      await uploadFiles(data.files);
-      toast.loading("Files uploaded, creating post!", {
-        id: t,
-      });
+    const uploads = await uploadFiles(data.files);
 
-      await createPostMutation.mutateAsync({
-        title: data.title,
-        files: data.files.map((file) => file.name), //uploadedFiles.map((file) => file.name) could be sanitized, so this is fine
-      });
+    if (!uploads) return;
+    toast.loading("Files uploaded, creating post!", {
+      id: t,
+    });
 
-      toast.success("Post created successfully!", {
-        id: t,
-      });
-      setOpen(false);
-      form.reset();
-    } catch (error) {
-      showErrorToast(error);
-    }
+    await createPostMutation.mutateAsync({
+      title: data.title,
+      files: uploads.map((f) => ({
+        name: f.name,
+        fileKey: f.id,
+        url: f.url,
+      })),
+    });
+
+    toast.success("Post created successfully", {
+      id: t,
+    });
+
+    form.reset();
+    setOpen(false);
   }
 
   return (

@@ -109,3 +109,19 @@ export function formatBytes(
       : (sizes[i] ?? "Bytes")
   }`;
 }
+
+export function getBaseUrl() {
+  if (typeof window !== "undefined") return window.location.origin;
+  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`;
+  return `http://localhost:${process.env.PORT ?? 3000}`;
+}
+
+/**
+ * Only allow s3 safe characters and characters which require special handling for now
+ * @see https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html
+ * @param fileName - The file name to sanitize
+ * @returns The sanitized file name
+ */
+export function sanitizeFileName(fileName: string): string {
+  return fileName.replace(/[^\w\/!-\.\*'\(\) &\$@=;:+,\?]/g, "_");
+}

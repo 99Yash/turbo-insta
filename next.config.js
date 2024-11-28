@@ -8,6 +8,15 @@ import { fileURLToPath } from "node:url";
 createJiti(fileURLToPath(import.meta.url))("./src/env.ts");
 
 /** @type {import("next").NextConfig} */
-const config = {};
+const config = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+      },
+    ],
+  },
+};
 
 export default config;
