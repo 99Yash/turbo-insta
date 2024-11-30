@@ -13,7 +13,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import { cn, getUserEmail } from "~/lib/utils";
+import { cn, getInitials, getUserEmail } from "~/lib/utils";
 
 interface AuthDropdownProps
   extends React.ComponentPropsWithRef<typeof DropdownMenuTrigger>,
@@ -37,9 +37,6 @@ export async function AuthDropdown({
     );
   }
 
-  const initials = `${user.firstName?.charAt(0) ?? ""} ${
-    user.lastName?.charAt(0) ?? ""
-  }`;
   const email = getUserEmail(user);
 
   return (
@@ -51,8 +48,10 @@ export async function AuthDropdown({
           {...props}
         >
           <Avatar className="size-8">
-            <AvatarImage src={user.imageUrl} alt={user.username ?? ""} />
-            <AvatarFallback>{initials}</AvatarFallback>
+            <AvatarImage src={user.imageUrl} alt="Avatar" />
+            <AvatarFallback>
+              {getInitials(user.fullName ?? "VH")}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>

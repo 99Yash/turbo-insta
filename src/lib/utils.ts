@@ -1,6 +1,7 @@
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { type User } from "@clerk/nextjs/server";
 import { type ClassValue, clsx } from "clsx";
+import { formatDistanceToNowStrict } from "date-fns";
 import { customAlphabet } from "nanoid";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
@@ -124,4 +125,72 @@ export function getBaseUrl() {
  */
 export function sanitizeFileName(fileName: string): string {
   return fileName.replace(/[^\w\/!-\.\*'\(\) &\$@=;:+,\?]/g, "_");
+}
+
+export function getInitials(name: string, all?: boolean) {
+  if (!name) {
+    return "";
+  }
+  if (all) {
+    return name
+      .trim()
+      .split(/\s+/)
+      .map((word) => word[0])
+      .join("");
+  }
+  const words = name.trim().split(/\s+/);
+  const firstNameInitial = words[0] ? words[0][0] : "";
+  const lastNameInitial =
+    words.length > 1 ? (words[words.length - 1] ?? "")[0] : "";
+
+  return `${firstNameInitial?.toUpperCase()}${lastNameInitial?.toUpperCase()}`;
+}
+
+export function formatDate(
+  date: Date | string | number,
+  opts: Intl.DateTimeFormatOptions = {},
+) {
+  return new Intl.DateTimeFormat("en-US", {
+    month: opts.month ?? "long",
+    day: opts.day ?? "numeric",
+    year: opts.year ?? "numeric",
+    ...opts,
+  }).format(new Date(date));
+}
+
+export const formatDistanceLocale = {
+  lessThanXSeconds: "just now",
+  xSeconds: "just now",
+  halfAMinute: "just now",
+  lessThanXMinutes: "{{count}}m",
+  xMinutes: "{{count}}m",
+  aboutXHours: "{{count}}h",
+  xHours: "{{count}}h",
+  xDays: "{{count}}d",
+  aboutXWeeks: "{{count}}w",
+  xWeeks: "{{count}}w",
+  aboutXMonths: "{{count}}M",
+  xMonths: "{{count}}M",
+  aboutXYears: "{{count}}y",
+  xYears: "{{count}}y",
+  overXYears: "{{count}}y",
+  almostXYears: "{{count}}y",
+};
+
+function formatDistance(token: string, count: number): string {
+  const result = formatDistanceLocale[
+    token as keyof typeof formatDistanceLocale
+  ].replace("{{count}}", count.toString());
+
+  if (result === "just now") return result;
+  return result;
+}
+
+export function formatTimeToNow(date: Date): string {
+  return formatDistanceToNowStrict(date, {
+    locale: {
+      formatDistance,
+    },
+    addSuffix: true,
+  });
 }

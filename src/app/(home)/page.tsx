@@ -15,6 +15,7 @@ import {
 } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { getCachedUser } from "~/lib/queries/user";
+import { formatTimeToNow } from "~/lib/utils";
 import { api, HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
@@ -106,13 +107,13 @@ export default async function Home() {
                   </Button>
                 </div>
                 <div className="w-full">
-                  <p className="text-sm font-semibold">123 likes</p>
+                  <p className="text-sm font-semibold">n likes</p>
                   <div className="mt-1 text-sm">
                     <span className="font-semibold">{post.userId}</span>{" "}
                     {post.title}
                   </div>
-                  <p className="mt-1 text-xs uppercase text-gray-500">
-                    {post.createdAt.getTime().toLocaleString()}
+                  <p className="mt-1 text-xs text-gray-500">
+                    {formatTimeToNow(post.createdAt)}
                   </p>
                 </div>
                 {user?.imageUrl && (
