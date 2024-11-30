@@ -33,7 +33,8 @@ type Inputs = z.infer<typeof createPostSchema>;
 export function Create() {
   const [open, setOpen] = React.useState(false);
 
-  const { uploadFiles, progresses, isUploading } = useUpload("postImage");
+  const { uploadFiles, progresses, isUploading, uploadedFiles } =
+    useUpload("postImage");
 
   const createPostMutation = api.post.create.useMutation({
     onError: (error) => {
