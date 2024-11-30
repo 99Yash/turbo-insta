@@ -10,16 +10,12 @@ interface UseUploadProps
   extends Pick<
     UploadFilesOptions<RepligramFileRouter, keyof RepligramFileRouter>,
     "headers" | "onUploadBegin" | "onUploadProgress" | "skipPolling"
-  > {
-  defaultUploadedFiles?: StoredFile[];
-}
+  > {}
 
 export function useUpload(
   endpoint: keyof RepligramFileRouter,
-  { defaultUploadedFiles = [], ...props }: UseUploadProps = {},
+  props: UseUploadProps = {},
 ) {
-  const [uploadedFiles, setUploadedFiles] =
-    React.useState<StoredFile[]>(defaultUploadedFiles);
   const [progresses, setProgresses] = React.useState<Record<string, number>>(
     {},
   );
@@ -49,10 +45,6 @@ export function useUpload(
         };
       }) satisfies StoredFile[];
 
-      setUploadedFiles((prev) =>
-        prev ? [...prev, ...formattedRes] : formattedRes,
-      );
-
       return formattedRes;
     } catch (err) {
       showErrorToast(err);
@@ -63,7 +55,6 @@ export function useUpload(
   }
 
   return {
-    uploadedFiles,
     progresses,
     uploadFiles: uploadThings,
     isUploading,

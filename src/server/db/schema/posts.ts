@@ -1,6 +1,7 @@
 import { relations, sql } from "drizzle-orm";
-import { index, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
+import { index, json, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
 import { generateId } from "~/app/lib/utils";
+import { type StoredFile } from "~/types";
 import { images } from "./images";
 
 export const posts = pgTable(
@@ -10,6 +11,7 @@ export const posts = pgTable(
       .$defaultFn(() => generateId())
       .primaryKey(),
     title: varchar("title", { length: 256 }),
+    images: json("images").$type<StoredFile[]>().notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .default(sql`current_timestamp`)

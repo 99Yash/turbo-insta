@@ -5,7 +5,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { images, posts } from "~/server/db/schema";
+import { posts } from "~/server/db/schema";
 
 export const postRouter = createTRPCRouter({
   create: protectedProcedure
@@ -17,7 +17,7 @@ export const postRouter = createTRPCRouter({
             z.object({
               url: z.string(),
               name: z.string(),
-              fileKey: z.string(),
+              id: z.string(),
             }),
           )
           .min(1)
@@ -31,6 +31,11 @@ export const postRouter = createTRPCRouter({
           .values({
             title: input.title,
             userId: ctx.userId,
+            images: input.files.map((file) => ({
+              url: file.url,
+              name: file.name,
+              id: file.id,
+            })),
           })
           .returning();
 
@@ -39,18 +44,6 @@ export const postRouter = createTRPCRouter({
             code: "INTERNAL_SERVER_ERROR",
             message: "Failed to create post",
           });
-
-        await Promise.all(
-          input.files.map(async (file) => {
-            await ctx.db.insert(images).values({
-              url: file.url,
-              alt: file.name,
-              name: file.name,
-              fileKey: file.fileKey,
-              postId: post.id,
-            });
-          }),
-        );
       } catch (e) {
         throw new TRPCError({
           code: getTRPCErrorFromUnknown(e).code,

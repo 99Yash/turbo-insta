@@ -57,6 +57,13 @@
       "when": 1732781116937,
       "tag": "0007_aberrant_orphan",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1732792699948,
+      "tag": "0008_deep_speed",
+      "breakpoints": true
     }
   ]
 }
