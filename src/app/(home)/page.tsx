@@ -1,9 +1,3 @@
-import {
-  BookmarkIcon,
-  ChatBubbleIcon,
-  HeartIcon,
-  PaperPlaneIcon,
-} from "@radix-ui/react-icons";
 import Image from "next/image";
 import { AddComment } from "~/components/forms/add-comment";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -17,6 +11,7 @@ import {
 import { users } from "~/lib/queries/user";
 import { formatTimeToNow, getInitials } from "~/lib/utils";
 import { api, HydrateClient } from "~/trpc/server";
+import { ActionButtons } from "./components/action-buttons";
 
 export default async function Home() {
   const posts = await api.posts.getAll();
@@ -76,39 +71,8 @@ export default async function Home() {
                   </div>
                 </CardContent>
                 <CardFooter className="flex flex-col space-y-3 p-4">
-                  <div className="flex w-full items-center justify-between">
-                    <div className="flex space-x-4">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-full"
-                      >
-                        <HeartIcon className="h-6 w-6" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-full"
-                      >
-                        <ChatBubbleIcon className="h-6 w-6" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-9 w-9 rounded-full"
-                      >
-                        <PaperPlaneIcon className="h-6 w-6" />
-                      </Button>
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="ml-auto h-9 w-9 rounded-full"
-                    >
-                      <BookmarkIcon className="h-6 w-6" />
-                    </Button>
-                  </div>
                   <div className="w-full">
+                    <ActionButtons post={post} />
                     <p className="text-sm font-semibold">n likes</p>
                     <div className="mt-1 text-sm">
                       <span className="font-semibold">{author?.firstName}</span>{" "}
