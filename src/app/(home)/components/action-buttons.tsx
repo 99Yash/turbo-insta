@@ -12,7 +12,7 @@ import { type Post } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
 export function ActionButtons({ post }: { post: Post }) {
-  const toogleLike = api.likes.toggle.useMutation({
+  const toggleLike = api.likes.toggle.useMutation({
     onError: (error) => {
       showErrorToast(error);
     },
@@ -22,30 +22,31 @@ export function ActionButtons({ post }: { post: Post }) {
     <div className="flex w-full items-center justify-between">
       <div className="flex space-x-4">
         <Button
-          onClick={() =>
-            toogleLike.mutate({
+          onClick={async () =>
+            await toggleLike.mutateAsync({
               postId: post.id,
             })
           }
+          disabled={toggleLike.isPending}
           variant="ghost"
           size="icon"
-          className="h-9 w-9 rounded-full"
+          className="size-7 rounded-full"
         >
-          <HeartIcon className="h-6 w-6" />
+          <HeartIcon className="size-6" aria-hidden="true" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
-          <ChatBubbleIcon className="h-6 w-6" />
+        <Button variant="ghost" size="icon" className="size-7 rounded-full">
+          <ChatBubbleIcon className="size-6" aria-hidden="true" />
         </Button>
-        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full">
-          <PaperPlaneIcon className="h-6 w-6" />
+        <Button variant="ghost" size="icon" className="size-7 rounded-full">
+          <PaperPlaneIcon className="size-6" aria-hidden="true" />
         </Button>
       </div>
       <Button
         variant="ghost"
         size="icon"
-        className="ml-auto h-9 w-9 rounded-full"
+        className="ml-auto size-7 rounded-full"
       >
-        <BookmarkIcon className="h-6 w-6" />
+        <BookmarkIcon className="size-6" aria-hidden="true" />
       </Button>
     </div>
   );
