@@ -24,9 +24,7 @@ export function LogOutButtons() {
         <span className="sr-only">Previous page</span>
       </Button>
       {mounted ? (
-        <SignOutButton
-          redirectUrl={`${window.location.origin}/?redirect=false`}
-        >
+        <SignOutButton redirectUrl={window.location.origin}>
           <Button size="sm" className="w-full">
             Log out
             <span className="sr-only">Log out</span>
