@@ -4,28 +4,28 @@ import { generateId } from "~/app/lib/utils";
 import { posts } from "./posts";
 import { lifecycleDates } from "./utils";
 
-export const comments = pgTable(
-  "comments",
+export const likes = pgTable(
+  "likes",
   {
     id: varchar("id")
       .$defaultFn(() => generateId())
       .primaryKey(),
-    text: varchar("text", { length: 256 }),
     userId: varchar("user_id", { length: 32 }).notNull(), // clerk user id
     postId: varchar("post_id", { length: 32 }).notNull(),
     ...lifecycleDates,
   },
   (example) => ({
-    postId: index("post_id_idx").on(example.postId),
+    postId: index("post_id_like_idx").on(example.postId),
+    userId: index("user_id_like_idx").on(example.userId),
   }),
 );
 
-export const commentRelations = relations(comments, ({ one }) => ({
+export const likeRelations = relations(likes, ({ one }) => ({
   post: one(posts, {
-    fields: [comments.postId],
+    fields: [likes.postId],
     references: [posts.id],
   }),
 }));
 
-export type Comment = typeof comments.$inferSelect;
-export type NewComment = typeof comments.$inferInsert;
+export type Like = typeof likes.$inferSelect;
+export type NewLike = typeof likes.$inferInsert;
