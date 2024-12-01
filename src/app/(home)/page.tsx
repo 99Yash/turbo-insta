@@ -26,7 +26,8 @@ export default async function Home() {
     <HydrateClient>
       <main className="flex flex-col items-center justify-center">
         {posts.map((post) => {
-          const author = users.data.find((user) => user.id === post.userId);
+          const author = users.find((user) => user.id === post.userId);
+
           return (
             <div key={post.id} className="flex flex-col items-center gap-2">
               <Card className="max-w-[470px] border-0 shadow-none">

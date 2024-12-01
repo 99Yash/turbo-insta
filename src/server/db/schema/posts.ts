@@ -1,7 +1,8 @@
-import { sql } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { index, json, pgTable, timestamp, varchar } from "drizzle-orm/pg-core";
 import { generateId } from "~/app/lib/utils";
 import { type StoredFile } from "~/types";
+import { comments } from "./comments";
 
 export const posts = pgTable(
   "posts",
@@ -21,6 +22,10 @@ export const posts = pgTable(
     titleIndex: index("title_idx").on(example.title),
   }),
 );
+
+export const postRelations = relations(posts, ({ many }) => ({
+  comments: many(comments),
+}));
 
 export type Post = typeof posts.$inferSelect;
 export type NewPost = typeof posts.$inferInsert;
