@@ -7,7 +7,7 @@ import {
   PaperPlaneIcon,
 } from "@radix-ui/react-icons";
 import { Button } from "~/components/ui/button";
-import { showErrorToast } from "~/lib/utils";
+import { cn, showErrorToast } from "~/lib/utils";
 import { type Post } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
@@ -30,14 +30,22 @@ export function ActionButtons({ post }: { post: Post }) {
           disabled={toggleLike.isPending}
           variant="ghost"
           size="icon"
-          className="size-7 rounded-full"
+          className={cn("size-7 rounded-full")}
         >
           <HeartIcon className="size-6" aria-hidden="true" />
         </Button>
-        <Button variant="ghost" size="icon" className="size-7 rounded-full">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("size-7 rounded-full")}
+        >
           <ChatBubbleIcon className="size-6" aria-hidden="true" />
         </Button>
-        <Button variant="ghost" size="icon" className="size-7 rounded-full">
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("size-7 rounded-full")}
+        >
           <PaperPlaneIcon className="size-6" aria-hidden="true" />
         </Button>
       </div>
