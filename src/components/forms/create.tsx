@@ -35,7 +35,7 @@ export function Create() {
 
   const { uploadFiles, progresses } = useUpload("postImage");
 
-  const createPostMutation = api.post.create.useMutation({
+  const createPostMutation = api.posts.create.useMutation({
     onError: (error) => {
       showErrorToast(error);
     },

@@ -7,7 +7,7 @@ import {
 } from "~/server/api/trpc";
 import { posts } from "~/server/db/schema";
 
-export const postRouter = createTRPCRouter({
+export const postsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({

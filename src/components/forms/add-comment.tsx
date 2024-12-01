@@ -12,7 +12,7 @@ import { Input } from "../ui/input";
 export function AddComment({ postId }: { postId: string }) {
   const [text, setText] = React.useState("");
 
-  const addComment = api.comment.create.useMutation({
+  const addComment = api.comments.create.useMutation({
     onSuccess: () => {
       toast.success("Comment added successfully");
       setText("");

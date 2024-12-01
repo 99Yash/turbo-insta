@@ -19,7 +19,7 @@ import { formatTimeToNow, getInitials } from "~/lib/utils";
 import { api, HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
-  const posts = await api.post.getAll();
+  const posts = await api.posts.getAll();
 
   return (
     <HydrateClient>
