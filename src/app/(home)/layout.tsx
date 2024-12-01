@@ -1,9 +1,9 @@
 import { SiteHeader } from "~/components/layouts/header";
 import { getCachedUser } from "~/lib/queries/user";
 
-interface LobyLayoutProps extends React.PropsWithChildren {}
+interface LobbyLayoutProps extends React.PropsWithChildren {}
 
-export default async function LobyLayout({ children }: LobyLayoutProps) {
+export default async function LobyLayout({ children }: LobbyLayoutProps) {
   const user = await getCachedUser();
 
   return (
