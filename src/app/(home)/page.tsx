@@ -5,6 +5,7 @@ import {
   PaperPlaneIcon,
 } from "@radix-ui/react-icons";
 import Image from "next/image";
+import { AddComment } from "~/components/forms/add-comment";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
@@ -13,14 +14,12 @@ import {
   CardFooter,
   CardHeader,
 } from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { getCachedUser, users } from "~/lib/queries/user";
+import { users } from "~/lib/queries/user";
 import { formatTimeToNow, getInitials } from "~/lib/utils";
 import { api, HydrateClient } from "~/trpc/server";
 
 export default async function Home() {
   const posts = await api.post.getAll();
-  const user = await getCachedUser();
 
   return (
     <HydrateClient>
@@ -32,7 +31,7 @@ export default async function Home() {
             <div key={post.id} className="flex flex-col items-center gap-2">
               <Card className="max-w-[470px] border-0 shadow-none">
                 <CardHeader className="flex flex-row items-center space-x-4 p-4">
-                  <Avatar className="h-8 w-8">
+                  <Avatar className="size-8">
                     <AvatarImage
                       src={author?.imageUrl}
                       alt={author?.fullName ?? "VH"}
@@ -119,24 +118,8 @@ export default async function Home() {
                       {formatTimeToNow(post.createdAt)}
                     </p>
                   </div>
-                  {user?.imageUrl && (
-                    <div className="flex w-full items-center space-x-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={user.imageUrl} alt="Your avatar" />
-                        <AvatarFallback>You</AvatarFallback>
-                      </Avatar>
-                      <Input
-                        className="flex-1 border-none bg-transparent text-sm"
-                        placeholder="Add a comment..."
-                      />
-                      <Button
-                        variant="ghost"
-                        className="text-sm font-semibold text-blue-500"
-                      >
-                        Post
-                      </Button>
-                    </div>
-                  )}
+
+                  <AddComment postId={post.id} />
                 </CardFooter>
               </Card>
             </div>
