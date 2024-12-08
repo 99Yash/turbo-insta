@@ -58,7 +58,7 @@ export function showErrorToast(err: unknown) {
   return toast.error(errorMessage);
 }
 
-export function isImageUrl(url: string | null): boolean {
+export function isImageUrl(url: string | null) {
   if (!url) return false;
   const imageExtensions = [
     "jpg",
@@ -71,14 +71,10 @@ export function isImageUrl(url: string | null): boolean {
     "avif",
   ];
 
-  try {
-    const parsedUrl = new URL(url);
-    const pathname = parsedUrl.pathname.toLowerCase();
+  const parsedUrl = new URL(url);
+  const pathname = parsedUrl.pathname.toLowerCase();
 
-    return imageExtensions.some((ext) => pathname.endsWith(`.${ext}`));
-  } catch (error) {
-    return false;
-  }
+  return imageExtensions.some((ext) => pathname.endsWith(`.${ext}`));
 }
 
 export function truncate(str: string, length: number) {
