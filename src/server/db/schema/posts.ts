@@ -19,6 +19,7 @@ export const posts = pgTable(
   },
   (example) => ({
     titleIndex: index("title_idx").on(example.title),
+    userIdIndex: index("user_id_idx").on(example.userId),
   }),
 );
 
