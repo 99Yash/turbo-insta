@@ -1,3 +1,4 @@
+import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import { AddComment } from "~/components/forms/add-comment";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -24,7 +25,7 @@ export default async function Home() {
 
           return (
             <div key={post.id} className="flex flex-col items-center gap-2">
-              <Card className="max-w-[470px] border-0 shadow-none">
+              <Card className="border-0 shadow-none">
                 <CardHeader className="flex flex-row items-center space-x-4 p-4">
                   <Avatar className="size-8">
                     <AvatarImage
@@ -41,22 +42,9 @@ export default async function Home() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 rounded-full"
+                    className="size-8 rounded-full"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="h-4 w-4"
-                    >
-                      <circle cx="12" cy="12" r="1" />
-                      <circle cx="19" cy="12" r="1" />
-                      <circle cx="5" cy="12" r="1" />
-                    </svg>
+                    <DotsHorizontalIcon className="size-4s" />
                   </Button>
                 </CardHeader>
                 <CardContent className="p-0">

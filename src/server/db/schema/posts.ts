@@ -3,6 +3,7 @@ import { index, json, pgTable, varchar } from "drizzle-orm/pg-core";
 import { generateId } from "~/app/lib/utils";
 import { type StoredFile } from "~/types";
 import { comments } from "./comments";
+import { likes } from "./likes";
 import { lifecycleDates } from "./utils";
 
 export const posts = pgTable(
@@ -23,6 +24,7 @@ export const posts = pgTable(
 
 export const postRelations = relations(posts, ({ many }) => ({
   comments: many(comments),
+  likes: many(likes),
 }));
 
 export type Post = typeof posts.$inferSelect;
