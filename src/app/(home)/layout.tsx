@@ -1,5 +1,5 @@
-import { SiteHeader } from "~/components/layouts/header";
 import { getCachedUser } from "~/lib/queries/user";
+import { AppSidebar } from "./components/app-sidebar";
 
 interface LobbyLayoutProps extends React.PropsWithChildren {}
 
@@ -8,9 +8,8 @@ export default async function LobbyLayout({ children }: LobbyLayoutProps) {
 
   return (
     <div className="relative flex min-h-screen flex-col">
-      <SiteHeader user={user} />
+      {user && <AppSidebar user={user} />}
       <main className="flex-1">{children}</main>
-      {/* <SiteFooter /> */}
     </div>
   );
 }
