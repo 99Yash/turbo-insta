@@ -7,6 +7,7 @@ import { Inter } from "next/font/google";
 import TailwindIndicator from "~/components/tailwind-indicator";
 import { ThemeProvider } from "~/components/theme-provider";
 import { Toaster } from "~/components/ui/sonner";
+import { TooltipProvider } from "~/components/ui/tooltip";
 import { TRPCReactProvider } from "~/trpc/react";
 import { cn } from "../lib/utils";
 
@@ -33,14 +34,16 @@ export default function RootLayout({
         <head />
         <body className="min-h-screen">
           <TRPCReactProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange={false}
-            >
-              {children}
-            </ThemeProvider>
+            <TooltipProvider delayDuration={10}>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange={false}
+              >
+                {children}
+              </ThemeProvider>
+            </TooltipProvider>
             <Toaster />
             <Analytics />
             <TailwindIndicator />
