@@ -36,8 +36,11 @@ export default async function Home() {
                       {getInitials(author?.fullName ?? "VH")}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
+                  <div className="flex flex-1 items-center gap-2">
                     <p className="text-sm font-semibold">{author?.fullName}</p>
+                    <p className="mt-1 text-xs text-gray-500">
+                      {formatTimeToNow(post.createdAt)}
+                    </p>
                   </div>
                   <Button
                     variant="ghost"
@@ -66,9 +69,6 @@ export default async function Home() {
                       <span className="font-semibold">{author?.firstName}</span>{" "}
                       {post.title}
                     </div>
-                    <p className="mt-1 text-xs text-gray-500">
-                      {formatTimeToNow(post.createdAt)}
-                    </p>
                   </div>
 
                   <AddComment postId={post.id} />

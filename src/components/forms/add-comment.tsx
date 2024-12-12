@@ -25,7 +25,7 @@ export function AddComment({ postId }: { postId: string }) {
   return (
     <div className="relative flex w-full items-center space-x-3 space-y-0">
       <Input
-        className="flex-1 border-none bg-transparent text-sm placeholder:text-xs"
+        className="flex-1 border-none bg-transparent text-sm placeholder:text-xs focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:ring-0"
         placeholder="Add a comment..."
         onChange={(e) => setText(e.target.value)}
         onKeyDown={(e) => {
