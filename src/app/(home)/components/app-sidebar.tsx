@@ -1,5 +1,5 @@
 import { type User } from "@clerk/nextjs/server";
-import { Film, Heart, PlusSquare, Search } from "lucide-react";
+import { Heart, Search } from "lucide-react";
 import Link from "next/link";
 import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -20,12 +20,17 @@ export function AppSidebar({ user }: SidebarProps) {
     },
     { icon: Search, filledIcon: Search, label: "Search", href: "/search" },
     {
-      icon: PlusSquare,
-      filledIcon: PlusSquare,
+      icon: Icons.create,
+      filledIcon: Icons.create,
       label: "Create",
       href: "/create",
     },
-    { icon: Film, filledIcon: Film, label: "Reels", href: "/reels" },
+    {
+      icon: Icons.reel,
+      filledIcon: Icons.reel,
+      label: "Reels",
+      href: "/reels",
+    },
     {
       icon: Icons.message,
       filledIcon: Icons.message,
