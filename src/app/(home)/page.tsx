@@ -41,7 +41,7 @@ export default async function Home() {
                     size="icon"
                     className="size-8 rounded-full"
                   >
-                    <DotsHorizontalIcon className="size-4s" />
+                    <DotsHorizontalIcon className="size-4" />
                   </Button>
                 </div>
                 <div className="p-0">
