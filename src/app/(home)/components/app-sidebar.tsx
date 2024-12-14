@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { siteConfig } from "~/config/site";
-import { getInitials } from "~/lib/utils";
+import { cn, getInitials } from "~/lib/utils";
 
 interface SidebarProps {
   user: User;
@@ -54,7 +54,7 @@ export function AppSidebar({ user }: SidebarProps) {
       </div>
       <nav className="flex justify-around md:block md:px-4 md:py-8">
         {navItems.map((item) => {
-          const isActive = false;
+          const isActive = true;
           const Icon = item.icon;
           return (
             <Link
@@ -64,7 +64,10 @@ export function AppSidebar({ user }: SidebarProps) {
                 isActive ? "fill-slate-100 font-bold" : ""
               }`}
             >
-              <Icon className={`size-6 ${isActive ? "fill-current" : ""}`} />
+              <Icon
+                className={cn("size-6")}
+                fill={isActive ? "slate-100" : "currentColor"}
+              />
 
               <span className="hidden text-sm font-semibold md:inline">
                 {item.label}

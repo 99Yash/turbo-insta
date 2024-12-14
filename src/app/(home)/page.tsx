@@ -1,14 +1,8 @@
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import Image from "next/image";
 import { AddComment } from "~/components/forms/add-comment";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "~/components/ui/card";
+import { ProductImageCarousel } from "~/components/utils/product-carousel";
 import { users } from "~/lib/queries/user";
 import { formatTimeToNow, getInitials } from "~/lib/utils";
 import { api, HydrateClient } from "~/trpc/server";
@@ -19,14 +13,14 @@ export default async function Home() {
 
   return (
     <HydrateClient>
-      <main className="flex flex-col items-center justify-center">
+      <main className="mt-12 flex flex-col items-center justify-center">
         {posts.map((post) => {
           const author = users.find((user) => user.id === post.userId);
 
           return (
             <div key={post.id} className="flex flex-col items-center gap-2">
-              <Card className="border-0 shadow-none">
-                <CardHeader className="flex flex-row items-center space-x-4 p-4">
+              <div className="border-0 shadow-none">
+                <div className="flex flex-row items-center space-x-4 p-4">
                   <Avatar className="size-8">
                     <AvatarImage
                       src={author?.imageUrl}
@@ -49,19 +43,11 @@ export default async function Home() {
                   >
                     <DotsHorizontalIcon className="size-4s" />
                   </Button>
-                </CardHeader>
-                <CardContent className="p-0">
-                  <div className="relative aspect-square">
-                    <Image
-                      src={post.images[0]?.url ?? `/images/image.png`}
-                      alt="Post image"
-                      layout="fill"
-                      objectFit="cover"
-                      className="rounded-none"
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter className="flex flex-col space-y-3 p-4">
+                </div>
+                <div className="p-0">
+                  <ProductImageCarousel files={post.images} />
+                </div>
+                <div className="flex flex-col space-y-3 p-4">
                   <div className="w-full">
                     <ActionButtons post={post} />
                     <p className="text-sm font-semibold">n likes</p>
@@ -72,8 +58,8 @@ export default async function Home() {
                   </div>
 
                   <AddComment postId={post.id} />
-                </CardFooter>
-              </Card>
+                </div>
+              </div>
             </div>
           );
         })}
