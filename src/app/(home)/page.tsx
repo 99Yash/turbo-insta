@@ -44,7 +44,7 @@ export default async function Home() {
                     <DotsHorizontalIcon className="size-4" />
                   </Button>
                 </div>
-                <div className="p-0">
+                <div className="w-[22vw] p-0">
                   <ProductImageCarousel files={post.images} />
                 </div>
                 <div className="flex flex-col space-y-3 p-4">

@@ -1,11 +1,8 @@
 "use client";
 
-import {
-  BookmarkIcon,
-  ChatBubbleIcon,
-  HeartIcon,
-  PaperPlaneIcon,
-} from "@radix-ui/react-icons";
+import { BookmarkIcon, PaperPlaneIcon } from "@radix-ui/react-icons";
+import { MessageCircleIcon } from "lucide-react";
+import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { cn, showErrorToast } from "~/lib/utils";
 import { type Post } from "~/server/db/schema";
@@ -32,14 +29,14 @@ export function ActionButtons({ post }: { post: Post }) {
           size="icon"
           className={cn("size-7 rounded-full")}
         >
-          <HeartIcon className="size-6" aria-hidden="true" />
+          <Icons.heart className="size-6" aria-hidden="true" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           className={cn("size-7 rounded-full")}
         >
-          <ChatBubbleIcon className="size-6" aria-hidden="true" />
+          <MessageCircleIcon className="size-6" aria-hidden="true" />
         </Button>
         <Button
           variant="ghost"

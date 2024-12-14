@@ -71,7 +71,7 @@ export function ProductImageCarousel({
         size="icon"
         aria-label="Previous slide"
         className={cn(
-          "absolute left-1.5 top-1/2 z-20 mr-0.5 aspect-square size-7 rounded-full text-muted-foreground opacity-90 sm:mr-2 sm:size-8",
+          "absolute left-1.5 top-1/2 z-20 mr-0.5 aspect-square size-4 rounded-full text-foreground opacity-90 sm:mr-2 sm:size-8",
           prevBtnDisabled && "hidden",
         )}
         onClick={scrollPrev}
@@ -111,7 +111,7 @@ export function ProductImageCarousel({
         variant="outline"
         size="icon"
         className={cn(
-          "absolute right-1.5 top-1/2 z-20 ml-0.5 aspect-square size-7 rounded-full text-muted-foreground opacity-90 sm:ml-2 sm:size-8",
+          "absolute right-1.5 top-1/2 z-20 ml-0.5 aspect-square size-4 rounded-full text-foreground opacity-90 sm:ml-2 sm:size-8",
           nextBtnDisabled && "hidden",
         )}
         onClick={scrollNext}
