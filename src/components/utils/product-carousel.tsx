@@ -31,7 +31,6 @@ export function ProductImageCarousel({
 
   const [prevBtnDisabled, setPrevBtnDisabled] = React.useState(true);
   const [nextBtnDisabled, setNextBtnDisabled] = React.useState(true);
-  const [selectedIndex, setSelectedIndex] = React.useState(0);
 
   const scrollPrev = React.useCallback(
     () => emblaApi && emblaApi.scrollPrev(),
@@ -41,26 +40,10 @@ export function ProductImageCarousel({
     () => emblaApi && emblaApi.scrollNext(),
     [emblaApi],
   );
-  const scrollTo = React.useCallback(
-    (index: number) => emblaApi && emblaApi.scrollTo(index),
-    [emblaApi],
-  );
-
-  const handleKeyDown = React.useCallback(
-    (event: React.KeyboardEvent<HTMLButtonElement>) => {
-      if (event.key === "ArrowLeft") {
-        scrollPrev();
-      } else if (event.key === "ArrowRight") {
-        scrollNext();
-      }
-    },
-    [scrollNext, scrollPrev],
-  );
 
   const onSelect = React.useCallback((emblaApi: CarouselApi) => {
     if (!emblaApi) return;
 
-    setSelectedIndex(emblaApi.selectedScrollSnap());
     setPrevBtnDisabled(!emblaApi.canScrollPrev());
     setNextBtnDisabled(!emblaApi.canScrollNext());
   }, []);
