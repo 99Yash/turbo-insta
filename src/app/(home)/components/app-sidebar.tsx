@@ -46,13 +46,13 @@ export function AppSidebar({ user }: SidebarProps) {
   ];
 
   return (
-    <aside className="fixed bottom-0 z-10 w-full border-t md:left-0 md:top-0 md:h-screen md:w-64 md:border-r md:border-t-0">
-      <div className="flex h-16 items-center justify-center md:h-20">
+    <aside className="fixed bottom-0 z-10 w-full border-t md:left-0 lg:top-0 lg:h-screen lg:w-64 lg:border-r lg:border-t-0">
+      <div className="flex h-16 items-center justify-center lg:h-20">
         <Link href="/" className="text-xl font-bold">
           {siteConfig.name}
         </Link>
       </div>
-      <nav className="flex justify-around md:block md:px-4 md:py-8">
+      <nav className="flex justify-around lg:block lg:px-4 lg:py-8">
         {navItems.map((item) => {
           const isActive = true;
           const Icon = item.icon;
@@ -69,7 +69,7 @@ export function AppSidebar({ user }: SidebarProps) {
                 fill={isActive ? "slate-100" : "currentColor"}
               />
 
-              <span className="hidden text-sm font-semibold md:inline">
+              <span className="hidden text-sm font-semibold lg:inline">
                 {item.label}
               </span>
             </Link>
@@ -85,7 +85,7 @@ export function AppSidebar({ user }: SidebarProps) {
               {getInitials(user.fullName ?? "VH")}
             </AvatarFallback>
           </Avatar>
-          <span className="hidden md:inline">Profile</span>
+          <span className="hidden lg:inline">Profile</span>
         </Link>
       </nav>
     </aside>
