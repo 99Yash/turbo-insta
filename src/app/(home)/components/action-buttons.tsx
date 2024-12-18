@@ -16,7 +16,7 @@ export function ActionButtons({ post }: { post: Post }) {
   });
 
   return (
-    <div className="flex w-full items-center justify-between">
+    <div className="flex w-full items-center justify-between [&_button:hover]:text-muted-foreground">
       <div className="flex items-center gap-2.5">
         <Button
           onClick={async () =>

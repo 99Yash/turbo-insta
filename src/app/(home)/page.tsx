@@ -47,18 +47,16 @@ export default async function Home() {
                 <div className="w-[calc(100vw-2px)] max-w-[470px] rounded">
                   <ProductImageCarousel files={post.images} />
                 </div>
-                <div className="flex flex-col space-y-3 p-4">
-                  <div className="w-full">
-                    <ActionButtons post={post} />
-                    <p className="text-sm font-semibold">n likes</p>
-                    <div className="mt-1 text-sm">
-                      <span className="font-semibold">{author?.firstName}</span>{" "}
-                      {post.title}
-                    </div>
+                <div className="flex flex-col gap-3 py-3">
+                  <ActionButtons post={post} />
+                  <p className="text-sm font-semibold">n likes</p>
+                  <div className="text-sm">
+                    <span className="font-semibold">{author?.firstName}</span>{" "}
+                    {post.title}
                   </div>
-
-                  <AddComment postId={post.id} />
                 </div>
+
+                <AddComment postId={post.id} />
               </div>
             </div>
           );
