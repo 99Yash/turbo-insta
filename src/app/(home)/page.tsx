@@ -41,7 +41,8 @@ export default async function Home() {
                     size="icon"
                     className="size-8 rounded-full"
                   >
-                    <DotsHorizontalIcon className="size-4" />
+                    <DotsHorizontalIcon aria-hidden className="size-4" />
+                    <span className="sr-only">More options</span>
                   </Button>
                 </div>
                 <div className="w-[calc(100vw-2px)] max-w-[470px] rounded">

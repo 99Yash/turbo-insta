@@ -30,6 +30,7 @@ export function ActionButtons({ post }: { post: Post }) {
           className={cn("size-7 rounded-full")}
         >
           <Icons.heart className="size-6" aria-hidden="true" />
+          <span className="sr-only">Like</span>
         </Button>
         <Button
           variant="ghost"
@@ -37,6 +38,7 @@ export function ActionButtons({ post }: { post: Post }) {
           className={cn("size-7 rounded-full")}
         >
           <MessageCircleIcon className="size-6 -rotate-90" aria-hidden="true" />
+          <span className="sr-only">Comment</span>
         </Button>
         <Button
           variant="ghost"
@@ -44,6 +46,7 @@ export function ActionButtons({ post }: { post: Post }) {
           className={cn("size-7 rounded-full")}
         >
           <Icons.share className="size-6" aria-hidden="true" />
+          <span className="sr-only">Share</span>
         </Button>
       </div>
       <Button
