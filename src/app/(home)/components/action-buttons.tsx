@@ -1,6 +1,6 @@
 "use client";
 
-import { BookmarkIcon, PaperPlaneIcon } from "@radix-ui/react-icons";
+import { BookmarkIcon } from "@radix-ui/react-icons";
 import { MessageCircleIcon } from "lucide-react";
 import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
@@ -17,7 +17,7 @@ export function ActionButtons({ post }: { post: Post }) {
 
   return (
     <div className="flex w-full items-center justify-between">
-      <div className="flex space-x-4">
+      <div className="flex items-center gap-2.5">
         <Button
           onClick={async () =>
             await toggleLike.mutateAsync({
@@ -36,14 +36,14 @@ export function ActionButtons({ post }: { post: Post }) {
           size="icon"
           className={cn("size-7 rounded-full")}
         >
-          <MessageCircleIcon className="size-6" aria-hidden="true" />
+          <MessageCircleIcon className="size-6 -rotate-90" aria-hidden="true" />
         </Button>
         <Button
           variant="ghost"
           size="icon"
           className={cn("size-7 rounded-full")}
         >
-          <PaperPlaneIcon className="size-6" aria-hidden="true" />
+          <Icons.share className="size-6" aria-hidden="true" />
         </Button>
       </div>
       <Button

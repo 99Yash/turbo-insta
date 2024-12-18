@@ -20,7 +20,7 @@ export default async function Home() {
           return (
             <div key={post.id} className="flex flex-col items-center gap-2">
               <div className="border-0 shadow-none">
-                <div className="flex flex-row items-center space-x-4 p-4">
+                <div className="flex flex-row items-center gap-1.5 px-1 py-3.5">
                   <Avatar className="size-8">
                     <AvatarImage
                       src={author?.imageUrl}
@@ -32,8 +32,8 @@ export default async function Home() {
                   </Avatar>
                   <div className="flex flex-1 items-center gap-2">
                     <p className="text-sm font-semibold">{author?.fullName}</p>
-                    <p className="mt-1 text-xs text-gray-500">
-                      {formatTimeToNow(post.createdAt)}
+                    <p className="mt-1 text-xs font-medium text-muted-foreground">
+                      • {formatTimeToNow(post.createdAt)}
                     </p>
                   </div>
                   <Button
