@@ -106,11 +106,11 @@ export function ActionButtons({ post }: { post: Post }) {
           <BookmarkIcon className="size-6" aria-hidden="true" />
         </Button>
       </div>
-      {likesData && (
-        <p className="mt-2 text-sm font-semibold">
-          {likesData.count} {likesData?.count === 1 ? "like" : "likes"}{" "}
-        </p>
-      )}
+      <p className="mt-2 text-sm font-semibold">
+        {likesData
+          ? `${likesData.count} ${likesData.count === 1 ? "like" : "likes"}`
+          : "\u00A0"}
+      </p>
     </div>
   );
 }
