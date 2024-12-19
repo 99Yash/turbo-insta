@@ -60,7 +60,7 @@ export function AddComment({ postId }: { postId: string }) {
             render={({ field }) => (
               <FormItem>
                 <FormControl>
-                  <div className="grow-wrap grid">
+                  <div className="grid">
                     <AutosizeTextarea
                       {...field}
                       className="flex w-full flex-1 resize-none rounded-md border-none bg-transparent pl-0 text-sm shadow-sm placeholder:text-muted-foreground focus:border-none focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
@@ -74,7 +74,7 @@ export function AddComment({ postId }: { postId: string }) {
                     <div
                       className="grid-area-[1/1/2/2] invisible whitespace-pre-wrap p-2"
                       data-replicated-value={field.value || ""}
-                    ></div>
+                    />
                   </div>
                 </FormControl>
               </FormItem>
