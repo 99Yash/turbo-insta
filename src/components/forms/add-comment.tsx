@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { showErrorToast } from "~/lib/utils";
+import { cn, showErrorToast } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { AutosizeTextarea } from "../ui/autosize-textarea";
 import { Button } from "../ui/button";
@@ -50,6 +50,8 @@ export function AddComment({ postId }: { postId: string }) {
     });
   }
 
+  const isDisabled = !form.getValues().text || addComment.isPending;
+
   return (
     <div className="relative flex items-center space-x-3 space-y-0">
       <form className="w-full" onSubmit={form.handleSubmit(onSubmit)}>
@@ -81,11 +83,14 @@ export function AddComment({ postId }: { postId: string }) {
             )}
           />
           <Button
-            disabled={!form.getValues().text || addComment.isPending}
+            disabled={isDisabled}
             variant="ghost"
             size="icon"
             type="submit"
-            className="absolute right-[3px] top-[-3.5px] z-20 size-7 text-sm font-semibold text-blue-500"
+            className={cn(
+              "absolute right-[3px] top-[-3.5px] z-20 size-7 text-sm font-semibold text-blue-500",
+              isDisabled && "hidden",
+            )}
           >
             {addComment.isPending ? (
               <Loading className="mr-2 size-3.5" aria-hidden="true" />

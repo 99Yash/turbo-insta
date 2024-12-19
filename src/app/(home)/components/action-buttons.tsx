@@ -1,7 +1,8 @@
 "use client";
 
 import { BookmarkIcon } from "@radix-ui/react-icons";
-import { MessageCircleIcon } from "lucide-react";
+import { Heart, MessageCircleIcon } from "lucide-react";
+import React from "react";
 import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { cn, showErrorToast } from "~/lib/utils";
@@ -10,8 +11,14 @@ import { api } from "~/trpc/react";
 
 export function ActionButtons({ post }: { post: Post }) {
   const utils = api.useUtils();
+  const [isLiked, setIsLiked] = React.useState(false);
 
-  const { data: likesData, isLoading } = api.posts.getLikes.useQuery(
+  const {
+    data: likesData,
+    isLoading,
+    isError,
+    error,
+  } = api.posts.getLikes.useQuery(
     {
       postId: post.id,
     },
@@ -21,18 +28,25 @@ export function ActionButtons({ post }: { post: Post }) {
     },
   );
 
+  React.useEffect(() => {
+    if (isLoading) return;
+    if (isError) {
+      showErrorToast(error);
+    } else if (likesData) {
+      setIsLiked(likesData.hasLiked);
+    }
+  }, [isError, error, isLoading, likesData]);
+
   const toggleLike = api.likes.toggle.useMutation({
-    async onSuccess(data, variables, context) {
+    async onSuccess() {
       await utils.posts.getLikes.invalidate({
         postId: post.id,
       });
     },
-    onError: (error) => {
+    onError(error) {
       showErrorToast(error);
     },
   });
-
-  const isLiked = likesData?.hasLiked;
 
   return (
     <div>
@@ -49,9 +63,13 @@ export function ActionButtons({ post }: { post: Post }) {
             size="icon"
             className={cn("size-7 rounded-full")}
           >
-            <Icons.heart
-              className={cn("size-6", isLiked && "fill-pink-500 text-pink-500")}
+            <Heart
+              className={cn(
+                "size-6 transition-colors duration-200",
+                isLiked && "fill-pink-500 text-pink-500",
+              )}
               aria-hidden="true"
+              aria-label="Like"
             />
             <span className="sr-only">Like</span>
           </Button>
@@ -63,6 +81,7 @@ export function ActionButtons({ post }: { post: Post }) {
             <MessageCircleIcon
               className="size-6 -rotate-90"
               aria-hidden="true"
+              aria-label="Comment"
             />
             <span className="sr-only">Comment</span>
           </Button>
@@ -71,7 +90,11 @@ export function ActionButtons({ post }: { post: Post }) {
             size="icon"
             className={cn("size-7 rounded-full")}
           >
-            <Icons.share className="size-6" aria-hidden="true" />
+            <Icons.share
+              className="size-6"
+              aria-hidden="true"
+              aria-label="Share"
+            />
             <span className="sr-only">Share</span>
           </Button>
         </div>
@@ -83,7 +106,11 @@ export function ActionButtons({ post }: { post: Post }) {
           <BookmarkIcon className="size-6" aria-hidden="true" />
         </Button>
       </div>
-      <p className="text-sm font-semibold">n likes</p>
+      {likesData && (
+        <p className="mt-2 text-sm font-semibold">
+          {likesData.count} {likesData?.count === 1 ? "like" : "likes"}{" "}
+        </p>
+      )}
     </div>
   );
 }
