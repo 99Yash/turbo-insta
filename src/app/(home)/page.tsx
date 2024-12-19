@@ -50,7 +50,6 @@ export default async function Home() {
                 </div>
                 <div className="flex flex-col gap-3 py-3">
                   <ActionButtons post={post} />
-                  <p className="text-sm font-semibold">n likes</p>
                   <div className="text-sm">
                     <span className="font-semibold">{author?.firstName}</span>{" "}
                     {post.title}

@@ -421,7 +421,6 @@ export const Icons = {
   heart: (props: IconProps) => (
     <svg
       aria-label="Notifications"
-      fill="currentColor"
       height="24"
       role="img"
       viewBox="0 0 24 24"
