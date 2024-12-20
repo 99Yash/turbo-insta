@@ -1,5 +1,6 @@
 import { type User } from "@clerk/nextjs/server";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import Link from "next/link";
 import { AddComment } from "~/components/forms/add-comment";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -18,17 +19,24 @@ export function Post({ post, author }: PostProps) {
     <div key={post.id} className="flex flex-col items-center gap-2">
       <div className="border-0 shadow-none">
         <div className="flex flex-row items-center gap-1.5 px-1 py-3.5">
-          <Avatar className="size-8">
-            <AvatarImage
-              src={author?.imageUrl}
-              alt={author?.fullName ?? "VH"}
-            />
-            <AvatarFallback>
-              {getInitials(author?.fullName ?? "VH")}
-            </AvatarFallback>
-          </Avatar>
+          <Link href={`/${author.id}`}>
+            <Avatar className="size-8">
+              <AvatarImage
+                src={author?.imageUrl}
+                alt={author?.fullName ?? "VH"}
+              />
+              <AvatarFallback>
+                {getInitials(author?.fullName ?? "VH")}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
           <div className="flex flex-1 items-center gap-2">
-            <p className="text-sm font-semibold">{author?.fullName}</p>
+            <Link
+              href={`/${author.id}`}
+              className="transition-all duration-200 hover:text-muted-foreground"
+            >
+              <p className="text-sm font-semibold">{author?.fullName}</p>
+            </Link>
             <p className="mt-1 text-xs font-medium text-muted-foreground">
               • {formatTimeToNow(post.createdAt)}
             </p>

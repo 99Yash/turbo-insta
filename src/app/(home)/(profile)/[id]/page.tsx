@@ -9,7 +9,7 @@ export default async function Profile() {
   }
   return (
     <div>
-      <h1>Hello, Profile!</h1>
+      <h1>Hello, {user.firstName}</h1>
     </div>
   );
 }
