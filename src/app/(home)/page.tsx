@@ -2,7 +2,7 @@ import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import { AddComment } from "~/components/forms/add-comment";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import { ProductImageCarousel } from "~/components/utils/product-carousel";
+import { PostCarousel } from "~/components/utils/post-carousel";
 import { users } from "~/lib/queries/user";
 import { formatTimeToNow, getInitials } from "~/lib/utils";
 import { api, HydrateClient } from "~/trpc/server";
@@ -46,7 +46,7 @@ export default async function Home() {
                   </Button>
                 </div>
                 <div className="w-[calc(100vw-2px)] max-w-[470px] rounded">
-                  <ProductImageCarousel files={post.images} />
+                  <PostCarousel files={post.images} />
                 </div>
                 <div className="flex flex-col gap-3 py-3">
                   <ActionButtons post={post} />

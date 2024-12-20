@@ -15,18 +15,17 @@ type CarouselApi = UseEmblaCarouselType["1"];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
 type CarouselOptions = UseCarouselParameters["0"];
 
-interface ProductImageCarouselProps
-  extends React.HTMLAttributes<HTMLDivElement> {
+interface PostCarouselProps extends React.HTMLAttributes<HTMLDivElement> {
   files: StoredFile[] | null;
   options?: CarouselOptions;
 }
 
-export function ProductImageCarousel({
+export function PostCarousel({
   files,
   className,
   options,
   ...props
-}: ProductImageCarouselProps) {
+}: PostCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel(options);
 
   const [prevBtnDisabled, setPrevBtnDisabled] = React.useState(true);
@@ -71,7 +70,7 @@ export function ProductImageCarousel({
         size="icon"
         aria-label="Previous slide"
         className={cn(
-          "absolute left-1.5 top-1/2 z-20 mr-0.5 aspect-square size-4 rounded-full bg-muted text-foreground opacity-90 sm:mr-2 sm:size-6",
+          "absolute left-1.5 top-1/2 z-20 mr-0.5 aspect-square size-6 rounded-full bg-muted text-foreground opacity-90",
           prevBtnDisabled && "hidden",
         )}
         onClick={scrollPrev}
@@ -111,7 +110,7 @@ export function ProductImageCarousel({
         variant="ghost"
         size="icon"
         className={cn(
-          "absolute right-1.5 top-1/2 z-20 mr-0.5 aspect-square size-4 rounded-full bg-muted text-foreground opacity-90 sm:mr-2 sm:size-6",
+          "absolute right-1.5 top-1/2 z-20 mr-0.5 aspect-square size-6 rounded-full bg-muted text-foreground opacity-90",
           nextBtnDisabled && "hidden",
         )}
         onClick={scrollNext}
