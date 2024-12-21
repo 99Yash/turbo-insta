@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 
 import { VerifyEmailForm } from "~/app/(auth)/_components/verify-email-form";
-import { Shell } from "~/components/shell";
 import {
   Card,
   CardContent,
@@ -9,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { Shell } from "~/compones/utils/shell";
 import { env } from "~/env";
 
 export const metadata: Metadata = {

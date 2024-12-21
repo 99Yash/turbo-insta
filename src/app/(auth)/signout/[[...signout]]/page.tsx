@@ -4,7 +4,7 @@ import {
   PageHeaderDescription,
   PageHeaderHeading,
 } from "~/components/page-header";
-import { Shell } from "~/components/shell";
+import { Shell } from "~/compones/utils/shell";
 import { env } from "~/env";
 import { LogOutButtons } from "../../_components/logout-buttons";
 

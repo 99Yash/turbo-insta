@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
 
-import { Shell } from "~/components/shell";
 import {
   Card,
   CardContent,
@@ -10,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
+import { Shell } from "~/compones/utils/shell";
 import { env } from "~/env";
 import { OAuthSignIn } from "../../_components/oauth-signin";
 import { SignUpForm } from "../../_components/signup-form";
