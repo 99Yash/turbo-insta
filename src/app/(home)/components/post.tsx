@@ -22,11 +22,11 @@ export function Post({ post, author }: PostProps) {
           <Link href={`/${author.id}`}>
             <Avatar className="size-8">
               <AvatarImage
-                src={author?.imageUrl}
-                alt={author?.fullName ?? "VH"}
+                src={author.imageUrl}
+                alt={author.fullName ?? "VH"}
               />
               <AvatarFallback>
-                {getInitials(author?.fullName ?? "VH")}
+                {getInitials(author.fullName ?? "VH")}
               </AvatarFallback>
             </Avatar>
           </Link>
@@ -35,7 +35,7 @@ export function Post({ post, author }: PostProps) {
               href={`/${author.id}`}
               className="transition-all duration-200 hover:text-muted-foreground"
             >
-              <p className="text-sm font-semibold">{author?.fullName}</p>
+              <p className="text-sm font-semibold">{author.fullName ?? ""}</p>
             </Link>
             <p className="mt-1 text-xs font-medium text-muted-foreground">
               • {formatTimeToNow(post.createdAt)}
