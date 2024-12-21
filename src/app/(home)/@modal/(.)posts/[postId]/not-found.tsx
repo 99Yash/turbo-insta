@@ -1,5 +1,5 @@
-import { Shell } from "~/componentnts/utils/shell";
 import { ErrorCard } from "~/components/utils/error-card";
+import { Shell } from "~/components/utils/shell";
 
 export default function ProductModalNotFound() {
   return (
