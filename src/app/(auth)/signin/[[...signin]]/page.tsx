@@ -3,7 +3,7 @@ import Link from "next/link";
 
 import { OAuthSignIn } from "~/app/(auth)/_components/oauth-signin";
 import { SignInForm } from "~/app/(auth)/_components/signin-form";
-import { Shell } from "~/compones/utils/shell";
+import { Shell } from "~/components/utils/shell";
 
 import {
   Card,

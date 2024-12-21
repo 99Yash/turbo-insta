@@ -1,6 +1,6 @@
 import { AuthenticateWithRedirectCallback } from "@clerk/nextjs";
 import { Icons } from "~/components/icons";
-import { Shell } from "~/compones/utils/shell";
+import { Shell } from "~/components/utils/shell";
 
 export default function SSOCallbackPage() {
   return (

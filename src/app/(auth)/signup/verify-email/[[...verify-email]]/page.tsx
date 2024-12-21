@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { Shell } from "~/compones/utils/shell";
+import { Shell } from "~/components/utils/shell";
 import { env } from "~/env";
 
 export const metadata: Metadata = {
