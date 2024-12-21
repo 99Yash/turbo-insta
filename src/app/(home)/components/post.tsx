@@ -49,7 +49,7 @@ export function Post({ post, author }: PostProps) {
         <div className="w-[calc(100vw-2px)] max-w-[470px] rounded">
           <PostCarousel files={post.images} />
         </div>
-        <div className="flex flex-col gap-3 py-3">
+        <div className="flex flex-col gap-3 pt-3">
           <ActionButtons post={post} />
           <div className="text-sm">
             <span className="font-semibold">{author?.firstName}</span>{" "}
