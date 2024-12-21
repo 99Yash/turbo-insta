@@ -75,7 +75,7 @@ export function AddComment({ postId }: { postId: string }) {
                       data-replicated-value={field.value || ""}
                     />
                     <div
-                      className="grid-area-[1/1/2/2] invisible whitespace-pre-wrap p-2"
+                      className="invisible whitespace-pre-wrap p-2"
                       data-replicated-value={field.value || ""}
                     />
                   </div>
