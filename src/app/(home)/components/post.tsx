@@ -37,7 +37,7 @@ export function Post({ post, author }: PostProps) {
             >
               <p className="text-sm font-semibold">{author.fullName ?? ""}</p>
             </Link>
-            <p className="mt-1 text-xs font-medium text-muted-foreground">
+            <p className="mt-1 text-xs font-semibold text-muted-foreground">
               • {formatTimeToNow(post.createdAt)}
             </p>
           </div>

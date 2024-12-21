@@ -54,20 +54,14 @@ export function AppSidebar({ user }: SidebarProps) {
       </div>
       <nav className="flex justify-around lg:block lg:px-4 lg:py-8">
         {navItems.map((item) => {
-          const isActive = true;
           const Icon = item.icon;
           return (
             <Link
               key={item.label}
               href={item.href}
-              className={`flex items-center gap-4 rounded-md p-2 transition-colors duration-300 hover:bg-muted md:mb-2 ${
-                isActive ? "fill-slate-100 font-bold" : ""
-              }`}
+              className="flex items-center gap-4 rounded-md p-2 transition-colors duration-300 hover:bg-muted md:mb-2"
             >
-              <Icon
-                className={cn("size-6")}
-                fill={isActive ? "slate-100" : "currentColor"}
-              />
+              <Icon className={cn("size-6")} />
 
               <span className="hidden text-sm font-semibold lg:inline">
                 {item.label}
