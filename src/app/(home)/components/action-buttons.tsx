@@ -2,6 +2,7 @@
 
 import { BookmarkIcon } from "@radix-ui/react-icons";
 import { Heart, MessageCircleIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
@@ -12,6 +13,7 @@ import { api } from "~/trpc/react";
 export function ActionButtons({ post }: { post: Post }) {
   const utils = api.useUtils();
   const [isLiked, setIsLiked] = React.useState(false);
+  const router = useRouter();
 
   const {
     data: likesData,
@@ -76,6 +78,7 @@ export function ActionButtons({ post }: { post: Post }) {
           <Button
             variant="ghost"
             size="icon"
+            onClick={() => router.push(`/posts/${post.id}`)}
             className={cn("size-7 rounded-full")}
           >
             <MessageCircleIcon
