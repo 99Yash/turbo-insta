@@ -11,6 +11,7 @@ import { initTRPC, TRPCError } from "@trpc/server";
 import type { NextRequest } from "next/server";
 import superjson from "superjson";
 import { ZodError } from "zod";
+import { getErrorMessage } from "~/lib/utils";
 import { db } from "~/server/db";
 
 type AuthContext = ReturnType<typeof getAuth>;
@@ -64,6 +65,7 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
   errorFormatter({ shape, error }) {
     return {
       ...shape,
+      message: getErrorMessage(error),
       data: {
         ...shape.data,
         zodError:
