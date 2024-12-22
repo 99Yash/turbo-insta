@@ -73,13 +73,6 @@ export const postsRouter = createTRPCRouter({
         .from(posts)
         .where(eq(posts.id, input.postId))
         .limit(1);
-
-      if (!post)
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Post not found",
-        });
-
       return post;
     }),
 

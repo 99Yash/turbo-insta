@@ -2,6 +2,7 @@ import { AspectRatio } from "@radix-ui/react-aspect-ratio";
 import { EnterFullScreenIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { AlertDialogAction } from "~/components/ui/alert-dialog";
 import { buttonVariants } from "~/components/ui/button";
 import { DialogShell } from "~/components/utils/dialog-shell";
@@ -17,6 +18,8 @@ interface PostModalPageProps {
 
 export default async function PostModalPage({ params }: PostModalPageProps) {
   const post = await api.posts.getById({ postId: params.postId });
+
+  if (!post) notFound();
 
   return (
     <DialogShell className="flex flex-col gap-2 overflow-visible sm:flex-row">

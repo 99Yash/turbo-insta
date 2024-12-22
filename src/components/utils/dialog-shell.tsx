@@ -1,11 +1,9 @@
 "use client";
 
-import { Cross2Icon } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useClickOutside } from "~/hooks/use-click-outside";
 import { cn } from "~/lib/utils";
-import { Button } from "../ui/button";
 
 interface DialogShellProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -36,7 +34,7 @@ export function DialogShell({
 
   return (
     <div ref={shellRef} className={cn(className)} {...props}>
-      <Button
+      {/* <Button
         variant="ghost"
         size="icon"
         className="absolute right-4 top-4 size-auto shrink-0 rounded-sm opacity-70 ring-offset-background transition-opacity hover:bg-transparent hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground"
@@ -44,7 +42,7 @@ export function DialogShell({
       >
         <Cross2Icon className="size-4" aria-hidden="true" />
         <span className="sr-only">Close</span>
-      </Button>
+      </Button> */}
       {children}
     </div>
   );
