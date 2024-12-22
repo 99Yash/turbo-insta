@@ -2,10 +2,10 @@
 
 import { BookmarkIcon } from "@radix-ui/react-icons";
 import { Heart, MessageCircleIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import React from "react";
 import { Icons } from "~/components/icons";
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import { cn, showErrorToast } from "~/lib/utils";
 import { type Post } from "~/server/db/schema";
 import { api } from "~/trpc/react";
@@ -13,7 +13,6 @@ import { api } from "~/trpc/react";
 export function ActionButtons({ post }: { post: Post }) {
   const utils = api.useUtils();
   const [isLiked, setIsLiked] = React.useState(false);
-  const router = useRouter();
 
   const {
     data: likesData,
@@ -75,11 +74,12 @@ export function ActionButtons({ post }: { post: Post }) {
             />
             <span className="sr-only">Like</span>
           </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.push(`/posts/${post.id}`)}
-            className={cn("size-7 rounded-full")}
+          <Link
+            href={`/posts/${post.id}`}
+            className={cn(
+              buttonVariants({ variant: "ghost", size: "icon" }),
+              "size-7 rounded-full",
+            )}
           >
             <MessageCircleIcon
               className="size-6 -rotate-90"
@@ -87,7 +87,7 @@ export function ActionButtons({ post }: { post: Post }) {
               aria-label="Comment"
             />
             <span className="sr-only">Comment</span>
-          </Button>
+          </Link>
           <Button
             variant="ghost"
             size="icon"
