@@ -11,8 +11,8 @@ interface PlaceholderImageProps
 }
 
 export function PlaceholderImage({
-  isSkeleton = false,
-  asChild = false,
+  isSkeleton,
+  asChild,
   className,
   ...props
 }: PlaceholderImageProps) {
