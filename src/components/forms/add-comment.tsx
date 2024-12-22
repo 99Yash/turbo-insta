@@ -53,7 +53,7 @@ export function AddComment({ postId }: { postId: string }) {
   const isDisabled = !form.getValues().text || addComment.isPending;
 
   return (
-    <div className="relative flex items-center space-x-3 space-y-0">
+    <div className="relative flex items-center gap-3">
       <form className="w-full" onSubmit={form.handleSubmit(onSubmit)}>
         <Form {...form}>
           <FormField

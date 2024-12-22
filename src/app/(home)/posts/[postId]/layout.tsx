@@ -1,11 +1,11 @@
-import { AlertDialog, AlertDialogContent } from "~/components/ui/alert-dialog";
+import { Dialog, DialogContent } from "~/components/ui/dialog";
 
 export default function ModalLayout({ children }: React.PropsWithChildren) {
   return (
-    <AlertDialog defaultOpen={true}>
-      <AlertDialogContent className="max-w-screen-2xl overflow-hidden p-0">
+    <Dialog defaultOpen={true}>
+      <DialogContent className="max-w-screen-2xl overflow-hidden p-0">
         {children}
-      </AlertDialogContent>
-    </AlertDialog>
+      </DialogContent>
+    </Dialog>
   );
 }

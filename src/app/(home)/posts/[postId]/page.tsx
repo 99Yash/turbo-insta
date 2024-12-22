@@ -2,11 +2,9 @@ import { EnterFullScreenIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddComment } from "~/components/forms/add-comment";
-import { AlertDialogAction } from "~/components/ui/alert-dialog";
 import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { buttonVariants } from "~/components/ui/button";
-import { DialogShell } from "~/components/utils/dialog-shell";
+import { Button, buttonVariants } from "~/components/ui/button";
 import { PostCarousel } from "~/components/utils/post-carousel";
 import { users } from "~/lib/queries/user";
 import { cn, getInitials } from "~/lib/utils";
@@ -27,8 +25,8 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
   if (!author) return notFound();
 
   return (
-    <DialogShell className="flex gap-2 overflow-visible">
-      <AlertDialogAction
+    <div className="flex w-full gap-2 px-0 sm:justify-end sm:gap-2">
+      <Button
         className={cn(
           buttonVariants({
             variant: "ghost",
@@ -42,14 +40,14 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
         <Link replace href={`/posts/${params.postId}`}>
           <EnterFullScreenIcon className="size-4" aria-hidden="true" />
         </Link>
-      </AlertDialogAction>
+      </Button>
       <AspectRatio ratio={6.13 / 3} className="border-r shadow-none">
         <PostCarousel files={post.images} />
       </AspectRatio>
-      <div className="relative w-full space-y-6 p-6">
-        <div className="flex flex-row items-center gap-1.5 border-b px-1 py-3">
+      <div className="relative w-full space-y-6 py-6">
+        <div className="absolute left-0 top-3 flex w-full items-center gap-1.5 border-b px-2 pb-3">
           <Link href={`/${author.id}`}>
-            <Avatar className="size-8">
+            <Avatar className="size-6">
               <AvatarImage
                 src={author.imageUrl}
                 alt={author.fullName ?? "VH"}
@@ -59,16 +57,15 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
               </AvatarFallback>
             </Avatar>
           </Link>
-          <div className="text-sm">
-            <span className="font-semibold">{author?.firstName}</span>{" "}
-            {post.title}
+          <div>
+            <span className="text-sm font-semibold">{author.fullName}</span>{" "}
           </div>
         </div>
-        <div className="absolute bottom-0 right-0 flex w-full flex-col gap-2 p-6 pt-0">
+        <div className="absolute bottom-0 left-0 right-0 flex h-fit w-full flex-col gap-2 border-t px-2 pt-3">
           <ActionButtons post={post} />
           <AddComment postId={post.id} />
         </div>
       </div>
-    </DialogShell>
+    </div>
   );
 }

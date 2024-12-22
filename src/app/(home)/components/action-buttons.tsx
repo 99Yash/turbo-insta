@@ -62,7 +62,7 @@ export function ActionButtons({ post }: { post: Post }) {
             disabled={toggleLike.isPending}
             variant="ghost"
             size="icon"
-            className={cn("size-7 rounded-full")}
+            className={cn("size-7")}
           >
             <Heart
               className={cn(
@@ -78,7 +78,7 @@ export function ActionButtons({ post }: { post: Post }) {
             href={`/posts/${post.id}`}
             className={cn(
               buttonVariants({ variant: "ghost", size: "icon" }),
-              "size-7 rounded-full",
+              "size-7",
             )}
           >
             <MessageCircleIcon
@@ -88,11 +88,7 @@ export function ActionButtons({ post }: { post: Post }) {
             />
             <span className="sr-only">Comment</span>
           </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn("size-7 rounded-full")}
-          >
+          <Button variant="ghost" size="icon" className={cn("size-7")}>
             <Icons.share
               className="size-6"
               aria-hidden="true"
@@ -101,11 +97,7 @@ export function ActionButtons({ post }: { post: Post }) {
             <span className="sr-only">Share</span>
           </Button>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="ml-auto size-7 rounded-full"
-        >
+        <Button variant="ghost" size="icon" className="ml-auto size-7">
           <BookmarkIcon className="size-6" aria-hidden="true" />
         </Button>
       </div>
