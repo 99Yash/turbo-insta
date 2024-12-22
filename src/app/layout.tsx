@@ -24,7 +24,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+  posts,
+}: Readonly<{ children: React.ReactNode; posts: React.ReactNode }>) {
   return (
     <ClerkProvider>
       <html
@@ -42,6 +43,7 @@ export default function RootLayout({
                 disableTransitionOnChange={false}
               >
                 {children}
+                {posts}
               </ThemeProvider>
             </TooltipProvider>
             <Toaster />
