@@ -61,6 +61,28 @@ export const postsRouter = createTRPCRouter({
     return allPosts;
   }),
 
+  getById: publicProcedure
+    .input(
+      z.object({
+        postId: z.string(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const [post] = await ctx.db
+        .select()
+        .from(posts)
+        .where(eq(posts.id, input.postId))
+        .limit(1);
+
+      if (!post)
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Post not found",
+        });
+
+      return post;
+    }),
+
   getLikes: publicProcedure
     .input(
       z.object({

@@ -1,9 +1,13 @@
+import { AspectRatio } from "@radix-ui/react-aspect-ratio";
 import { EnterFullScreenIcon } from "@radix-ui/react-icons";
+import Image from "next/image";
 import Link from "next/link";
 import { AlertDialogAction } from "~/components/ui/alert-dialog";
 import { buttonVariants } from "~/components/ui/button";
 import { DialogShell } from "~/components/utils/dialog-shell";
-import { cn } from "~/lib/utils";
+import { PlaceholderImage } from "~/components/utils/placeholder-image";
+import { cn, formatTimeToNow } from "~/lib/utils";
+import { api } from "~/trpc/server";
 
 interface PostModalPageProps {
   params: {
@@ -12,6 +16,8 @@ interface PostModalPageProps {
 }
 
 export default async function PostModalPage({ params }: PostModalPageProps) {
+  const post = await api.posts.getById({ postId: params.postId });
+
   return (
     <DialogShell className="flex flex-col gap-2 overflow-visible sm:flex-row">
       <AlertDialogAction
@@ -29,11 +35,11 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
           <EnterFullScreenIcon className="size-4" aria-hidden="true" />
         </Link>
       </AlertDialogAction>
-      {/* <AspectRatio ratio={16 / 9} className="w-full">
-        {product.images?.length ? (
+      <AspectRatio ratio={16 / 9} className="w-full">
+        {post.images?.length > 0 ? (
           <Image
-            src={product.images[0]?.url ?? "/images/product-placeholder.webp"}
-            alt={product.images[0]?.name ?? product.name}
+            src={post.images[0]?.url ?? "/images/post-placeholder.webp"}
+            alt={post.images[0]?.name ?? post.title ?? "Post"}
             className="object-cover"
             sizes="(min-width: 1024px) 20vw, (min-width: 768px) 25vw, (min-width: 640px) 33vw, (min-width: 475px) 50vw, 100vw"
             fill
@@ -42,21 +48,15 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
         ) : (
           <PlaceholderImage className="rounded-none" asChild />
         )}
-      </AspectRatio> */}
+      </AspectRatio>
       <div className="w-full space-y-6 p-6 sm:p-10">
-        {/* <div className="space-y-2">
-          <h1 className="line-clamp-2 text-2xl font-bold">{product.name}</h1>
-          <p className="text-base text-muted-foreground">
-            {formatPrice(product.price)}
-          </p>
-          <Rating rating={Math.round(product.rating / 5)} />
-          <p className="text-base text-muted-foreground">
-            {product.inventory} in stock
+        <div className="space-y-2">
+          <h1 className="line-clamp-2 text-2xl font-bold">{post.title}</h1>
+
+          <p className="line-clamp-4 text-base text-muted-foreground">
+            {formatTimeToNow(post.createdAt)}
           </p>
         </div>
-        <p className="line-clamp-4 text-base text-muted-foreground">
-          {product.description}
-        </p> */}
       </div>
     </DialogShell>
   );
