@@ -2,7 +2,8 @@
 
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { useRouter } from "next/navigation";
-import React from "react";
+import * as React from "react";
+import { useClickOutside } from "~/hooks/use-click-outside";
 import { cn } from "~/lib/utils";
 import { Button } from "../ui/button";
 
@@ -15,6 +16,23 @@ export function DialogShell({
 }: DialogShellProps) {
   const router = useRouter();
   const shellRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleEsc = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        router.back();
+      }
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => {
+      window.removeEventListener("keydown", handleEsc);
+    };
+  }, [router]);
+
+  useClickOutside({
+    ref: shellRef,
+    handler: () => router.back(),
+  });
 
   return (
     <div ref={shellRef} className={cn(className)} {...props}>
