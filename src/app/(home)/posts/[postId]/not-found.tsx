@@ -1,6 +1,6 @@
 import { ErrorCard } from "~/components/utils/error-card";
 
-export default function ProductModalNotFound() {
+export default function PostModalNotFound() {
   return (
     <ErrorCard
       title="Post not found"
