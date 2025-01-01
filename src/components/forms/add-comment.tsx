@@ -71,7 +71,7 @@ export function AddComment({ postId }: { postId: string }) {
                       aria-label="Add a comment..."
                       placeholder="Add a comment..."
                       minHeight={10}
-                      maxHeight={70}
+                      maxHeight={100}
                       data-replicated-value={field.value || ""}
                     />
                     <div
