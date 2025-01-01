@@ -2,10 +2,10 @@
 
 import { BookmarkIcon } from "@radix-ui/react-icons";
 import { Heart, MessageCircleIcon } from "lucide-react";
-import Link from "next/link";
+import router from "next/router";
 import React from "react";
 import { Icons } from "~/components/icons";
-import { Button, buttonVariants } from "~/components/ui/button";
+import { Button } from "~/components/ui/button";
 import { cn, showErrorToast } from "~/lib/utils";
 import { type Post } from "~/server/db/schema";
 import { api } from "~/trpc/react";
@@ -74,12 +74,11 @@ export function ActionButtons({ post }: { post: Post }) {
             />
             <span className="sr-only">Like</span>
           </Button>
-          <Link
-            href={`/posts/${post.id}`}
-            className={cn(
-              buttonVariants({ variant: "ghost", size: "icon" }),
-              "size-7",
-            )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.push(`/posts/${post.id}`)}
+            className={cn("size-7")}
           >
             <MessageCircleIcon
               className="size-6 -rotate-90"
@@ -87,7 +86,7 @@ export function ActionButtons({ post }: { post: Post }) {
               aria-label="Comment"
             />
             <span className="sr-only">Comment</span>
-          </Link>
+          </Button>
           <Button variant="ghost" size="icon" className={cn("size-7")}>
             <Icons.share
               className="size-6"

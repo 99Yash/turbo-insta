@@ -82,7 +82,7 @@ export function AppSidebar({ user }: SidebarProps) {
           <span className="hidden lg:inline">Profile</span>
         </Link>
       </nav>
-      <nav className="bottom-4 hidden lg:block lg:px-4 lg:py-8">
+      <nav className="hidden lg:block lg:px-4 lg:py-8">
         <Link
           href="/settings"
           className="flex items-center gap-4 rounded-md p-2 hover:bg-muted"
