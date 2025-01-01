@@ -16,7 +16,10 @@ interface PostProps {
 
 export function Post({ post, author }: PostProps) {
   return (
-    <div key={post.id} className="flex flex-col items-center gap-2">
+    <div
+      key={post.id}
+      className="flex w-[calc(100vw-2px)] max-w-[470px] flex-col items-center gap-2 rounded"
+    >
       <div className="border-0 shadow-none">
         <div className="flex flex-row items-center gap-1.5 px-1 py-3.5">
           <Link href={`/${author.id}`}>
@@ -46,7 +49,7 @@ export function Post({ post, author }: PostProps) {
             <span className="sr-only">More options</span>
           </Button>
         </div>
-        <div className="w-[calc(100vw-2px)] max-w-[470px] rounded">
+        <div>
           <PostCarousel files={post.images} />
         </div>
         <div className="flex flex-col gap-3 pt-3">

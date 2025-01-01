@@ -1,5 +1,5 @@
 import { type User } from "@clerk/nextjs/server";
-import { Heart, Search } from "lucide-react";
+import { CogIcon, Heart, LogOutIcon, Search } from "lucide-react";
 import Link from "next/link";
 import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -80,6 +80,22 @@ export function AppSidebar({ user }: SidebarProps) {
             </AvatarFallback>
           </Avatar>
           <span className="hidden lg:inline">Profile</span>
+        </Link>
+      </nav>
+      <nav className="bottom-4 hidden lg:block lg:px-4 lg:py-8">
+        <Link
+          href="/settings"
+          className="flex items-center gap-4 rounded-md p-2 hover:bg-muted"
+        >
+          <CogIcon className="size-6" />
+          <span className="hidden lg:inline">Settings</span>
+        </Link>
+        <Link
+          href="/signout"
+          className="flex items-center gap-4 rounded-md p-2 hover:bg-muted"
+        >
+          <LogOutIcon className="size-6" />
+          <span className="hidden lg:inline">Logout</span>
         </Link>
       </nav>
     </aside>

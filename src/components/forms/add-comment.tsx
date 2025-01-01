@@ -65,7 +65,7 @@ export function AddComment({ postId }: { postId: string }) {
                   <div className="grid">
                     <AutosizeTextarea
                       {...field}
-                      className="flex w-full flex-1 resize-none rounded-md border-none bg-transparent pl-0 text-sm shadow-sm placeholder:text-muted-foreground focus:border-none focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="flex w-full flex-1 resize-none rounded-md border-none bg-transparent pl-0 text-sm shadow-sm placeholder:font-medium placeholder:text-muted-foreground focus:border-none focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
                       id="add-comment"
                       onKeyDown={handleKeyDown}
                       aria-label="Add a comment..."
