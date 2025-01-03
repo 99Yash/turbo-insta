@@ -2,15 +2,12 @@ import { redirect } from "next/navigation";
 import { getCachedUser } from "~/lib/queries/user";
 import { AppSidebar } from "./components/app-sidebar";
 
-interface LobbyLayoutProps
+interface LayoutProps
   extends React.PropsWithChildren<{
     modal: React.ReactNode;
   }> {}
 
-export default async function LobbyLayout({
-  children,
-  modal,
-}: LobbyLayoutProps) {
+export default async function LobbyLayout({ children, modal }: LayoutProps) {
   const user = await getCachedUser();
 
   if (!user) {
