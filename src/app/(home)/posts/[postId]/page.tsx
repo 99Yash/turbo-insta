@@ -55,12 +55,12 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
 
   return (
     <HydrateClient>
-      <div className="flex w-full gap-2 px-0 sm:justify-end sm:gap-2">
-        <AspectRatio ratio={6.13 / 3} className="border-r shadow-none">
+      <div className="flex h-[calc(100vh-4rem)] w-full gap-2 px-0 sm:justify-end sm:gap-2">
+        <AspectRatio ratio={4 / 3} className="border-r shadow-none">
           <PostCarousel files={post.images} />
         </AspectRatio>
-        <div className="relative w-full space-y-6 py-6">
-          <div className="absolute left-0 top-3 flex w-full items-center gap-1.5 border-b px-2 pb-3">
+        <div className="flex h-full w-full flex-col">
+          <div className="flex items-center gap-1.5 border-b px-2 py-3">
             <Link href={`/${author.id}`}>
               <Avatar className="size-6">
                 <AvatarImage
@@ -77,11 +77,11 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
             </div>
           </div>
 
-          <div className="mb-20 mt-12 max-h-[calc(100vh-16rem)] overflow-y-auto">
+          <div className="h-[calc(100%-8rem)] overflow-y-auto">
             <CommentsList postId={post.id} />
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 flex h-fit w-full flex-col gap-2 border-t bg-background px-2 pt-3">
+          <div className="border-t bg-background px-2 py-3">
             <ActionButtons post={post} />
             <AddComment postId={post.id} />
           </div>
