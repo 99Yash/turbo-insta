@@ -12,8 +12,8 @@ import { createPost } from "../services/post.service";
 export const postsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(createPostSchema)
-    .mutation(async ({ input }) => {
-      return createPost(input);
+    .mutation(async ({ input, ctx }) => {
+      return createPost(input, ctx.userId);
     }),
 
   getAll: publicProcedure.query(async ({ ctx }) => {

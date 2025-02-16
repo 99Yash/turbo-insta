@@ -3,13 +3,13 @@ import { db } from "~/server/db";
 import { posts } from "~/server/db/schema";
 import { type CreatePostInput } from "../schema/posts.schema";
 
-export const createPost = async (input: CreatePostInput) => {
+export const createPost = async (input: CreatePostInput, userId: string) => {
   try {
     const [post] = await db
       .insert(posts)
       .values({
         title: input.title,
-        userId: input.userId,
+        userId,
         images: input.files.map((file) => ({
           url: file.url,
           name: file.name,
