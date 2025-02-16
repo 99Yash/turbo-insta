@@ -64,10 +64,10 @@ export const commentsRouter = createTRPCRouter({
                   ),
                 ),
               )
-            : eq(comments.postId, postId),
+            : undefined,
         )
         .orderBy(desc(comments.createdAt), desc(comments.id))
-        .limit(limit + 1);
+        .limit(limit);
 
       const userIds = [
         ...new Set(postComments.map((comment) => comment.userId)),

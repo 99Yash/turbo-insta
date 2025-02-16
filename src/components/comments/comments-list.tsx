@@ -60,28 +60,34 @@ export function CommentsList({ postId }: CommentsListProps) {
                 <div className="flex items-baseline space-x-2">
                   <Link
                     href={`/${user.id}`}
-                    className="text-sm font-semibold hover:underline"
+                    className="text-sm font-semibold text-muted-foreground hover:underline"
                   >
                     {user.fullName}
                   </Link>
-                  <span className="text-sm text-muted-foreground">
-                    {formatTimeToNow(comment.createdAt)}
+                  <span className="text-xs text-muted-foreground">
+                    • {formatTimeToNow(comment.createdAt)}
                   </span>
                 </div>
-                <p className="text-sm">{comment.text}</p>
+                <p className="text-xs">{comment.text}</p>
               </div>
             </div>
           );
         }),
       )}
 
-      <div ref={ref} className="h-4">
-        {isFetchingNextPage && (
-          <div className="text-center text-sm text-muted-foreground">
-            Loading more comments...
-          </div>
-        )}
-      </div>
+      {hasNextPage ? (
+        <div ref={ref} className="h-4">
+          {isFetchingNextPage && (
+            <div className="text-center text-sm text-muted-foreground">
+              Loading more comments...
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="text-center text-sm text-muted-foreground">
+          No more comments
+        </div>
+      )}
     </div>
   );
 }
