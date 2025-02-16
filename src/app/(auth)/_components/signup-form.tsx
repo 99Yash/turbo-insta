@@ -21,7 +21,7 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { showErrorToast } from "~/lib/utils";
-import { authSchema } from "~/server/api/schema/user.schema";
+import { authSchema } from "~/server/api/validators/user.schema";
 
 type Inputs = z.infer<typeof authSchema>;
 

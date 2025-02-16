@@ -1,7 +1,7 @@
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import { db } from "~/server/db";
 import { posts } from "~/server/db/schema";
-import { type CreatePostInput } from "../schema/posts.schema";
+import { type CreatePostInput } from "../validators/posts.schema";
 
 export const createPost = async (input: CreatePostInput, userId: string) => {
   try {
