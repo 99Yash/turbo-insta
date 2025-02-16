@@ -1,4 +1,4 @@
-import { Metadata } from "next";
+import { type Metadata } from "next";
 
 import { VerifyEmailForm } from "~/app/(auth)/_components/verify-email-form";
 import {

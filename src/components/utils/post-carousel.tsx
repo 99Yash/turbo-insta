@@ -27,6 +27,7 @@ export function PostCarousel({
   ...props
 }: PostCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel(options);
+  const [selectedIndex, setSelectedIndex] = React.useState(0);
 
   const [prevBtnDisabled, setPrevBtnDisabled] = React.useState(true);
   const [nextBtnDisabled, setNextBtnDisabled] = React.useState(true);
@@ -45,6 +46,7 @@ export function PostCarousel({
 
     setPrevBtnDisabled(!emblaApi.canScrollPrev());
     setNextBtnDisabled(!emblaApi.canScrollNext());
+    setSelectedIndex(emblaApi.selectedScrollSnap());
   }, []);
 
   React.useEffect(() => {
@@ -54,6 +56,11 @@ export function PostCarousel({
     emblaApi.on("reInit", onSelect);
     emblaApi.on("select", onSelect);
   }, [emblaApi, onSelect]);
+
+  const scrollTo = React.useCallback(
+    (index: number) => emblaApi && emblaApi.scrollTo(index),
+    [emblaApi],
+  );
 
   if (!files || files.length === 0) {
     return null;
@@ -118,6 +125,24 @@ export function PostCarousel({
         <ChevronRightIcon className="size-3" aria-hidden="true" />
         <span className="sr-only">Next slide</span>
       </Button>
+
+      <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center gap-2">
+        {files.map((_, index) => (
+          <Button
+            key={index}
+            variant="ghost"
+            size="icon"
+            className={cn(
+              "size-1.5 rounded-full p-0",
+              selectedIndex === index
+                ? "bg-foreground"
+                : "bg-foreground/50 hover:bg-foreground/70",
+            )}
+            onClick={() => scrollTo(index)}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
     </div>
   );
 }
