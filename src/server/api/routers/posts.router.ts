@@ -1,4 +1,4 @@
-import { and, count, eq } from "drizzle-orm";
+import { and, count, desc, eq, gt, or } from "drizzle-orm";
 import { z } from "zod";
 import {
   createTRPCRouter,
@@ -16,13 +16,53 @@ export const postsRouter = createTRPCRouter({
       return createPost(input, ctx.userId);
     }),
 
-  getAll: publicProcedure.query(async ({ ctx }) => {
-    const allPosts = await ctx.db.query.posts.findMany({
-      limit: 10,
-    });
+  getAll: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(10),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { limit, cursor } = input;
 
-    return allPosts;
-  }),
+      const items = await ctx.db
+        .select()
+        .from(posts)
+        .where(
+          cursor
+            ? or(
+                gt(posts.createdAt, cursor.createdAt),
+                and(
+                  eq(posts.createdAt, cursor.createdAt),
+                  gt(posts.id, cursor.id),
+                ),
+              )
+            : undefined,
+        )
+        .orderBy(desc(posts.createdAt), desc(posts.id))
+        .limit(limit + 1);
+
+      let nextCursor: typeof cursor | undefined = undefined;
+
+      if (items.length > limit) {
+        const nextItem = items.pop()!;
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+      }
+
+      return {
+        items,
+        nextCursor,
+      };
+    }),
 
   getById: publicProcedure
     .input(

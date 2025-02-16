@@ -15,3 +15,10 @@ export const createPostSchema = z.object({
 });
 
 export type CreatePostInput = z.infer<typeof createPostSchema>;
+
+export const paginatedPostsSchema = z.object({
+  items: z.array(z.any()), // Replace with your post schema type
+  nextCursor: z.string().nullish(),
+});
+
+export type PaginatedPostsResponse = z.infer<typeof paginatedPostsSchema>;
