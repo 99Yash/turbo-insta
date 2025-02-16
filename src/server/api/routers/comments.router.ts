@@ -1,7 +1,9 @@
+import { clerkClient } from "@clerk/nextjs/server";
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
+import { and, desc, eq, gt, or } from "drizzle-orm";
 import { z } from "zod";
 import { comments } from "~/server/db/schema";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const commentsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -29,5 +31,84 @@ export const commentsRouter = createTRPCRouter({
           message: getTRPCErrorFromUnknown(e).message,
         });
       }
+    }),
+
+  getByPostId: publicProcedure
+    .input(
+      z.object({
+        postId: z.string(),
+        limit: z.number().min(1).max(50).default(20),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .nullish(),
+      }),
+    )
+    .query(async ({ input, ctx }) => {
+      const { postId, limit, cursor } = input;
+
+      const postComments = await ctx.db
+        .select()
+        .from(comments)
+        .where(
+          cursor
+            ? and(
+                eq(comments.postId, postId),
+                or(
+                  gt(comments.createdAt, cursor.createdAt),
+                  and(
+                    eq(comments.createdAt, cursor.createdAt),
+                    gt(comments.id, cursor.id),
+                  ),
+                ),
+              )
+            : eq(comments.postId, postId),
+        )
+        .orderBy(desc(comments.createdAt), desc(comments.id))
+        .limit(limit + 1);
+
+      const userIds = [
+        ...new Set(postComments.map((comment) => comment.userId)),
+      ];
+
+      const { data: authors } = await (
+        await clerkClient()
+      ).users.getUserList({
+        userId: userIds,
+        limit: userIds.length,
+      });
+
+      const commentsWithUser = postComments.map((comment) => {
+        const user = authors.find((u) => u.id === comment.userId);
+        return {
+          ...comment,
+          user: user
+            ? {
+                id: user.id,
+                fullName:
+                  user.firstName && user.lastName
+                    ? `${user.firstName} ${user.lastName}`
+                    : null,
+                imageUrl: user.imageUrl,
+              }
+            : null,
+        };
+      });
+
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (postComments.length > limit) {
+        const nextItem = postComments.pop()!;
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+      }
+
+      return {
+        postComments: commentsWithUser,
+        nextCursor,
+      };
     }),
 });
