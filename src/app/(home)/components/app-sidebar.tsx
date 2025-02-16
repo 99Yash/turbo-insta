@@ -48,7 +48,8 @@ export function AppSidebar({ user }: SidebarProps) {
   return (
     <aside className="fixed bottom-0 z-10 w-full border-t md:left-0 lg:top-0 lg:h-screen lg:w-64 lg:border-r lg:border-t-0">
       <div className="flex h-16 items-center justify-center max-lg:hidden lg:h-20">
-        <Link href="/" className="text-xl font-bold">
+        <Link href="/" className="flex items-center gap-2 text-xl font-bold">
+          <Icons.logo className="size-7" aria-hidden="true" />
           {siteConfig.name}
         </Link>
       </div>

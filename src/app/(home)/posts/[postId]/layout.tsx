@@ -1,23 +1,23 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import React from "react";
 import { Dialog, DialogContent } from "~/components/ui/dialog";
 import { useClickOutside } from "~/hooks/use-click-outside";
 
 export default function ModalLayout({ children }: React.PropsWithChildren) {
   const router = useRouter();
-  const contentRef = useRef<HTMLDivElement>(null);
+  const contentRef = React.useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         router.back();
       }
     };
 
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, [router]);
 
   useClickOutside({
