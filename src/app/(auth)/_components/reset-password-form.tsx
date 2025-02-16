@@ -20,7 +20,7 @@ import {
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import { showErrorToast } from "~/lib/utils";
-import { checkEmailSchema } from "~/lib/validations/auth";
+import { checkEmailSchema } from "~/server/api/schema/user.schema";
 
 type Inputs = z.infer<typeof checkEmailSchema>;
 

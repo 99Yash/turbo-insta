@@ -26,7 +26,7 @@ import {
   InputOTPSlot,
 } from "~/components/ui/input-otp";
 import { getErrorMessage } from "~/lib/utils";
-import { resetPasswordSchema } from "~/lib/validations/auth";
+import { resetPasswordSchema } from "~/server/api/schema/user.schema";
 
 type Inputs = z.infer<typeof resetPasswordSchema>;
 
