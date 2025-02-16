@@ -1,9 +1,11 @@
+import { type Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddComment } from "~/components/forms/add-comment";
 import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { PostCarousel } from "~/components/utils/post-carousel";
+import { siteConfig } from "~/config/site";
 import { users } from "~/lib/queries/user";
 import { getInitials } from "~/lib/utils";
 import { api } from "~/trpc/server";
@@ -14,6 +16,34 @@ interface PostModalPageProps {
     postId: string;
   };
 }
+
+export const generateMetadata = async ({
+  params,
+}: PostModalPageProps): Promise<Metadata> => {
+  const post = await api.posts.getById({ postId: params.postId });
+  if (!post) return { title: "Post not found" };
+
+  const author = users.find((user) => user.id === post?.userId);
+
+  if (!author) return { title: "Post not found" };
+  return {
+    title: `${post.title} - ${author?.fullName} on ${siteConfig.name}`,
+    description: post.title,
+    openGraph: {
+      type: "website",
+      locale: "en_US",
+      title: `${author?.fullName} on ${siteConfig.name}`,
+      description: post.title ?? "",
+      url: `${siteConfig.url}/posts/${post.id}`,
+      images: post.images.map((image) => ({
+        url: image.url,
+        width: 1200,
+        height: 630,
+        alt: post.title ?? "",
+      })),
+    },
+  };
+};
 
 export default async function PostModalPage({ params }: PostModalPageProps) {
   const post = await api.posts.getById({ postId: params.postId });
