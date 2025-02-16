@@ -1,4 +1,5 @@
 import { type SQL } from "drizzle-orm";
+import { z } from "zod";
 import { type Icons } from "~/components/icons";
 
 export interface NavItem {
@@ -33,11 +34,14 @@ export interface SearchParams {
   [key: string]: string | string[] | undefined;
 }
 
-export interface StoredFile {
-  id: string;
-  name: string;
-  url: string;
-}
+export const storedFileSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  url: z.string(),
+  alt: z.string().optional(),
+});
+
+export type StoredFile = z.infer<typeof storedFileSchema>;
 
 export type DrizzleWhere<T> =
   | SQL<unknown>

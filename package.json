@@ -19,6 +19,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.1.12",
     "@clerk/nextjs": "^6.9.6",
     "@hookform/resolvers": "^3.9.1",
     "@radix-ui/react-accordion": "^1.2.2",

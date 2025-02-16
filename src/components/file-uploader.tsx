@@ -1,3 +1,4 @@
+import { Cross2Icon, UploadIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import * as React from "react";
 import Dropzone, {
@@ -5,8 +6,6 @@ import Dropzone, {
   type FileRejection,
 } from "react-dropzone";
 import { toast } from "sonner";
-
-import { Cross2Icon, UploadIcon } from "@radix-ui/react-icons";
 import { useControllableState } from "~/hooks/use-controllable-state";
 import { cn, formatBytes, isFileWithPreview, isImageUrl } from "~/lib/utils";
 import { Button } from "./ui/button";
