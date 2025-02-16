@@ -14,11 +14,11 @@ export function useClickOutside({ ref, handler }: UseClickOutsideProps) {
       }
       handler(event);
     };
-    document.addEventListener("mousedown", listener);
-    document.addEventListener("touchstart", listener);
+    window.addEventListener("mousedown", listener);
+    window.addEventListener("touchstart", listener);
     return () => {
-      document.removeEventListener("mousedown", listener);
-      document.removeEventListener("touchstart", listener);
+      window.removeEventListener("mousedown", listener);
+      window.removeEventListener("touchstart", listener);
     };
   }, [ref, handler]);
 }
