@@ -4,9 +4,8 @@ import { ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import * as React from "react";
 import { cn } from "~/lib/utils";
-import { buttonVariants } from "../ui/button";
+import { Button, buttonVariants } from "../ui/button";
 import { Card, CardDescription, CardTitle } from "../ui/card";
-import { ClientButton } from "./client-button";
 
 interface ErrorCardProps extends React.ComponentPropsWithoutRef<typeof Card> {
   icon?: React.ComponentType<{ className?: string }>;
@@ -61,9 +60,9 @@ export function ErrorCard({
         </Link>
       ) : null}
       {reset ? (
-        <ClientButton aria-label="Retry" variant="ghost" onClick={reset}>
+        <Button aria-label="Retry" variant="ghost" onClick={reset}>
           Retry
-        </ClientButton>
+        </Button>
       ) : null}
     </Card>
   );

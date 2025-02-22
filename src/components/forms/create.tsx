@@ -2,11 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  PlusIcon,
-} from "@radix-ui/react-icons";
+import { ChevronLeftIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { AnimatePresence, motion } from "framer-motion";
 import { UserIcon } from "lucide-react";
 import Image from "next/image";
@@ -34,11 +30,12 @@ import {
 } from "../ui/form";
 import { Loading } from "../ui/icons";
 import { CircleInfo as CircleInfoIcon } from "../ui/icons/nucleo/circle-info";
-import { LocationPin as LocationPinIcon } from "../ui/icons/nucleo/location-pin";
-import { Tag as TagIcon } from "../ui/icons/nucleo/tag";
 
+import { Sparkle3 } from "../ui/icons/nucleo";
+import { Input } from "../ui/input";
 import { Modal } from "../ui/modal";
 import { Textarea } from "../ui/textarea";
+import { StarBorder } from "../utils/star-border";
 
 export const createPostSchema = z.object({
   title: z.string().min(1).max(256),
@@ -143,21 +140,17 @@ export function Create() {
 
   return (
     <>
-      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-        <Button
-          variant="secondary"
-          className="w-full"
-          onClick={() => setOpen(true)}
-        >
-          <PlusIcon className="mr-2 size-4" aria-hidden="true" />
+      <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}>
+        <StarBorder className="w-full" onClick={() => setOpen(true)}>
+          <Sparkle3 className="size-4" aria-hidden="true" />
           Create
-        </Button>
+        </StarBorder>
       </motion.div>
 
       <Modal
         showModal={open}
         setShowModal={handleCloseModal}
-        className="max-w-fit"
+        className="min-w-[769px] max-w-fit"
       >
         <AnimatePresence mode="wait">
           {open && (
@@ -331,16 +324,6 @@ export function Create() {
                           />
 
                           <div className="space-y-2 border-t pt-4">
-                            <button className="flex w-full items-center gap-2 rounded-md p-2 hover:bg-muted/50">
-                              <LocationPinIcon className="size-4" />
-                              <span>Add location</span>
-                            </button>
-
-                            <button className="flex w-full items-center gap-2 rounded-md p-2 hover:bg-muted/50">
-                              <TagIcon className="size-4" />
-                              <span>Tag people</span>
-                            </button>
-
                             <Accordion
                               type="single"
                               collapsible
@@ -378,7 +361,7 @@ export function Create() {
                                           render={({ field }) => (
                                             <FormItem className="flex-1">
                                               <FormControl>
-                                                <Textarea
+                                                <Input
                                                   {...field}
                                                   placeholder="Write alt text..."
                                                   className="flex-1"

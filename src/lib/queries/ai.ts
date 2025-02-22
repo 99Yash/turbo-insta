@@ -1,5 +1,5 @@
 import { generateText } from "ai";
-import { ai_model } from "~/config/product";
+import { openai_model } from "~/config/product";
 
 export const generateAltText = async (imagePath: string) => {
   const systemPrompt =
@@ -11,7 +11,7 @@ export const generateAltText = async (imagePath: string) => {
     `Use simple language. `;
 
   const { text } = await generateText({
-    model: ai_model,
+    model: openai_model,
     system: systemPrompt,
     messages: [
       {
