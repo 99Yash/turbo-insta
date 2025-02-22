@@ -11,6 +11,7 @@ import { type StoredFile } from "~/types";
 import { Icons } from "../icons";
 import { Button } from "../ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { TextGenerateEffect } from "./text-generate";
 
 type CarouselApi = UseEmblaCarouselType["1"];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
@@ -164,7 +165,7 @@ export function PostCarousel({
             align="end"
             className="w-64 text-xs italic opacity-90 backdrop-blur-md"
           >
-            “{files[selectedIndex].alt}”
+            <TextGenerateEffect text={files[selectedIndex].alt} />
           </PopoverContent>
         </Popover>
       )}
