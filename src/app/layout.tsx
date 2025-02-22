@@ -29,10 +29,10 @@ export default function RootLayout({
     <ClerkProvider>
       <html
         lang="en"
-        className={cn("scroll-smooth antialiased", inter.variable)}
+        className={cn("h-full scroll-smooth antialiased", inter.variable)}
       >
         <head />
-        <body className="min-h-screen">
+        <body className="h-full min-h-screen bg-background">
           <TRPCReactProvider>
             <TooltipProvider delayDuration={10}>
               <ThemeProvider
@@ -41,7 +41,7 @@ export default function RootLayout({
                 enableSystem
                 disableTransitionOnChange={false}
               >
-                {children}
+                <div className="h-full">{children}</div>
               </ThemeProvider>
             </TooltipProvider>
             <Toaster />

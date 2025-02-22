@@ -13,15 +13,17 @@ export default async function Home() {
 
   return (
     <HydrateClient>
-      <main className="mt-12 flex flex-col items-center justify-center">
+      <div className="flex flex-col py-8 pb-24 lg:pb-8">
         {user && <Create />}
-        {posts.items.map((post) => {
-          const author = users.find((user) => user.id === post.userId);
-          if (!author) return null;
+        <div className="space-y-6">
+          {posts.items.map((post) => {
+            const author = users.find((user) => user.id === post.userId);
+            if (!author) return null;
 
-          return <Post key={post.id} post={post} author={author} />;
-        })}
-      </main>
+            return <Post key={post.id} post={post} author={author} />;
+          })}
+        </div>
+      </div>
     </HydrateClient>
   );
 }

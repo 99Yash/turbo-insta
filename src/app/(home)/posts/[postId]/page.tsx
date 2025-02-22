@@ -56,11 +56,11 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
   return (
     <HydrateClient>
       <div className="flex h-[calc(100vh-4rem)] w-full gap-2 px-0 sm:justify-end sm:gap-2">
-        <AspectRatio ratio={4 / 3} className="border-r shadow-none">
+        <AspectRatio ratio={2} className="self-center border-r shadow-none">
           <PostCarousel files={post.images} />
         </AspectRatio>
         <div className="flex h-full w-full flex-col">
-          <div className="flex items-center gap-1.5 border-b px-2 py-3">
+          <div className="flex items-center gap-1.5 border-b px-4 py-3">
             <Link href={`/${author.id}`}>
               <Avatar className="size-6">
                 <AvatarImage
@@ -72,9 +72,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
                 </AvatarFallback>
               </Avatar>
             </Link>
-            <div>
-              <span className="text-sm font-semibold">{author.fullName}</span>{" "}
-            </div>
+            <span className="text-sm font-semibold">{author.fullName}</span>{" "}
           </div>
 
           <div className="h-[calc(100%-8rem)] overflow-y-auto">

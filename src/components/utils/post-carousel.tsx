@@ -69,7 +69,10 @@ export function PostCarousel({
   return (
     <div
       aria-label="Product image carousel"
-      className={cn("relative flex flex-[0_0_40%] flex-col gap-4", className)}
+      className={cn(
+        "relative flex max-w-full flex-[0_0_40%] flex-col gap-4",
+        className,
+      )}
       {...props}
     >
       <Button
