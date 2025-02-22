@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PlusIcon, UploadIcon } from "@radix-ui/react-icons";
+import { PlusIcon } from "@radix-ui/react-icons";
+import { MapPinIcon, SettingsIcon, UsersIcon } from "lucide-react";
 import * as React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -16,10 +17,8 @@ import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "../ui/form";
-import { Loading } from "../ui/icons";
 import { Modal } from "../ui/modal";
 import { Textarea } from "../ui/textarea";
 
@@ -82,34 +81,26 @@ export function Create() {
       </Button>
       <Modal showModal={open} setShowModal={setOpen}>
         <div className="flex flex-col items-center justify-center">
-          <div className="w-full max-w-md space-y-8 bg-background p-6 text-center">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Create a new post
-            </h1>
+          <div className="w-full max-w-md space-y-8 bg-background p-6">
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-semibold tracking-tight">
+                Create new post
+              </h1>
+              <Button variant="ghost" onClick={() => setOpen(false)}>
+                Share
+              </Button>
+            </div>
           </div>
           <Form {...form}>
-            <form className="space-y-3" onSubmit={form.handleSubmit(onSubmit)}>
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Title</FormLabel>
-                    <Textarea
-                      {...field}
-                      value={field.value}
-                      disabled={isSubmitting}
-                    />
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            <form
+              className="w-full max-w-md space-y-4"
+              onSubmit={form.handleSubmit(onSubmit)}
+            >
               <FormField
                 control={form.control}
                 name="files"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="mr-4">Images/Files</FormLabel>
                     <FormControl>
                       <FileUploader
                         accept={{
@@ -125,20 +116,72 @@ export function Create() {
                   </FormItem>
                 )}
               />
-              <Button
-                disabled={isSubmitting}
-                className="mt-4 w-full bg-muted-foreground"
-                type="submit"
-              >
-                {isSubmitting ? (
-                  <Loading className="mr-2 size-4" aria-hidden="true" />
-                ) : (
-                  <>
-                    <UploadIcon className="mr-2 size-4" aria-hidden="true" />
-                    Upload
-                  </>
+
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <Textarea
+                      placeholder="Write a caption..."
+                      className="min-h-[100px]"
+                      {...field}
+                      disabled={isSubmitting}
+                    />
+                    <FormMessage />
+                  </FormItem>
                 )}
-              </Button>
+              />
+
+              <div className="space-y-2 border-t pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    /* Add location handler */
+                  }}
+                >
+                  <MapPinIcon className="mr-2 size-4" />
+                  Add location
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    /* Add collaborators handler */
+                  }}
+                >
+                  <UsersIcon className="mr-2 size-4" />
+                  Add collaborators
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    /* Add accessibility handler */
+                  }}
+                >
+                  <span className="mr-2">Aa</span>
+                  Accessibility
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={() => {
+                    /* Add settings handler */
+                  }}
+                >
+                  <SettingsIcon className="mr-2 size-4" />
+                  Advanced settings
+                </Button>
+              </div>
             </form>
           </Form>
         </div>

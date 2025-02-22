@@ -1,5 +1,5 @@
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
-import { describeImage } from "~/lib/utils";
+import { generateAltText } from "~/lib/queries/ai";
 import { db } from "~/server/db";
 import { posts } from "~/server/db/schema";
 import { type CreatePostInput } from "../validators/posts.schema";
@@ -8,10 +8,10 @@ export const createPost = async (input: CreatePostInput, userId: string) => {
   try {
     await Promise.all(
       input.files.map(async (file) => {
-        const description = await describeImage(file.url);
-        file.alt = description;
-
-        console.log(description);
+        if (!file.alt) {
+          const description = await generateAltText(file.url);
+          file.alt = description;
+        }
       }),
     );
 

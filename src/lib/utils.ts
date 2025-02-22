@@ -1,13 +1,11 @@
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { type User } from "@clerk/nextjs/server";
-import { generateText } from "ai";
 import { type ClassValue, clsx } from "clsx";
 import { formatDistanceToNowStrict } from "date-fns";
 import { customAlphabet } from "nanoid";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
-import { ai_model } from "~/config/product";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -189,31 +187,3 @@ export function formatTimeToNow(date: Date): string {
     addSuffix: true,
   });
 }
-
-export const describeImage = async (imagePath: string) => {
-  const systemPrompt =
-    `You will receive an image. ` +
-    `Please create an alt text for the image. ` +
-    `Be concise. ` +
-    `Use adjectives only when necessary. ` +
-    `Do not pass 160 characters. ` +
-    `Use simple language. `;
-
-  const { text } = await generateText({
-    model: ai_model,
-    system: systemPrompt,
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "image",
-            image: imagePath,
-          },
-        ],
-      },
-    ],
-  });
-
-  return text;
-};
