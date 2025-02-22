@@ -24,7 +24,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "../ui/accordion";
-import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "../ui/button";
 import {
   Form,
@@ -34,13 +33,17 @@ import {
   FormMessage,
 } from "../ui/form";
 import { Loading } from "../ui/icons";
+import { CircleInfo as CircleInfoIcon } from "../ui/icons/nucleo/circle-info";
+import { LocationPin as LocationPinIcon } from "../ui/icons/nucleo/location-pin";
+import { Tag as TagIcon } from "../ui/icons/nucleo/tag";
+
 import { Modal } from "../ui/modal";
 import { Textarea } from "../ui/textarea";
 
 export const createPostSchema = z.object({
   title: z.string().min(1).max(256),
   files: z.array(z.instanceof(File)).min(1).max(3),
-  altTexts: z.array(z.string()).optional(),
+  altTexts: z.array(z.string().optional()).optional(),
 });
 
 type Inputs = z.infer<typeof createPostSchema>;
@@ -71,7 +74,7 @@ export function Create() {
     const uploads = await uploadFiles(data.files);
     if (!uploads) return;
 
-    toast.loading("Files uploaded, creating post!", {
+    toast.info("Files uploaded, creating post!", {
       id: t,
     });
 
@@ -302,12 +305,7 @@ export function Create() {
 
                     <div className="flex w-1/2 flex-col">
                       <div className="mb-4 flex items-center gap-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={user?.imageUrl} />
-                          <AvatarFallback>
-                            <UserIcon className="size-4" />
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserIcon className="size-4 text-muted-foreground" />
                         <span className="font-semibold">{user?.fullName}</span>
                       </div>
 
@@ -332,54 +330,71 @@ export function Create() {
                             )}
                           />
 
-                          <Accordion
-                            type="single"
-                            collapsible
-                            defaultValue="accessibility"
-                          >
-                            <AccordionItem value="accessibility">
-                              <AccordionTrigger>Accessibility</AccordionTrigger>
-                              <AccordionContent className="space-y-4">
-                                <p className="text-sm text-muted-foreground">
-                                  Alt text describes your photos for people with
-                                  visual impairments. Alt text will be
-                                  automatically created for your photos if you
-                                  don&apos;t provide one.
-                                </p>
+                          <div className="space-y-2 border-t pt-4">
+                            <button className="flex w-full items-center gap-2 rounded-md p-2 hover:bg-muted/50">
+                              <LocationPinIcon className="size-4" />
+                              <span>Add location</span>
+                            </button>
 
-                                {form.getValues("files")?.map((file, index) => (
-                                  <div key={index} className="flex gap-2">
-                                    <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-muted">
-                                      <Image
-                                        src={URL.createObjectURL(file)}
-                                        alt=""
-                                        width={48}
-                                        height={48}
-                                        className="h-full w-full object-cover"
-                                      />
-                                    </div>
-                                    <FormField
-                                      control={form.control}
-                                      name={`altTexts.${index}`}
-                                      render={({ field }) => (
-                                        <FormItem className="flex-1">
-                                          <FormControl>
-                                            <Textarea
-                                              {...field}
-                                              placeholder="Write alt text..."
-                                              className="flex-1"
-                                              disabled={isSubmitting}
-                                            />
-                                          </FormControl>
-                                          <FormMessage />
-                                        </FormItem>
-                                      )}
-                                    />
-                                  </div>
-                                ))}
-                              </AccordionContent>
-                            </AccordionItem>
-                          </Accordion>
+                            <button className="flex w-full items-center gap-2 rounded-md p-2 hover:bg-muted/50">
+                              <TagIcon className="size-4" />
+                              <span>Tag people</span>
+                            </button>
+
+                            <Accordion
+                              type="single"
+                              collapsible
+                              defaultValue="accessibility"
+                            >
+                              <AccordionItem value="accessibility">
+                                <AccordionTrigger className="flex gap-2">
+                                  <CircleInfoIcon className="size-4" />
+                                  Accessibility
+                                </AccordionTrigger>
+                                <AccordionContent className="space-y-4">
+                                  <p className="text-sm text-muted-foreground">
+                                    Alt text describes your photos for people
+                                    with visual impairments. Alt text will be
+                                    automatically created for your photos if you
+                                    don&apos;t provide one.
+                                  </p>
+
+                                  {form
+                                    .getValues("files")
+                                    ?.map((file, index) => (
+                                      <div key={index} className="flex gap-2">
+                                        <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-muted">
+                                          <Image
+                                            src={URL.createObjectURL(file)}
+                                            alt={file.name}
+                                            width={48}
+                                            height={48}
+                                            className="h-full w-full object-cover"
+                                          />
+                                        </div>
+                                        <FormField
+                                          control={form.control}
+                                          name={`altTexts.${index}`}
+                                          render={({ field }) => (
+                                            <FormItem className="flex-1">
+                                              <FormControl>
+                                                <Textarea
+                                                  {...field}
+                                                  placeholder="Write alt text..."
+                                                  className="flex-1"
+                                                  disabled={isSubmitting}
+                                                />
+                                              </FormControl>
+                                              <FormMessage />
+                                            </FormItem>
+                                          )}
+                                        />
+                                      </div>
+                                    ))}
+                                </AccordionContent>
+                              </AccordionItem>
+                            </Accordion>
+                          </div>
                         </form>
                       </Form>
                     </div>

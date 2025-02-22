@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useControllableState } from "~/hooks/use-controllable-state";
 import { cn, formatBytes, isFileWithPreview, isImageUrl } from "~/lib/utils";
 import { Button } from "./ui/button";
+import { CloudUpload } from "./ui/icons/nucleo";
 import { Progress } from "./ui/progress";
 import { ScrollArea } from "./ui/scroll-area";
 
@@ -228,7 +229,7 @@ export function FileUploader(props: FileUploaderProps) {
             {isDragActive ? (
               <div className="flex flex-col items-center justify-center gap-4 sm:px-5">
                 <div className="rounded-full border border-dashed p-3">
-                  <UploadIcon
+                  <CloudUpload
                     className="size-7 text-muted-foreground"
                     aria-hidden="true"
                   />
