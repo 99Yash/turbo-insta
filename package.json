@@ -46,6 +46,7 @@
     "@trpc/server": "^11.0.0-rc.666",
     "@uploadthing/react": "^6.8.0",
     "@vercel/analytics": "^1.4.1",
+    "ably": "^2.6.3",
     "ai": "^4.1.41",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
