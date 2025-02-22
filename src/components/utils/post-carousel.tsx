@@ -10,6 +10,8 @@ import { cn } from "~/lib/utils";
 import { type StoredFile } from "~/types";
 import { Icons } from "../icons";
 import { Button } from "../ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
+import { TextGenerateEffect } from "./text-generate";
 
 type CarouselApi = UseEmblaCarouselType["1"];
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>;
@@ -69,7 +71,10 @@ export function PostCarousel({
   return (
     <div
       aria-label="Product image carousel"
-      className={cn("relative flex flex-[0_0_40%] flex-col gap-4", className)}
+      className={cn(
+        "relative flex max-w-full flex-[0_0_40%] flex-col gap-4",
+        className,
+      )}
       {...props}
     >
       <Button
@@ -143,6 +148,27 @@ export function PostCarousel({
           />
         ))}
       </div>
+
+      {files[selectedIndex]?.alt && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              size="sm"
+              className="absolute bottom-4 right-4 z-20 h-6 rounded-md bg-background/80 px-2 text-xs font-semibold backdrop-blur-md hover:bg-background/90"
+            >
+              ALT
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            side="top"
+            align="end"
+            className="w-64 text-xs italic opacity-95 backdrop-blur-md"
+          >
+            <TextGenerateEffect text={files[selectedIndex].alt} />
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   );
 }

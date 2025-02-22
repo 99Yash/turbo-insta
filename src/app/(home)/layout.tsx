@@ -15,9 +15,13 @@ export default async function LobbyLayout({ children, modal }: LayoutProps) {
   }
 
   return (
-    <div className="relative flex min-h-screen w-screen flex-col">
-      <AppSidebar user={user} />
-      <main>{children}</main>
+    <div className="flex h-full">
+      <div className="fixed left-0 top-0 h-full border-r border-border">
+        <AppSidebar user={user} />
+      </div>
+      <div className="flex-1">
+        <div className="mx-auto max-w-[470px]">{children}</div>
+      </div>
       {modal}
     </div>
   );

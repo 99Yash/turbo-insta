@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { PostCarousel } from "~/components/utils/post-carousel";
 import { siteConfig } from "~/config/site";
 import { users } from "~/lib/queries/user";
-import { getInitials } from "~/lib/utils";
+import { formatTimeToNow, getInitials } from "~/lib/utils";
 import { api, HydrateClient } from "~/trpc/server";
 import { ActionButtons } from "../../components/action-buttons";
 
@@ -56,13 +56,13 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
   return (
     <HydrateClient>
       <div className="flex h-[calc(100vh-4rem)] w-full gap-2 px-0 sm:justify-end sm:gap-2">
-        <AspectRatio ratio={4 / 3} className="border-r shadow-none">
+        <AspectRatio ratio={2} className="self-center border-r shadow-none">
           <PostCarousel files={post.images} />
         </AspectRatio>
         <div className="flex h-full w-full flex-col">
-          <div className="flex items-center gap-1.5 border-b px-2 py-3">
+          <div className="flex items-center gap-1.5 border-b px-4 py-3">
             <Link href={`/${author.id}`}>
-              <Avatar className="size-6">
+              <Avatar className="size-7">
                 <AvatarImage
                   src={author.imageUrl}
                   alt={author.fullName ?? "VH"}
@@ -72,10 +72,37 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
                 </AvatarFallback>
               </Avatar>
             </Link>
-            <div>
-              <span className="text-sm font-semibold">{author.fullName}</span>{" "}
-            </div>
+            <span className="text-sm font-semibold">{author.fullName}</span>
           </div>
+
+          {post.title && (
+            <div className="px-4 py-3">
+              <div className="flex items-start gap-2">
+                <Link href={`/${author.id}`}>
+                  <Avatar className="size-7">
+                    <AvatarImage
+                      src={author.imageUrl}
+                      alt={author.fullName ?? "VH"}
+                    />
+                    <AvatarFallback>
+                      {getInitials(author.fullName ?? "VH")}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+                <div className="flex flex-col gap-1">
+                  <div>
+                    <span className="text-sm font-semibold">
+                      {author.fullName}
+                    </span>{" "}
+                    <span className="text-sm">{post.title}</span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {formatTimeToNow(post.createdAt)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="h-[calc(100%-8rem)] overflow-y-auto">
             <CommentsList postId={post.id} />
