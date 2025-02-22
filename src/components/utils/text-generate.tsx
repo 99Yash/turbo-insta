@@ -10,7 +10,7 @@ type TextGenerateEffectProps = {
 
 export function TextGenerateEffect({
   text,
-  duration = 0.3,
+  duration = 0.2,
   className,
 }: TextGenerateEffectProps) {
   const words = text

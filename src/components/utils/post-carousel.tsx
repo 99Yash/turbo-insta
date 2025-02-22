@@ -163,7 +163,7 @@ export function PostCarousel({
           <PopoverContent
             side="top"
             align="end"
-            className="w-64 text-xs italic opacity-90 backdrop-blur-md"
+            className="w-64 text-xs italic opacity-95 backdrop-blur-md"
           >
             <TextGenerateEffect text={files[selectedIndex].alt} />
           </PopoverContent>
