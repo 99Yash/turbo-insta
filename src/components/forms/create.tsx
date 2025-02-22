@@ -69,18 +69,19 @@ export function Create() {
     const t = toast.loading("Uploading files...");
 
     const uploads = await uploadFiles(data.files);
-
     if (!uploads) return;
+
     toast.loading("Files uploaded, creating post!", {
       id: t,
     });
 
     await createPostMutation.mutateAsync({
       title: data.title,
-      files: uploads.map((f) => ({
+      files: uploads.map((f, index) => ({
         name: f.name,
         id: f.id,
         url: f.url,
+        alt: data.altTexts?.[index] ?? undefined,
       })),
     });
 
@@ -165,7 +166,7 @@ export function Create() {
               exit="exit"
             >
               <div className="flex items-center justify-between border-b p-4">
-                {step === "details" ? (
+                {step === "details" && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -175,8 +176,6 @@ export function Create() {
                     <ChevronLeftIcon className="size-4" />
                     Back
                   </Button>
-                ) : (
-                  <div />
                 )}
 
                 <h1 className="text-lg font-semibold">
@@ -333,15 +332,19 @@ export function Create() {
                             )}
                           />
 
-                          <Accordion type="single" collapsible>
+                          <Accordion
+                            type="single"
+                            collapsible
+                            defaultValue="accessibility"
+                          >
                             <AccordionItem value="accessibility">
                               <AccordionTrigger>Accessibility</AccordionTrigger>
                               <AccordionContent className="space-y-4">
                                 <p className="text-sm text-muted-foreground">
                                   Alt text describes your photos for people with
                                   visual impairments. Alt text will be
-                                  automatically created for your photos or you
-                                  can choose to write your own.
+                                  automatically created for your photos if you
+                                  don&apos;t provide one.
                                 </p>
 
                                 {form.getValues("files")?.map((file, index) => (
@@ -349,26 +352,28 @@ export function Create() {
                                     <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-muted">
                                       <Image
                                         src={URL.createObjectURL(file)}
-                                        alt={`Preview of ${file.name}`}
+                                        alt=""
                                         width={48}
                                         height={48}
                                         className="h-full w-full object-cover"
                                       />
                                     </div>
-                                    <Textarea
-                                      placeholder="Write alt text..."
-                                      className="mx-0.5 flex-1"
-                                      onChange={(e) => {
-                                        const altTexts =
-                                          form.getValues("altTexts") ?? [];
-                                        altTexts[index] = e.target.value;
-                                        form.setValue("altTexts", altTexts);
-                                      }}
-                                      value={
-                                        form.getValues("altTexts")?.[index] ??
-                                        ""
-                                      }
-                                      disabled={isSubmitting}
+                                    <FormField
+                                      control={form.control}
+                                      name={`altTexts.${index}`}
+                                      render={({ field }) => (
+                                        <FormItem className="flex-1">
+                                          <FormControl>
+                                            <Textarea
+                                              {...field}
+                                              placeholder="Write alt text..."
+                                              className="flex-1"
+                                              disabled={isSubmitting}
+                                            />
+                                          </FormControl>
+                                          <FormMessage />
+                                        </FormItem>
+                                      )}
                                     />
                                   </div>
                                 ))}
