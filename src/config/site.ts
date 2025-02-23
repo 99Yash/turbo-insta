@@ -1,5 +1,3 @@
-import { getBaseUrl } from "~/lib/utils";
-
 export type SiteConfig = typeof siteConfig;
 
 const links = {
@@ -13,6 +11,6 @@ export const siteConfig = {
   name: "Repligram",
   description: `Create an account or log in to Repligram - Share what you're into with the people who get you.`,
   url: "https://repligram.vercel.app",
-  ogImage: `${getBaseUrl()}/opengraph.png`,
+  ogImage: `https://repligram.vercel.app/opengraph.png`,
   links,
 };
