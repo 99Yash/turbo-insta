@@ -23,14 +23,7 @@ export const metadata: Metadata = {
   title: "Repligram",
   description: "A social media platform for sharing your thoughts and ideas.",
   icons: {
-    icon: [
-      { url: "/icon", type: "image/png" },
-      {
-        url: "/icon-dark",
-        type: "image/png",
-        media: "(prefers-color-scheme: dark)",
-      },
-    ],
+    shortcut: "/icon",
   },
   openGraph: {
     title: "Repligram",
@@ -40,7 +33,7 @@ export const metadata: Metadata = {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: "Sign in page with dramatic side lighting",
+        alt: "Repligram",
       },
     ],
   },
@@ -50,7 +43,8 @@ export const metadata: Metadata = {
     description: "A social media platform for sharing your thoughts and ideas.",
     images: [siteConfig.ogImage],
     creator: "@YashGouravKar1",
-    site: siteConfig.links.web,
+    site: siteConfig.url,
+    creatorId: "YashGouravKar1",
   },
 };
 
