@@ -18,7 +18,7 @@ export default function AuthLayout({ children }: React.PropsWithChildren) {
       </main>
       <div className="relative aspect-video size-full">
         <Image
-          src="/images/image.png"
+          src="/images/image.jpg"
           alt="Instagram 2024"
           fill
           className="absolute inset-0 object-cover"
