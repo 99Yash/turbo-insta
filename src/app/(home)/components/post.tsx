@@ -1,13 +1,13 @@
 import { type User } from "@clerk/nextjs/server";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
-import { AddComment } from "~/components/forms/add-comment";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { PostCarousel } from "~/components/utils/post-carousel";
 import { formatTimeToNow, getInitials } from "~/lib/utils";
 import { type Post } from "~/server/db/schema";
 import { ActionButtons } from "./action-buttons";
+import { AddComment } from "./forms/add-comment";
 
 interface PostProps {
   post: Post;
@@ -56,7 +56,7 @@ export function Post({ post, author }: PostProps) {
           <PostCarousel files={post.images} />
 
           <div className="flex flex-col gap-3 pt-3">
-            <ActionButtons post={post} />
+            <ActionButtons postId={post.id} />
             <div className="text-sm">
               <span className="font-semibold">{author?.firstName}</span>{" "}
               {post.title}

@@ -4,12 +4,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { AutosizeTextarea } from "~/components/ui/autosize-textarea";
+import { Button } from "~/components/ui/button";
+import { Form, FormControl, FormField, FormItem } from "~/components/ui/form";
+import { Loading } from "~/components/ui/icons";
 import { cn, showErrorToast } from "~/lib/utils";
 import { api } from "~/trpc/react";
-import { AutosizeTextarea } from "../ui/autosize-textarea";
-import { Button } from "../ui/button";
-import { Form, FormControl, FormField, FormItem } from "../ui/form";
-import { Loading } from "../ui/icons";
 
 const formSchema = z.object({
   text: z.string().max(2000),

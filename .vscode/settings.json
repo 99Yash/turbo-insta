@@ -1,1 +1,8 @@
-{}
+{
+	"typescript.preferences.autoImportFileExcludePatterns": [
+		"@radix-ui/*",
+		"lucide-react/*",
+		"framer-motion/*",
+		"react-hook-form/*",
+	]
+}

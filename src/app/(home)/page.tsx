@@ -1,7 +1,7 @@
 import { currentUser } from "@clerk/nextjs/server";
-import { Create } from "~/components/forms/create";
 import { users } from "~/lib/queries/user";
 import { api, HydrateClient } from "~/trpc/server";
+import { Create } from "./components/forms/create";
 import { Post } from "./components/post";
 
 export default async function Home() {

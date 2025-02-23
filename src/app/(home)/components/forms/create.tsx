@@ -10,32 +10,30 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useUpload } from "~/hooks/use-upload";
-import { showErrorToast } from "~/lib/utils";
-import { api } from "~/trpc/react";
-import { FileUploader } from "../file-uploader";
+import { FileUploader } from "~/components/file-uploader";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "../ui/accordion";
-import { Button } from "../ui/button";
+} from "~/components/ui/accordion";
+import { Button } from "~/components/ui/button";
 import {
   Form,
   FormControl,
   FormField,
   FormItem,
   FormMessage,
-} from "../ui/form";
-import { Loading } from "../ui/icons";
-import { CircleInfo as CircleInfoIcon } from "../ui/icons/nucleo/circle-info";
-
-import { Sparkle3 } from "../ui/icons/nucleo";
-import { Input } from "../ui/input";
-import { Modal } from "../ui/modal";
-import { Textarea } from "../ui/textarea";
-import { StarBorder } from "../utils/star-border";
+} from "~/components/ui/form";
+import { Loading } from "~/components/ui/icons";
+import { CircleInfo, Sparkle3 } from "~/components/ui/icons/nucleo";
+import { Input } from "~/components/ui/input";
+import { Modal } from "~/components/ui/modal";
+import { Textarea } from "~/components/ui/textarea";
+import { StarBorder } from "~/components/utils/star-border";
+import { useUpload } from "~/hooks/use-upload";
+import { showErrorToast } from "~/lib/utils";
+import { api } from "~/trpc/react";
 
 export const createPostSchema = z.object({
   title: z.string().min(1).max(256),
@@ -336,7 +334,7 @@ export function Create() {
                             >
                               <AccordionItem value="accessibility">
                                 <AccordionTrigger className="flex gap-2">
-                                  <CircleInfoIcon className="size-4" />
+                                  <CircleInfo className="size-4" />
                                   Accessibility
                                 </AccordionTrigger>
                                 <AccordionContent className="space-y-4">

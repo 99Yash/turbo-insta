@@ -7,10 +7,9 @@ import React from "react";
 import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { cn, showErrorToast } from "~/lib/utils";
-import { type Post } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
-export function ActionButtons({ post }: { post: Post }) {
+export function ActionButtons({ postId }: { postId: string }) {
   const utils = api.useUtils();
   const [isLiked, setIsLiked] = React.useState(false);
 
@@ -23,10 +22,9 @@ export function ActionButtons({ post }: { post: Post }) {
     error,
   } = api.posts.getLikes.useQuery(
     {
-      postId: post.id,
+      postId,
     },
     {
-      enabled: !!post,
       refetchOnWindowFocus: false,
     },
   );
@@ -43,7 +41,7 @@ export function ActionButtons({ post }: { post: Post }) {
   const toggleLike = api.likes.toggle.useMutation({
     async onSuccess() {
       await utils.posts.getLikes.invalidate({
-        postId: post.id,
+        postId,
       });
     },
     onError(error) {
@@ -58,7 +56,7 @@ export function ActionButtons({ post }: { post: Post }) {
           <Button
             onClick={async () =>
               await toggleLike.mutateAsync({
-                postId: post.id,
+                postId,
               })
             }
             disabled={toggleLike.isPending}
@@ -79,7 +77,7 @@ export function ActionButtons({ post }: { post: Post }) {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => router.push(`/posts/${post.id}`)}
+            onClick={() => router.push(`/posts/${postId}`)}
             className={cn("size-7")}
           >
             <MessageCircleIcon

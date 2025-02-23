@@ -1,8 +1,8 @@
 import { type Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CommentsList } from "~/components/comments/comments-list";
-import { AddComment } from "~/components/forms/add-comment";
+import { CommentsList } from "~/app/(home)/components/comments/comments-list";
+import { AddComment } from "~/app/(home)/components/forms/add-comment";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { PostCarousel } from "~/components/utils/post-carousel";
 import { siteConfig } from "~/config/site";
@@ -107,12 +107,12 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
             </div>
           )}
 
-          <div className="scrollbar-hide h-[calc(100%-8rem)] overflow-y-auto">
+          <div className="h-[calc(100%-8rem)] overflow-y-auto scrollbar-hide">
             <CommentsList postId={post.id} />
           </div>
 
           <div className="border-t bg-background px-2 py-3">
-            <ActionButtons post={post} />
+            <ActionButtons postId={post.id} />
             <AddComment postId={post.id} />
           </div>
         </div>
