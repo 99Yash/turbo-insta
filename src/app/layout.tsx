@@ -8,6 +8,7 @@ import TailwindIndicator from "~/components/tailwind-indicator";
 import { ThemeProvider } from "~/components/theme-provider";
 import { Toaster } from "~/components/ui/sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
+import { siteConfig } from "~/config/site";
 import { TRPCReactProvider } from "~/trpc/react";
 import { cn } from "../lib/utils";
 
@@ -17,9 +18,29 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Instagram",
-  description: "A trpc app",
+  title: "Repligram",
+  description: "A social media platform for sharing your thoughts and ideas.",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
+  openGraph: {
+    title: "Repligram",
+    description: "A social media platform for sharing your thoughts and ideas.",
+    images: [
+      {
+        url: "/opengraph.png",
+        width: 1200,
+        height: 630,
+        alt: "Sign in page with dramatic side lighting",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Repligram",
+    description: "A social media platform for sharing your thoughts and ideas.",
+    images: ["/opengraph.png"],
+    creator: "@YashGouravKar1",
+    site: siteConfig.links.web,
+  },
 };
 
 export default function RootLayout({

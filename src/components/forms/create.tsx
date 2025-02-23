@@ -73,6 +73,7 @@ export function Create() {
 
     toast.loading("Files uploaded, creating post...", {
       id: t,
+      className: "bg-blue-500",
     });
 
     await createPostMutation.mutateAsync({
