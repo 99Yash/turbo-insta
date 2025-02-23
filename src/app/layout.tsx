@@ -4,10 +4,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
-import { ImageResponse } from "next/og";
 import TailwindIndicator from "~/components/tailwind-indicator";
 import { ThemeProvider } from "~/components/theme-provider";
-import { NucleoPhoto } from "~/components/ui/icons/nucleo";
 import { Toaster } from "~/components/ui/sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { siteConfig } from "~/config/site";
@@ -23,7 +21,14 @@ export const metadata: Metadata = {
   title: "Repligram",
   description: "A social media platform for sharing your thoughts and ideas.",
   icons: {
-    shortcut: "/icon",
+    icon: [
+      { url: "/icon", type: "image/png" },
+      {
+        url: "/icon-dark",
+        type: "image/png",
+        media: "(prefers-color-scheme: dark)",
+      },
+    ],
   },
   openGraph: {
     title: "Repligram",
@@ -79,29 +84,5 @@ export default function RootLayout({
         </body>
       </html>
     </ClerkProvider>
-  );
-}
-
-export function Icon() {
-  return new ImageResponse(
-    (
-      <div
-        style={{
-          width: "100%",
-          height: "100%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "#000",
-          background: "transparent",
-        }}
-      >
-        <NucleoPhoto style={{ width: "100%", height: "100%" }} />
-      </div>
-    ),
-    {
-      width: 32,
-      height: 32,
-    },
   );
 }
