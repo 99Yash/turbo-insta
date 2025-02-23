@@ -1,4 +1,6 @@
+import scrollbarHide from "tailwind-scrollbar-hide";
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 import { withUt } from "uploadthing/tw";
 
 const config = {
@@ -108,8 +110,7 @@ const config = {
       },
     },
   },
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate, scrollbarHide],
 } satisfies Config;
 
 export default withUt(config);

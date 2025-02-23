@@ -104,7 +104,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
             </div>
           )}
 
-          <div className="h-[calc(100%-8rem)] overflow-y-auto">
+          <div className="scrollbar-hide h-[calc(100%-8rem)] overflow-y-auto">
             <CommentsList postId={post.id} />
           </div>
 
