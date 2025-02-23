@@ -1,4 +1,5 @@
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
+import { and, eq } from "drizzle-orm";
 import { generateAltText } from "~/lib/queries/ai";
 import { db } from "~/server/db";
 import { posts } from "~/server/db/schema";
@@ -34,6 +35,29 @@ export const createPost = async (input: CreatePostInput, userId: string) => {
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to create post",
       });
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+};
+
+export const deletePost = async (postId: string, userId: string) => {
+  try {
+    const [post] = await db
+      .select()
+      .from(posts)
+      .where(and(eq(posts.id, postId), eq(posts.userId, userId)));
+
+    if (!post) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "Post not found or you don't have permission to delete it",
+      });
+    }
+
+    await db.delete(posts).where(eq(posts.id, postId));
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,

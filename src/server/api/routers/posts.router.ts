@@ -6,7 +6,7 @@ import {
   publicProcedure,
 } from "~/server/api/trpc";
 import { likes, posts } from "~/server/db/schema";
-import { createPost } from "../services/post.service";
+import { createPost, deletePost } from "../services/post.service";
 import { createPostSchema } from "../validators/posts.schema";
 
 export const postsRouter = createTRPCRouter({
@@ -115,4 +115,12 @@ export const postsRouter = createTRPCRouter({
         hasLiked: false,
       };
     }),
+
+  delete: protectedProcedure
+    .input(
+      z.object({
+        postId: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => deletePost(input.postId, ctx.userId)),
 });
