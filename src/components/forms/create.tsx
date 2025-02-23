@@ -71,7 +71,7 @@ export function Create() {
     const uploads = await uploadFiles(data.files);
     if (!uploads) return;
 
-    toast.info("Files uploaded, creating post!", {
+    toast.loading("Files uploaded, creating post...", {
       id: t,
     });
 
@@ -141,7 +141,11 @@ export function Create() {
   return (
     <>
       <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}>
-        <StarBorder className="w-full" onClick={() => setOpen(true)}>
+        <StarBorder
+          className="w-full"
+          onClick={() => setOpen(true)}
+          color="#28c8ef"
+        >
           <Sparkle3 className="size-4" aria-hidden="true" />
           Create
         </StarBorder>

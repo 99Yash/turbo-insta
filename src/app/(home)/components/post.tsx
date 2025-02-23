@@ -34,6 +34,7 @@ export function Post({ post, author }: PostProps) {
                 </AvatarFallback>
               </Avatar>
             </Link>
+
             <div className="flex flex-1 items-center gap-2">
               <Link
                 href={`/${author.id}`}
@@ -45,12 +46,15 @@ export function Post({ post, author }: PostProps) {
                 • {formatTimeToNow(post.createdAt)}
               </p>
             </div>
+
             <Button variant="ghost" size="icon" className="size-8 rounded-full">
               <DotsHorizontalIcon aria-hidden className="size-4" />
               <span className="sr-only">More options</span>
             </Button>
           </div>
+
           <PostCarousel files={post.images} />
+
           <div className="flex flex-col gap-3 pt-3">
             <ActionButtons post={post} />
             <div className="text-sm">

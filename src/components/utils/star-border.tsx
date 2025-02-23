@@ -13,7 +13,7 @@ export function StarBorder<T extends ElementType = "button">({
   as,
   className,
   color,
-  speed = "6s",
+  speed = "3s",
   children,
   ...props
 }: StarBorderProps<T> &
@@ -31,28 +31,28 @@ export function StarBorder<T extends ElementType = "button">({
     >
       <div
         className={cn(
-          "animate-star-movement-bottom absolute bottom-[-11px] right-[-250%] z-0 h-[50%] w-[300%] rounded-full",
+          "absolute bottom-[-11px] right-[-250%] z-0 h-[50%] w-[300%] animate-star-movement-bottom rounded-full",
           "opacity-20 dark:opacity-70",
         )}
         style={{
-          background: `radial-gradient(circle, ${defaultColor}, transparent 10%)`,
+          background: `radial-gradient(circle, ${defaultColor}, transparent 20%)`,
           animationDuration: speed,
         }}
       />
       <div
         className={cn(
-          "animate-star-movement-top absolute left-[-250%] top-[-10px] z-0 h-[50%] w-[300%] rounded-full",
+          "absolute left-[-250%] top-[-10px] z-0 h-[50%] w-[300%] animate-star-movement-top rounded-full",
           "opacity-20 dark:opacity-70",
         )}
         style={{
-          background: `radial-gradient(circle, ${defaultColor}, transparent 10%)`,
+          background: `radial-gradient(circle, ${defaultColor}, transparent 20%)`,
           animationDuration: speed,
         }}
       />
       <div
         className={cn(
           "z-1 relative rounded-[20px] border px-6 py-4 text-center text-base text-foreground",
-          "border-border/40 bg-gradient-to-b from-background/90 to-muted/90",
+          "border-border/40 bg-gradient-to-b from-background to-muted-foreground",
           "dark:border-border dark:from-background dark:to-muted",
           "flex items-center justify-center gap-2",
         )}
