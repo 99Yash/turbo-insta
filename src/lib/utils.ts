@@ -179,7 +179,18 @@ function formatDistance(token: string, count: number): string {
   return result;
 }
 
-export function formatTimeToNow(date: Date): string {
+export function formatTimeToNow(
+  date: Date,
+  { showDateAfterDays = Infinity }: { showDateAfterDays?: number } = {},
+): string {
+  const daysDiff = Math.floor(
+    (new Date().getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
+  );
+
+  if (daysDiff > showDateAfterDays) {
+    return formatDate(date, { month: "short", day: "numeric" });
+  }
+
   return formatDistanceToNowStrict(date, {
     locale: {
       formatDistance,

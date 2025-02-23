@@ -100,7 +100,9 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
                     <span className="text-sm">{post.title}</span>
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {formatTimeToNow(post.createdAt)}
+                    {formatTimeToNow(post.createdAt, {
+                      showDateAfterDays: 10,
+                    })}
                   </span>
                 </div>
               </div>
