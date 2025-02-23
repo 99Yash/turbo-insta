@@ -1,6 +1,7 @@
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
 import { generateAltText } from "~/lib/queries/ai";
+import { utapi } from "~/lib/uploadthing";
 import { db } from "~/server/db";
 import { posts } from "~/server/db/schema";
 import { type CreatePostInput } from "../validators/posts.schema";
@@ -58,6 +59,14 @@ export const deletePost = async (postId: string, userId: string) => {
     }
 
     await db.delete(posts).where(eq(posts.id, postId));
+
+    await Promise.all(
+      post.images.map((image) =>
+        utapi.deleteFiles(image.id).catch((err) => {
+          console.error(`Failed to delete file ${image.id}:`, err);
+        }),
+      ),
+    );
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,
