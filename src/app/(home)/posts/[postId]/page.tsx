@@ -39,8 +39,18 @@ export const generateMetadata = async ({
         url: image.url,
         width: 1200,
         height: 630,
-        alt: post.title ?? "",
+        alt: image.alt,
       })),
+      siteName: siteConfig.name,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${author?.fullName} on ${siteConfig.name}`,
+      description: post.title ?? "",
+      images: post.images.map((image) => image.url),
+      site: siteConfig.url,
+      creator: "@YashGouravKar1",
+      creatorId: "YashGouravKar1",
     },
   };
 };
