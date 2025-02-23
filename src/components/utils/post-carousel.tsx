@@ -6,6 +6,7 @@ import useEmblaCarousel, {
 } from "embla-carousel-react";
 import Image from "next/image";
 import * as React from "react";
+import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { cn } from "~/lib/utils";
 import { type StoredFile } from "~/types";
 import { Icons } from "../icons";
@@ -99,21 +100,23 @@ export function PostCarousel({
         >
           {files.map((f, index) => (
             <section
-              className="relative aspect-square min-w-0 flex-[0_0_100%] border-muted-foreground/20"
+              className="relative min-w-0 flex-[0_0_100%] border-muted-foreground/20"
               key={f.url}
             >
-              <Image
-                aria-label={`Slide ${index + 1} of ${files.length}`}
-                role="group"
-                key={index}
-                aria-roledescription="slide"
-                src={f.url}
-                alt={`Listing product image ${index + 1} of ${files.length}`}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover"
-                priority={index === 0}
-              />
+              <AspectRatio ratio={4 / 3} className="relative">
+                <Image
+                  aria-label={`Slide ${index + 1} of ${files.length}`}
+                  role="group"
+                  key={index}
+                  aria-roledescription="slide"
+                  src={f.url}
+                  alt={`Listing product image ${index + 1} of ${files.length}`}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-contain"
+                  priority={index === 0}
+                />
+              </AspectRatio>
             </section>
           ))}
         </div>
