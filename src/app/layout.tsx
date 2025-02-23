@@ -20,14 +20,10 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "Repligram",
   description: "A social media platform for sharing your thoughts and ideas.",
-  icons: [
-    { url: siteConfig.url + "/images/icon.png", type: "image/png" },
-    {
-      url: siteConfig.url + "/images/icon-dark.png",
-      type: "image/png",
-      media: "(prefers-color-scheme: dark)",
-    },
-  ],
+  icons: {
+    shortcut: "/images/repligram.webp",
+    apple: "/images/repligram.webp",
+  },
   openGraph: {
     title: "Repligram",
     description: "A social media platform for sharing your thoughts and ideas.",
