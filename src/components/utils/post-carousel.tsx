@@ -118,7 +118,7 @@ export function PostCarousel({
                   alt={`Listing product image ${index + 1} of ${files.length}`}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-contain"
+                  className="rounded-sm border object-contain"
                   priority={index === 0}
                 />
               </div>
@@ -140,21 +140,22 @@ export function PostCarousel({
       </Button>
 
       <div className="absolute bottom-4 left-0 right-0 z-20 flex justify-center gap-2">
-        {files.map((_, index) => (
-          <Button
-            key={index}
-            variant="ghost"
-            size="icon"
-            className={cn(
-              "size-1.5 rounded-full p-0",
-              selectedIndex === index
-                ? "bg-foreground"
-                : "bg-foreground/50 hover:bg-foreground/70",
-            )}
-            onClick={() => scrollTo(index)}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
+        {files.length > 1 &&
+          files.map((_, index) => (
+            <Button
+              key={index}
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "size-1.5 rounded-full p-0",
+                selectedIndex === index
+                  ? "bg-foreground"
+                  : "bg-foreground/50 hover:bg-foreground/70",
+              )}
+              onClick={() => scrollTo(index)}
+              aria-label={`Go to slide ${index + 1}`}
+            />
+          ))}
       </div>
 
       {files[selectedIndex]?.alt && (
@@ -171,7 +172,7 @@ export function PostCarousel({
           <PopoverContent
             side="top"
             align="end"
-            className="w-64 text-xs italic opacity-95 backdrop-blur-md"
+            className="w-64 text-xs italic opacity-90 backdrop-blur-xl"
           >
             <TextGenerateEffect text={files[selectedIndex].alt} />
           </PopoverContent>

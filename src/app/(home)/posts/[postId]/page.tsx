@@ -58,8 +58,8 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
         <div className="relative flex-1 basis-0">
           <PostCarousel
             files={post.images}
-            modal
             className="h-full border-r shadow-none"
+            modal
           />
         </div>
         <div className="flex w-full basis-[450px] flex-col">
