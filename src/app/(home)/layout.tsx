@@ -17,7 +17,7 @@ export default async function LobbyLayout({ children, modal }: LayoutProps) {
   return (
     <div className="flex h-full">
       <div className="fixed left-0 top-0 h-full border-r border-border">
-        <AppSidebar user={user} />
+        <AppSidebar />
       </div>
       <div className="flex-1">
         <div className="mx-auto max-w-[470px]">{children}</div>

@@ -13,7 +13,7 @@ export function StarBorder<T extends ElementType = "button">({
   as,
   className,
   color,
-  speed = "3s",
+  speed = "2.5s",
   children,
   ...props
 }: StarBorderProps<T> &

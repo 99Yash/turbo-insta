@@ -141,7 +141,7 @@ export function Create() {
     <>
       <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}>
         <StarBorder
-          className="w-full"
+          className="mb-9 w-full"
           onClick={() => setOpen(true)}
           color="#28c8ef"
         >

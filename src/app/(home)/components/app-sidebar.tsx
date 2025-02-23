@@ -1,16 +1,18 @@
-import { type User } from "@clerk/nextjs/server";
+"use client";
+
+import { useUser } from "@clerk/nextjs";
 import { CogIcon, Heart, LogOutIcon, Search } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { siteConfig } from "~/config/site";
 import { cn, getInitials } from "~/lib/utils";
 
-interface SidebarProps {
-  user: User;
-}
+export function AppSidebar() {
+  const { user } = useUser();
+  const pathname = usePathname();
 
-export function AppSidebar({ user }: SidebarProps) {
   const navItems = [
     {
       icon: Icons.home,
@@ -53,17 +55,24 @@ export function AppSidebar({ user }: SidebarProps) {
           {siteConfig.name}
         </Link>
       </div>
+
       <nav className="flex justify-around lg:block lg:px-4 lg:py-8">
         {navItems.map((item) => {
-          const Icon = item.icon;
+          const isActive =
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
+          const Icon = isActive ? item.filledIcon : item.icon;
           return (
             <Link
               key={item.label}
               href={item.href}
-              className="flex items-center gap-4 rounded-md p-2 transition-colors duration-300 hover:bg-muted md:mb-2"
+              className={cn(
+                "flex items-center gap-4 rounded-md p-2 transition-colors duration-300 hover:bg-muted md:mb-2",
+                isActive && "font-bold",
+              )}
             >
               <Icon className={cn("size-6")} />
-
               <span className="hidden text-sm font-semibold lg:inline">
                 {item.label}
               </span>
@@ -72,28 +81,41 @@ export function AppSidebar({ user }: SidebarProps) {
         })}
         <Link
           href="/profile"
-          className="flex items-center gap-4 rounded-md p-2 hover:bg-muted md:mt-auto"
+          className={cn(
+            "flex items-center gap-4 rounded-md p-2 hover:bg-muted md:mt-auto",
+            pathname.startsWith("/profile") && "font-bold",
+          )}
         >
           <Avatar className="size-6">
-            <AvatarImage src={user.imageUrl} alt={user.fullName ?? "User"} />
+            <AvatarImage
+              src={user?.imageUrl ?? ""}
+              alt={user?.fullName ?? ""}
+            />
             <AvatarFallback>
-              {getInitials(user.fullName ?? "VH")}
+              {getInitials(user?.fullName ?? "VH")}
             </AvatarFallback>
           </Avatar>
           <span className="hidden lg:inline">Profile</span>
         </Link>
       </nav>
+
       <nav className="hidden lg:block lg:px-4 lg:py-8">
         <Link
           href="/settings"
-          className="flex items-center gap-4 rounded-md p-2 hover:bg-muted"
+          className={cn(
+            "flex items-center gap-4 rounded-md p-2 hover:bg-muted",
+            pathname.startsWith("/settings") && "font-bold",
+          )}
         >
           <CogIcon className="size-6" />
           <span className="hidden lg:inline">Settings</span>
         </Link>
         <Link
           href="/signout"
-          className="flex items-center gap-4 rounded-md p-2 hover:bg-muted"
+          className={cn(
+            "flex items-center gap-4 rounded-md p-2 hover:bg-muted",
+            pathname.startsWith("/signout") && "font-bold",
+          )}
         >
           <LogOutIcon className="size-6" />
           <span className="hidden lg:inline">Logout</span>
