@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CommentsList } from "~/components/comments/comments-list";
 import { AddComment } from "~/components/forms/add-comment";
-import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { PostCarousel } from "~/components/utils/post-carousel";
 import { siteConfig } from "~/config/site";
@@ -55,11 +54,15 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
 
   return (
     <HydrateClient>
-      <div className="flex h-[calc(100vh-4rem)] w-full gap-2 px-0 sm:justify-end sm:gap-2">
-        <AspectRatio ratio={2} className="self-center border-r shadow-none">
-          <PostCarousel files={post.images} />
-        </AspectRatio>
-        <div className="flex h-full w-full flex-col">
+      <div className="flex h-[calc(100vh-4rem)] w-full gap-2">
+        <div className="relative flex-1 basis-0">
+          <PostCarousel
+            files={post.images}
+            modal
+            className="h-full border-r shadow-none"
+          />
+        </div>
+        <div className="flex w-full basis-[450px] flex-col">
           <div className="flex items-center gap-1.5 border-b px-4 py-3">
             <Link href={`/${author.id}`}>
               <Avatar className="size-7">

@@ -1,28 +1,42 @@
 import { Skeleton } from "~/components/ui/skeleton";
 import { PlaceholderImage } from "~/components/utils/placeholder-image";
-import { cn } from "~/lib/utils";
 
 export default function ProductModalLoading() {
   return (
-    <>
-      <Skeleton className="absolute right-10 top-4 size-4" />
-      <PlaceholderImage ratio={16 / 9} className="rounded-none" isSkeleton />
-      <div className="w-full space-y-8 p-6 sm:p-10">
-        <div className="space-y-2.5">
-          <Skeleton className="h-7 w-1/2" />
-          <Skeleton className="h-4 w-10" />
+    <div className="flex h-[calc(100vh-4rem)] w-full gap-2">
+      <div className="relative flex-1 basis-0">
+        <PlaceholderImage className="h-full rounded-none border-r" />
+      </div>
+      <div className="flex w-full basis-[450px] flex-col">
+        <div className="flex items-center gap-1.5 border-b px-4 py-3">
+          <Skeleton className="size-7 rounded-full" />
           <Skeleton className="h-4 w-24" />
-          <Skeleton className="h-4 w-20" />
         </div>
-        <div className="space-y-2">
-          {Array.from({ length: 4 }, (_, i) => (
-            <Skeleton
-              key={i}
-              className={cn("h-4 w-full", i === 3 && "w-1/2")}
-            />
+
+        <div className="scrollbar-hide h-[calc(100%-8rem)] overflow-y-auto p-4">
+          {Array.from({ length: 3 }, (_, i) => (
+            <div key={i} className="mb-6 flex items-start gap-2">
+              <Skeleton className="size-7 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3 w-1/4" />
+              </div>
+            </div>
           ))}
         </div>
+
+        <div className="border-t bg-background px-2 py-3">
+          <div className="mb-3 flex gap-2">
+            <Skeleton className="size-6" />
+            <Skeleton className="size-6" />
+            <Skeleton className="size-6" />
+          </div>
+          <div className="flex gap-2">
+            <Skeleton className="size-8 rounded-full" />
+            <Skeleton className="h-8 flex-1 rounded-full" />
+          </div>
+        </div>
       </div>
-    </>
+    </div>
   );
 }

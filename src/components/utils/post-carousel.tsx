@@ -6,7 +6,6 @@ import useEmblaCarousel, {
 } from "embla-carousel-react";
 import Image from "next/image";
 import * as React from "react";
-import { AspectRatio } from "~/components/ui/aspect-ratio";
 import { cn } from "~/lib/utils";
 import { type StoredFile } from "~/types";
 import { Icons } from "../icons";
@@ -21,12 +20,14 @@ type CarouselOptions = UseCarouselParameters["0"];
 interface PostCarouselProps extends React.HTMLAttributes<HTMLDivElement> {
   files: StoredFile[] | null;
   options?: CarouselOptions;
+  modal?: boolean;
 }
 
 export function PostCarousel({
   files,
   className,
   options,
+  modal = false,
   ...props
 }: PostCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel(options);
@@ -72,10 +73,7 @@ export function PostCarousel({
   return (
     <div
       aria-label="Product image carousel"
-      className={cn(
-        "relative flex max-w-full flex-[0_0_40%] flex-col gap-4",
-        className,
-      )}
+      className={cn("relative flex max-w-full flex-col gap-4", className)}
       {...props}
     >
       <Button
@@ -103,7 +101,14 @@ export function PostCarousel({
               className="relative min-w-0 flex-[0_0_100%] border-muted-foreground/20"
               key={f.url}
             >
-              <AspectRatio ratio={4 / 3} className="relative">
+              <div
+                className={cn(
+                  "relative w-full",
+                  modal
+                    ? "flex h-[calc(100vh-4rem)] items-center justify-center"
+                    : "aspect-square",
+                )}
+              >
                 <Image
                   aria-label={`Slide ${index + 1} of ${files.length}`}
                   role="group"
@@ -116,7 +121,7 @@ export function PostCarousel({
                   className="object-contain"
                   priority={index === 0}
                 />
-              </AspectRatio>
+              </div>
             </section>
           ))}
         </div>
