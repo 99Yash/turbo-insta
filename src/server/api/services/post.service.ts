@@ -15,8 +15,13 @@ export const createPost = async (input: CreatePostInput, userId: string) => {
     await Promise.all(
       input.files.map(async (file) => {
         if (!file.alt) {
-          const description = await generateAltText(file.url);
-          file.alt = description;
+          try {
+            const description = await generateAltText(file.url);
+            file.alt = description;
+          } catch (error) {
+            console.error("Failed to generate alt text:", error);
+            file.alt = file.name; // Fallback to using the filename as alt text
+          }
         }
       }),
     );
