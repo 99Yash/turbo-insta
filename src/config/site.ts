@@ -11,6 +11,6 @@ export const siteConfig = {
   name: "Repligram",
   description: `Create an account or log in to Repligram - Share what you're into with the people who get you.`,
   url: "https://repligram.vercel.app",
-  ogImage: `https://repligram.vercel.app/opengraph.png`,
+  ogImage: `https://repligram.vercel.app/images/opengraph.png`,
   links,
 };
