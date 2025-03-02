@@ -13,6 +13,8 @@ export const generateAltText = async (imagePath: string) => {
   const { text } = await generateText({
     model: openai_model,
     system: systemPrompt,
+    maxTokens: 30,
+    abortSignal: AbortSignal.timeout(5000),
     messages: [
       {
         role: "user",

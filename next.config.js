@@ -9,6 +9,9 @@ createJiti(fileURLToPath(import.meta.url))("./src/env.ts");
 
 /** @type {import("next").NextConfig} */
 const config = {
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production",
+  },
   images: {
     remotePatterns: [
       {
