@@ -1,15 +1,15 @@
 import { type Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CommentsList } from "~/app/(home)/components/comments/comments-list";
-import { AddComment } from "~/app/(home)/components/forms/add-comment";
+import { CommentsList } from "~/app/(home)/_components/comments/comments-list";
+import { AddComment } from "~/app/(home)/_components/forms/add-comment";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { PostCarousel } from "~/components/utils/post-carousel";
 import { siteConfig } from "~/config/site";
 import { users } from "~/lib/queries/user";
 import { formatTimeToNow, getInitials } from "~/lib/utils";
 import { api, HydrateClient } from "~/trpc/server";
-import { ActionButtons } from "../../components/action-buttons";
+import { ActionButtons } from "../../_components/action-buttons";
 
 interface PostModalPageProps {
   params: {

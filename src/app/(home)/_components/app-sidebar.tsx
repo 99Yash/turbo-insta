@@ -86,7 +86,7 @@ export function AppSidebar() {
             pathname.startsWith("/profile") && "font-bold",
           )}
         >
-          <Avatar className="size-6">
+          <Avatar className="size-7 rounded-full">
             <AvatarImage
               src={user?.imageUrl ?? ""}
               alt={user?.fullName ?? ""}

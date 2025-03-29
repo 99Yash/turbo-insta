@@ -1,17 +1,22 @@
 "use client";
 
 import { BookmarkIcon } from "@radix-ui/react-icons";
+import { motion } from "framer-motion";
 import { Heart, MessageCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { type Dispatch, type SetStateAction, useState } from "react";
+import { toast } from "sonner";
 import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
-import { cn, showErrorToast } from "~/lib/utils";
+import { CheckboxCheckedFill, Cube } from "~/components/ui/icons/nucleo";
+import { Modal } from "~/components/ui/modal";
+import { cn, getBaseUrl, showErrorToast } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 export function ActionButtons({ postId }: { postId: string }) {
   const utils = api.useUtils();
   const [isLiked, setIsLiked] = React.useState(false);
+  const [isShareOpen, setIsShareOpen] = React.useState(false);
 
   const router = useRouter();
 
@@ -62,11 +67,11 @@ export function ActionButtons({ postId }: { postId: string }) {
             disabled={toggleLike.isPending}
             variant="ghost"
             size="icon"
-            className={cn("size-7")}
+            className={cn("size-8")}
           >
             <Heart
               className={cn(
-                "size-6 transition-colors duration-200",
+                "size-8 transition-colors duration-200",
                 isLiked && "fill-pink-500 text-pink-500",
               )}
               aria-hidden="true"
@@ -87,7 +92,12 @@ export function ActionButtons({ postId }: { postId: string }) {
             />
             <span className="sr-only">Comment</span>
           </Button>
-          <Button variant="ghost" size="icon" className={cn("size-7")}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={cn("size-7")}
+            onClick={() => setIsShareOpen(true)}
+          >
             <Icons.share
               className="size-6"
               aria-hidden="true"
@@ -100,11 +110,66 @@ export function ActionButtons({ postId }: { postId: string }) {
           <BookmarkIcon className="size-6" aria-hidden="true" />
         </Button>
       </div>
+      <ShareModal
+        isOpen={isShareOpen}
+        onOpenChange={setIsShareOpen}
+        postId={postId}
+      />
       <p className="mt-2 text-sm font-semibold">
         {likesData
           ? `${likesData.count} ${likesData.count === 1 ? "like" : "likes"}`
           : "\u00A0"}
       </p>
     </div>
+  );
+}
+
+interface ShareModalProps {
+  isOpen: boolean;
+  onOpenChange: Dispatch<SetStateAction<boolean>>;
+  postId: string;
+}
+
+export function ShareModal({ isOpen, onOpenChange, postId }: ShareModalProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    const url = `${getBaseUrl()}/posts/${postId}`;
+    await navigator.clipboard.writeText(url);
+    toast.info("Copied to clipboard");
+    setCopied(true);
+    onOpenChange(false);
+    setCopied(false);
+  };
+
+  return (
+    <Modal showModal={isOpen} setShowModal={onOpenChange}>
+      <motion.div
+        className="flex flex-col gap-5 rounded-lg bg-card p-6 text-foreground shadow-md"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+      >
+        <h2 className="text-center text-xl font-semibold">Share Post</h2>
+
+        <Button
+          onClick={handleCopy}
+          variant="outline"
+          className="w-full gap-3 border-border py-3 text-lg font-medium transition-all duration-200 hover:bg-secondary"
+        >
+          {copied ? (
+            <>
+              <CheckboxCheckedFill className="text-chart-2 size-5" />
+              <span className="text-chart-2 text-sm">Copied!</span>
+            </>
+          ) : (
+            <>
+              <Cube className="size-5 text-primary" />
+              <span className="text-sm text-foreground">Copy Link</span>
+            </>
+          )}
+        </Button>
+      </motion.div>
+    </Modal>
   );
 }

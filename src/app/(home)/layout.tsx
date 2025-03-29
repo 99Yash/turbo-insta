@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCachedUser } from "~/lib/queries/user";
-import { AppSidebar } from "./components/app-sidebar";
+import { AppSidebar } from "./_components/app-sidebar";
 
 interface LayoutProps
   extends React.PropsWithChildren<{
@@ -16,7 +16,7 @@ export default async function LobbyLayout({ children, modal }: LayoutProps) {
 
   return (
     <div className="flex h-full">
-      <div className="fixed left-0 top-0 h-full border-r border-border">
+      <div className="fixed left-0 top-0 z-20 h-full border-r border-border">
         <AppSidebar />
       </div>
       <div className="flex-1">

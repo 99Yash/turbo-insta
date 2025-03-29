@@ -1,8 +1,8 @@
 import { currentUser } from "@clerk/nextjs/server";
 import { users } from "~/lib/queries/user";
 import { api, HydrateClient } from "~/trpc/server";
-import { Create } from "./components/forms/create";
-import { Post } from "./components/post";
+import { Create } from "./_components/forms/create";
+import { Post } from "./_components/post";
 
 export default async function Home() {
   const posts = await api.posts.getAll({
