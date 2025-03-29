@@ -62,11 +62,11 @@ export function ActionButtons({ postId }: { postId: string }) {
             disabled={toggleLike.isPending}
             variant="ghost"
             size="icon"
-            className={cn("size-7")}
+            className={cn("size-8")}
           >
             <Heart
               className={cn(
-                "size-6 transition-colors duration-200",
+                "size-8 transition-colors duration-200",
                 isLiked && "fill-pink-500 text-pink-500",
               )}
               aria-hidden="true"
