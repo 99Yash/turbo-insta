@@ -92,7 +92,7 @@ export const postsRouter = createTRPCRouter({
         .where(eq(likes.postId, input.postId));
 
       if (ctx.auth.userId) {
-        const [hasLiked] = await ctx.db
+        const [likedPost] = await ctx.db
           .select({
             id: likes.id,
           })
@@ -106,7 +106,7 @@ export const postsRouter = createTRPCRouter({
 
         return {
           count: c?.count ?? 0,
-          hasLiked: !!hasLiked,
+          hasLiked: !!likedPost,
         };
       }
 
