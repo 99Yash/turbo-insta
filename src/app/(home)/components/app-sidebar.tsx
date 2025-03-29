@@ -79,25 +79,24 @@ export function AppSidebar() {
             </Link>
           );
         })}
-        <Avatar asChild className="rounded-full">
-          <Link
-            href="/profile"
-            className={cn(
-              "flex items-center gap-4 p-2 hover:bg-muted md:mt-auto",
-              pathname.startsWith("/profile") && "font-bold",
-            )}
-          >
+        <Link
+          href="/profile"
+          className={cn(
+            "flex items-center gap-4 rounded-md p-2 hover:bg-muted md:mt-auto",
+            pathname.startsWith("/profile") && "font-bold",
+          )}
+        >
+          <Avatar className="size-7 rounded-full">
             <AvatarImage
-              className="rounded-full"
               src={user?.imageUrl ?? ""}
               alt={user?.fullName ?? ""}
             />
             <AvatarFallback>
               {getInitials(user?.fullName ?? "VH")}
             </AvatarFallback>
-          </Link>
-        </Avatar>
-        <span className="hidden lg:inline">Profile</span>
+          </Avatar>
+          <span className="hidden lg:inline">Profile</span>
+        </Link>
       </nav>
 
       <nav className="hidden lg:block lg:px-4 lg:py-8">
