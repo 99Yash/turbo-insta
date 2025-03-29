@@ -5,9 +5,10 @@ import { motion } from "framer-motion";
 import { Heart, MessageCircleIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { type Dispatch, type SetStateAction, useState } from "react";
+import { toast } from "sonner";
 import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
-import { CheckboxCheckedFill, Folder } from "~/components/ui/icons/nucleo";
+import { CheckboxCheckedFill, Cube } from "~/components/ui/icons/nucleo";
 import { Modal } from "~/components/ui/modal";
 import { cn, getBaseUrl, showErrorToast } from "~/lib/utils";
 import { api } from "~/trpc/react";
@@ -135,8 +136,10 @@ export function ShareModal({ isOpen, onOpenChange, postId }: ShareModalProps) {
   const handleCopy = async () => {
     const url = `${getBaseUrl()}/posts/${postId}`;
     await navigator.clipboard.writeText(url);
+    toast.info("Copied to clipboard");
     setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    onOpenChange(false);
+    setCopied(false);
   };
 
   return (
@@ -147,7 +150,7 @@ export function ShareModal({ isOpen, onOpenChange, postId }: ShareModalProps) {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
       >
-        <h2 className="text-xl font-semibold">🔗 Share Post</h2>
+        <h2 className="text-center text-xl font-semibold">Share Post</h2>
 
         <Button
           onClick={handleCopy}
@@ -157,12 +160,12 @@ export function ShareModal({ isOpen, onOpenChange, postId }: ShareModalProps) {
           {copied ? (
             <>
               <CheckboxCheckedFill className="text-chart-2 size-5" />
-              <span className="text-chart-2">Copied!</span>
+              <span className="text-chart-2 text-sm">Copied!</span>
             </>
           ) : (
             <>
-              <Folder className="size-5 text-primary" />
-              <span className="text-foreground">Copy Link</span>
+              <Cube className="size-5 text-primary" />
+              <span className="text-sm text-foreground">Copy Link</span>
             </>
           )}
         </Button>
