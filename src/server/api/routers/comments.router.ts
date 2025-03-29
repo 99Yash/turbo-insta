@@ -4,12 +4,13 @@ import { and, desc, eq, gt, or } from "drizzle-orm";
 import { z } from "zod";
 import { comments } from "~/server/db/schema";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { MAX_COMMENT_CHAR_LENGTH } from "../validators/posts.validator";
 
 export const commentsRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
-        text: z.string().min(1),
+        text: z.string().min(1).max(MAX_COMMENT_CHAR_LENGTH),
         postId: z.string(),
       }),
     )

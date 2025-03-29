@@ -9,10 +9,13 @@ import { Button } from "~/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "~/components/ui/form";
 import { Loading } from "~/components/ui/icons";
 import { cn, showErrorToast } from "~/lib/utils";
+import { MAX_COMMENT_CHAR_LENGTH } from "~/server/api/validators/posts.validator";
 import { api } from "~/trpc/react";
 
 const formSchema = z.object({
-  text: z.string().max(2000),
+  text: z.string().max(MAX_COMMENT_CHAR_LENGTH, {
+    message: `Comment cannot exceed ${MAX_COMMENT_CHAR_LENGTH} characters`,
+  }),
 });
 
 type Inputs = z.infer<typeof formSchema>;
@@ -36,10 +39,47 @@ export function AddComment({ postId }: { postId: string }) {
   });
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    const currentText = form.getValues("text") || "";
+
+    // Prevent typing if max characters reached
+    if (
+      currentText.length >= MAX_COMMENT_CHAR_LENGTH &&
+      event.key !== "Backspace" &&
+      event.key !== "Delete" &&
+      event.key !== "ArrowLeft" &&
+      event.key !== "ArrowRight"
+    ) {
+      event.preventDefault();
+
+      // Optional: Show a toast to inform user
+      toast.error("Maximum character limit reached");
+      return;
+    }
+
     if (event.key === "Enter" && !event.shiftKey) {
-      if (form.getValues().text) {
+      if (currentText) {
         void form.handleSubmit(onSubmit)();
       }
+    }
+  }
+
+  function handlePaste(event: React.ClipboardEvent<HTMLTextAreaElement>) {
+    const currentText = form.getValues("text") || "";
+    const pastedText = event.clipboardData.getData("text");
+
+    if (currentText.length + pastedText.length > MAX_COMMENT_CHAR_LENGTH) {
+      event.preventDefault();
+
+      // Truncate pasted text to fit within limit
+      const allowedLength = MAX_COMMENT_CHAR_LENGTH - currentText.length;
+      const truncatedText = pastedText.slice(0, allowedLength);
+
+      // Manually set the value
+      form.setValue("text", currentText + truncatedText, {
+        shouldValidate: true,
+      });
+
+      toast.warning("Pasted text was truncated to fit character limit");
     }
   }
 
@@ -50,7 +90,9 @@ export function AddComment({ postId }: { postId: string }) {
     });
   }
 
-  const isDisabled = !form.getValues().text || addComment.isPending;
+  const currentText = form.watch("text") || "";
+  const characterCount = currentText.length;
+  const isDisabled = !currentText || addComment.isPending;
 
   return (
     <div className="relative flex items-center gap-3">
@@ -60,14 +102,19 @@ export function AddComment({ postId }: { postId: string }) {
             control={form.control}
             name="text"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="relative">
                 <FormControl>
                   <div className="grid">
                     <AutosizeTextarea
                       {...field}
-                      className="flex w-full flex-1 resize-none rounded-md border-none bg-transparent pl-0 text-sm shadow-sm placeholder:font-medium placeholder:text-muted-foreground focus:border-none focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50"
+                      className={cn(
+                        "flex w-full flex-1 resize-none rounded-md border-none bg-transparent pl-0 text-sm shadow-sm placeholder:font-medium placeholder:text-muted-foreground focus:border-none focus:outline-none focus:ring-0 focus:ring-offset-0 focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-ring focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50",
+                        characterCount >= MAX_COMMENT_CHAR_LENGTH &&
+                          "text-destructive",
+                      )}
                       id="add-comment"
                       onKeyDown={handleKeyDown}
+                      onPaste={handlePaste}
                       aria-label="Add a comment..."
                       placeholder="Add a comment..."
                       minHeight={10}
@@ -80,6 +127,20 @@ export function AddComment({ postId }: { postId: string }) {
                     />
                   </div>
                 </FormControl>
+
+                {/* Character Count Display */}
+                <div
+                  className={cn(
+                    "absolute bottom-1 right-1 text-xs text-muted-foreground transition-all duration-300",
+                    characterCount > MAX_COMMENT_CHAR_LENGTH * 0.9 &&
+                      "text-destructive",
+                    characterCount === 0 && "opacity-0",
+                  )}
+                >
+                  <span>
+                    {characterCount}/{MAX_COMMENT_CHAR_LENGTH}
+                  </span>
+                </div>
               </FormItem>
             )}
           />
