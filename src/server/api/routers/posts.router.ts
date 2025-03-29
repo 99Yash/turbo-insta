@@ -7,7 +7,7 @@ import {
 } from "~/server/api/trpc";
 import { likes, posts } from "~/server/db/schema";
 import { createPost, deletePost } from "../services/post.service";
-import { createPostSchema } from "../validators/posts.schema";
+import { createPostSchema } from "../validators/posts.validator";
 
 export const postsRouter = createTRPCRouter({
   create: protectedProcedure

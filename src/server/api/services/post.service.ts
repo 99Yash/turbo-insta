@@ -4,7 +4,7 @@ import { UTApi } from "uploadthing/server";
 import { generateAltText } from "~/lib/queries/ai";
 import { db } from "~/server/db";
 import { posts } from "~/server/db/schema";
-import { type CreatePostInput } from "../validators/posts.schema";
+import { type CreatePostInput } from "../validators/posts.validator";
 
 export const utapi = new UTApi({
   apiKey: process.env.UPLOADTHING_SECRET,
