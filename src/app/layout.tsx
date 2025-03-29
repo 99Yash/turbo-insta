@@ -50,12 +50,6 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  // Get the default theme based on the current time - if it's between 6 AM and 14 PM, it's light, otherwise it's dark
-  const getDefaultTheme = () => {
-    const hour = new Date().getHours();
-    return hour >= 6 && hour < 14 ? "dark" : "dark";
-  };
-
   return (
     <ClerkProvider>
       <html
@@ -68,7 +62,7 @@ export default function RootLayout({
             <TooltipProvider delayDuration={10}>
               <ThemeProvider
                 attribute="class"
-                defaultTheme={getDefaultTheme()}
+                defaultTheme={"dark"}
                 enableSystem={false}
                 disableTransitionOnChange={false}
               >

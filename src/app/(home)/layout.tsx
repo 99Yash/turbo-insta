@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCachedUser } from "~/lib/queries/user";
-import { AppSidebar } from "./components/app-sidebar";
+import { AppSidebar } from "./_components/app-sidebar";
 
 interface LayoutProps
   extends React.PropsWithChildren<{
