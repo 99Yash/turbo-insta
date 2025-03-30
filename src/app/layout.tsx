@@ -5,7 +5,6 @@ import { Analytics } from "@vercel/analytics/react";
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
 import TailwindIndicator from "~/components/tailwind-indicator";
-import { ThemeProvider } from "~/components/theme-provider";
 import { Toaster } from "~/components/ui/sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { siteConfig } from "~/config/site";
@@ -52,23 +51,11 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ClerkProvider>
-      <html
-        lang="en"
-        className={cn("h-full scroll-smooth antialiased", inter.variable)}
-      >
+      <html lang="en" className={cn("dark", inter.variable)}>
         <head />
-        <body className="h-full min-h-screen bg-background">
+        <body className="min-h-full bg-background">
           <TRPCReactProvider>
-            <TooltipProvider delayDuration={10}>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme={"dark"}
-                enableSystem={false}
-                disableTransitionOnChange={false}
-              >
-                <div className="h-full">{children}</div>
-              </ThemeProvider>
-            </TooltipProvider>
+            <TooltipProvider delayDuration={10}>{children}</TooltipProvider>
             <Toaster />
             <Analytics />
             <TailwindIndicator />
