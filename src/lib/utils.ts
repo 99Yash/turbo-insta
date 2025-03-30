@@ -13,8 +13,10 @@ export function cn(...inputs: ClassValue[]) {
 
 export const unknownError = "Something went wrong. Please try again later.";
 export function getErrorMessage(err: unknown) {
-  if (err instanceof z.ZodError) {
-    return err.errors[0]?.message ?? unknownError;
+  if (typeof err === "string") {
+    return err;
+  } else if (err instanceof z.ZodError) {
+    return err.errors.map((e) => e.message).join(", ") ?? unknownError;
   } else if (isClerkAPIResponseError(err)) {
     return err.errors[0]?.longMessage ?? unknownError;
   } else if (err instanceof Error) {

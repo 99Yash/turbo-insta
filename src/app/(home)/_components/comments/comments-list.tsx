@@ -81,7 +81,7 @@ export function CommentsList({ postId }: CommentsListProps) {
                   </AvatarFallback>
                 </Avatar>
               </Link>
-              <div className="flex-1">
+              <div className="flex flex-1 flex-col">
                 <span className="space-x-1">
                   <Link
                     href={`/${comment.user.id}`}
@@ -89,7 +89,9 @@ export function CommentsList({ postId }: CommentsListProps) {
                   >
                     {comment.user.fullName}
                   </Link>
-                  <span>{comment.text}</span>
+                  <span className="whitespace-pre break-words">
+                    {comment.text}
+                  </span>
                 </span>
                 <div className="mt-1 flex space-x-3 text-xs text-muted-foreground">
                   <span>{formatTimeToNow(comment.createdAt)}</span>

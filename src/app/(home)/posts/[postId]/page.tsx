@@ -65,14 +65,14 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
   return (
     <HydrateClient>
       <div className="flex h-[calc(100vh-4rem)] w-full gap-2">
-        <div className="relative flex-1 basis-0">
+        <div className="relative flex-1 basis-0 border-none">
           <PostCarousel
             files={post.images}
             className="h-full border-r shadow-none"
             modal
           />
         </div>
-        <div className="flex w-full basis-[450px] flex-col">
+        <div className="flex max-w-[450px] flex-col">
           <div className="flex items-center gap-1.5 border-b px-4 py-3">
             <Link href={`/${author.id}`}>
               <Avatar className="size-7">

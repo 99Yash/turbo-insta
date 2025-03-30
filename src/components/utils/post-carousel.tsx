@@ -98,7 +98,7 @@ export function PostCarousel({
         >
           {files.map((f, index) => (
             <section
-              className="relative min-w-0 flex-[0_0_100%] border-muted-foreground/20"
+              className="relative min-w-0 flex-[0_0_100%] rounded border border-muted-foreground/20"
               key={f.url}
             >
               <div
@@ -118,7 +118,7 @@ export function PostCarousel({
                   alt={`Listing product image ${index + 1} of ${files.length}`}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="rounded-sm border object-contain"
+                  className="object-contain"
                   priority={index === 0}
                 />
               </div>
