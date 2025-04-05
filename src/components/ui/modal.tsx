@@ -1,6 +1,7 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useRouter } from "next/navigation";
 import { type Dispatch, type SetStateAction } from "react";
 import { Drawer } from "vaul";
@@ -57,7 +58,9 @@ export function Modal({
       >
         <DrawerOverlay />
         <Drawer.Portal>
-          <DrawerContent className={cn(className)}>{children}</DrawerContent>
+          <VisuallyHidden asChild>
+            <DrawerContent className={cn(className)}>{children}</DrawerContent>
+          </VisuallyHidden>
           <Drawer.Overlay />
         </Drawer.Portal>
       </Drawer.Root>
@@ -75,13 +78,15 @@ export function Modal({
     >
       <Dialog.Portal>
         <DialogOverlay id="modal-backdrop" />
-        <DialogContent
-          onOpenAutoFocus={(e) => e.preventDefault()}
-          onCloseAutoFocus={(e) => e.preventDefault()}
-          className={cn(className)}
-        >
-          {children}
-        </DialogContent>
+        <VisuallyHidden asChild>
+          <DialogContent
+            onOpenAutoFocus={(e) => e.preventDefault()}
+            onCloseAutoFocus={(e) => e.preventDefault()}
+            className={cn(className)}
+          >
+            {children}
+          </DialogContent>
+        </VisuallyHidden>
       </Dialog.Portal>
     </Dialog.Root>
   );
