@@ -1,5 +1,5 @@
 import { generateText } from "ai";
-import { openai_model } from "~/config/product";
+import { openai_model } from "~/config/ai";
 
 export const generateAltText = async (imagePath: string) => {
   const systemPrompt =
