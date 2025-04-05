@@ -56,59 +56,49 @@ export function ActionButtons({ postId }: { postId: string }) {
 
   return (
     <div>
-      <div className="flex w-full items-center justify-between [&_button:hover]:text-muted-foreground">
+      <div className="flex w-full items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <Button
+          <Heart
+            role="button"
             onClick={async () =>
               await toggleLike.mutateAsync({
                 postId,
               })
             }
-            disabled={toggleLike.isPending}
-            variant="ghost"
-            size="icon"
-            className={cn("size-8")}
-          >
-            <Heart
-              className={cn(
-                "size-8 transition-colors duration-200",
-                isLiked && "fill-pink-500 text-pink-500",
-              )}
-              aria-hidden="true"
-              aria-label="Like"
-            />
-            <span className="sr-only">Like</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
+            className={cn(
+              "size-6 transition-colors duration-200",
+              isLiked
+                ? "fill-pink-500 text-pink-500"
+                : "hover:text-muted-foreground",
+            )}
+            aria-hidden="true"
+            aria-label="Like"
+          />
+          <span className="sr-only">Like</span>
+          <MessageCircleIcon
+            role="button"
             onClick={() => router.push(`/posts/${postId}`)}
-            className={cn("size-7")}
-          >
-            <MessageCircleIcon
-              className="size-6 -rotate-90"
-              aria-hidden="true"
-              aria-label="Comment"
-            />
-            <span className="sr-only">Comment</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn("size-7")}
-            onClick={() => setIsShareOpen(true)}
-          >
-            <Icons.share
-              className="size-6"
-              aria-hidden="true"
-              aria-label="Share"
-            />
-            <span className="sr-only">Share</span>
-          </Button>
+            className="size-6 -rotate-90 transition-colors duration-200 hover:text-muted-foreground"
+            aria-hidden="true"
+            aria-label="Comment"
+          />
+          <span className="sr-only">Comment</span>
+
+          <Icons.share
+            role="button"
+            className="size-6 transition-colors duration-200 hover:text-muted-foreground"
+            aria-hidden="true"
+            aria-label="Share"
+          />
+          <span className="sr-only">Share</span>
         </div>
-        <Button variant="ghost" size="icon" className="ml-auto size-7">
-          <BookmarkIcon className="size-6" aria-hidden="true" />
-        </Button>
+        <BookmarkIcon
+          role="button"
+          className="size-6 transition-colors duration-200 hover:text-muted-foreground"
+          aria-hidden="true"
+          aria-label="Bookmark"
+        />
+        <span className="sr-only">Bookmark</span>
       </div>
       <ShareModal
         isOpen={isShareOpen}
