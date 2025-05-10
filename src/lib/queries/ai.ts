@@ -1,6 +1,6 @@
 import { generateText } from "ai";
 import { eq } from "drizzle-orm";
-import { openai_model } from "~/config/ai";
+import { openai_4o_mini } from "~/config/ai";
 import { db } from "~/server/db";
 import { users } from "~/server/db/schema/users";
 
@@ -14,7 +14,7 @@ export const generateAltText = async (imagePath: string) => {
     `Use simple language. `;
 
   const { text } = await generateText({
-    model: openai_model,
+    model: openai_4o_mini,
     system: systemPrompt,
     maxTokens: 25,
     abortSignal: AbortSignal.timeout(5000),
@@ -54,7 +54,7 @@ export async function generateUniqueUsername(name: string): Promise<string> {
 
   while (attempts < maxAttempts) {
     const { text } = await generateText({
-      model: openai_model,
+      model: openai_4o_mini,
       system: systemPrompt,
       maxTokens: 9,
       abortSignal: AbortSignal.timeout(5000),
