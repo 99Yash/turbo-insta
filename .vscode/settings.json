@@ -4,5 +4,8 @@
 		"lucide-react/*",
 		"framer-motion/*",
 		"react-hook-form/*",
+	],
+	"cSpell.words": [
+		"Repligram"
 	]
 }

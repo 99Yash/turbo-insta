@@ -66,7 +66,7 @@ export default async function handler(
 
   console.info(`Webhook with and ID of ${id} and type of ${eventType}`);
   console.info("Webhook body:", body);
-  // TODO - handle the event
+
   switch (eventType) {
     case "user.created": {
       const {
@@ -88,7 +88,7 @@ export default async function handler(
 
       try {
         await db.insert(users).values({
-          clerkId,
+          id: clerkId,
           email: email_addresses[0].email_address,
           name,
           username,
@@ -130,7 +130,7 @@ export default async function handler(
             username,
             imageUrl: image_url,
           })
-          .where(eq(users.clerkId, clerkId));
+          .where(eq(users.id, clerkId));
 
         console.info(`Updated user in database: ${username}`);
       } catch (error) {
