@@ -1,8 +1,8 @@
-import { clerkClient } from "@clerk/nextjs/server";
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
-import { and, desc, eq, gt, or } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, or } from "drizzle-orm";
 import { z } from "zod";
 import { comments } from "~/server/db/schema";
+import { users } from "~/server/db/schema/users";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 import { MAX_COMMENT_CHAR_LENGTH } from "../validators/posts.validator";
 
@@ -74,12 +74,15 @@ export const commentsRouter = createTRPCRouter({
         ...new Set(postComments.map((comment) => comment.userId)),
       ];
 
-      const { data: authors } = await (
-        await clerkClient()
-      ).users.getUserList({
-        userId: userIds,
-        limit: userIds.length,
-      });
+      const authors = await ctx.db
+        .select({
+          id: users.id,
+          name: users.name,
+          imageUrl: users.imageUrl,
+          username: users.username,
+        })
+        .from(users)
+        .where(inArray(users.id, userIds));
 
       const commentsWithUser = postComments.map((comment) => {
         const user = authors.find((u) => u.id === comment.userId);
@@ -88,10 +91,8 @@ export const commentsRouter = createTRPCRouter({
           user: user
             ? {
                 id: user.id,
-                fullName:
-                  user.firstName && user.lastName
-                    ? `${user.firstName} ${user.lastName}`
-                    : null,
+                name: user.name,
+                username: user.username,
                 imageUrl: user.imageUrl,
               }
             : null,
