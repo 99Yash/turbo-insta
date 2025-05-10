@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { CogIcon, Heart, LogOutIcon, Search } from "lucide-react";
+import { CogIcon, Heart, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icons } from "~/components/icons";
@@ -19,19 +19,6 @@ export function AppSidebar() {
       filledIcon: Icons.homeFilled,
       label: "Home",
       href: "/",
-    },
-    { icon: Search, filledIcon: Search, label: "Search", href: "/search" },
-    {
-      icon: Icons.create,
-      filledIcon: Icons.create,
-      label: "Create",
-      href: "/create",
-    },
-    {
-      icon: Icons.reel,
-      filledIcon: Icons.reel,
-      label: "Reels",
-      href: "/reels",
     },
     {
       icon: Icons.message,
