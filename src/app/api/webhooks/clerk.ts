@@ -1,7 +1,11 @@
 import { type WebhookEvent } from "@clerk/nextjs/server";
+import { eq } from "drizzle-orm";
 import { buffer } from "micro";
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { Webhook } from "svix";
+import { generateUniqueUsername } from "~/lib/queries/ai";
+import { db } from "~/server/db";
+import { users } from "~/server/db/schema/users";
 
 export const config = {
   api: {
@@ -65,10 +69,76 @@ export default async function handler(
   // TODO - handle the event
   switch (eventType) {
     case "user.created": {
+      const {
+        id: clerkId,
+        email_addresses,
+        first_name,
+        last_name,
+        image_url,
+      } = evt.data;
+
+      if (!email_addresses?.[0]?.email_address) {
+        console.error("No email address found for user:", clerkId);
+        return res.status(400).json({ error: "No email address found" });
+      }
+
+      const name =
+        `${first_name ?? ""} ${last_name ?? ""}`.trim() || "Anonymous";
+      const username = await generateUniqueUsername(name);
+
+      try {
+        await db.insert(users).values({
+          clerkId,
+          email: email_addresses[0].email_address,
+          name,
+          username,
+          imageUrl: image_url,
+          isVerified: false,
+        });
+
+        console.info(`Created user in database: ${username}`);
+      } catch (error) {
+        console.error("Error creating user in database:", error);
+        return res.status(500).json({ error: "Failed to create user" });
+      }
       break;
     }
-    case "user.updated":
+    case "user.updated": {
+      const {
+        id: clerkId,
+        email_addresses,
+        first_name,
+        last_name,
+        image_url,
+      } = evt.data;
+
+      if (!email_addresses?.[0]?.email_address) {
+        console.error("No email address found for user:", clerkId);
+        return res.status(400).json({ error: "No email address found" });
+      }
+
+      const name =
+        `${first_name ?? ""} ${last_name ?? ""}`.trim() || "Anonymous";
+      const username = await generateUniqueUsername(name);
+
+      try {
+        await db
+          .update(users)
+          .set({
+            email: email_addresses[0].email_address,
+            name,
+            username,
+            imageUrl: image_url,
+          })
+          .where(eq(users.clerkId, clerkId));
+
+        console.info(`Updated user in database: ${username}`);
+      } catch (error) {
+        console.error("Error updating user in database:", error);
+        return res.status(500).json({ error: "Failed to update user" });
+      }
       break;
+    }
     case "user.deleted":
       break;
     case "session.created":

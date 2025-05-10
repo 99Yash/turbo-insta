@@ -2,6 +2,7 @@ import { relations } from "drizzle-orm";
 import { index, pgTable, varchar } from "drizzle-orm/pg-core";
 import { generateId } from "~/lib/utils";
 import { posts } from "./posts";
+import { users } from "./users";
 import { lifecycleDates } from "./utils";
 
 export const likes = pgTable(
@@ -24,6 +25,10 @@ export const likeRelations = relations(likes, ({ one }) => ({
   post: one(posts, {
     fields: [likes.postId],
     references: [posts.id],
+  }),
+  user: one(users, {
+    fields: [likes.userId],
+    references: [users.id],
   }),
 }));
 

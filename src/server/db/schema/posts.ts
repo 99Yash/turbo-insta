@@ -4,6 +4,7 @@ import { generateId } from "~/lib/utils";
 import { type StoredFile } from "~/types";
 import { comments } from "./comments";
 import { likes } from "./likes";
+import { users } from "./users";
 import { lifecycleDates } from "./utils";
 
 export const posts = pgTable(
@@ -23,9 +24,13 @@ export const posts = pgTable(
   }),
 );
 
-export const postRelations = relations(posts, ({ many }) => ({
+export const postRelations = relations(posts, ({ many, one }) => ({
   comments: many(comments),
   likes: many(likes),
+  user: one(users, {
+    fields: [posts.userId],
+    references: [users.id],
+  }),
 }));
 
 export type Post = typeof posts.$inferSelect;
