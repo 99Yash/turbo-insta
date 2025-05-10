@@ -73,11 +73,11 @@ export function CommentsList({ postId }: CommentsListProps) {
               <Link href={`/${comment.user.id}`}>
                 <Avatar className="mr-2 size-7">
                   <AvatarImage
-                    src={comment.user.imageUrl}
-                    alt={comment.user.fullName ?? ""}
+                    src={comment.user.imageUrl ?? ""}
+                    alt={comment.user.name ?? ""}
                   />
                   <AvatarFallback>
-                    {getInitials(comment.user.fullName ?? "")}
+                    {getInitials(comment.user.name ?? "")}
                   </AvatarFallback>
                 </Avatar>
               </Link>
@@ -87,7 +87,7 @@ export function CommentsList({ postId }: CommentsListProps) {
                     href={`/${comment.user.id}`}
                     className="font-semibold hover:underline"
                   >
-                    {comment.user.fullName}
+                    {comment.user.name}
                   </Link>
                   <span className="flex-wrap whitespace-pre break-words">
                     {comment.text}
