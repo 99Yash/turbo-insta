@@ -16,7 +16,7 @@ interface ProfileViewProps {
 
 export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
   return (
-    <div className="container mx-auto max-w-4xl py-8">
+    <div className="container py-8">
       {/* Profile Header */}
       <div className="flex flex-col items-center md:flex-row md:items-start md:space-x-8">
         <Avatar className="size-24 md:size-36 lg:size-40">
@@ -32,6 +32,7 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
               {user.username ?? user.name}
             </h1>
 
+            {/* //TODO: Add stuff for current user */}
             {isCurrentUser ? (
               <div className="flex gap-2">
                 <Button variant="outline" size="sm">
@@ -53,7 +54,7 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
             )}
           </div>
 
-          <div className="mt-4 flex space-x-6">
+          <div className="mt-4 flex justify-center space-x-6">
             <div className="flex flex-col items-center md:items-start">
               <span className="font-semibold">{posts.length}</span>
               <span className="text-sm text-muted-foreground">posts</span>
@@ -68,7 +69,7 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
             </div>
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 flex max-md:justify-center">
             <p className="font-semibold">{user.name}</p>
             {user.bio && <p className="mt-1 text-sm">{user.bio}</p>}
           </div>
@@ -76,38 +77,46 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
       </div>
 
       {/* Profile Tabs */}
-      <div className="mt-8 border-t">
+      <div className="mt-8 flex w-full flex-col items-center border-t">
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="flex justify-center">
+          <TabsList className="flex h-auto w-full justify-center rounded-none border-b bg-transparent p-0">
             <TabsTrigger
               value="posts"
-              className="flex items-center gap-2 px-4 py-3"
+              className="relative rounded-none py-2 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
             >
               <GridLayoutRows className="size-4" />
               <span className="hidden md:inline">Posts</span>
             </TabsTrigger>
             <TabsTrigger
               value="saved"
-              className="flex items-center gap-2 px-4 py-3"
+              className="relative rounded-none py-2 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
             >
               <Book2Small className="size-4" />
               <span className="hidden md:inline">Saved</span>
             </TabsTrigger>
             <TabsTrigger
               value="tagged"
-              className="flex items-center gap-2 px-4 py-3"
+              className="relative rounded-none py-2 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
             >
               <Tag className="size-4" />
               <span className="hidden md:inline">Tagged</span>
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="posts" className="mt-6">
-            <ProfilePosts posts={posts} />
+          <TabsContent
+            value="posts"
+            className="mt-6 flex w-full justify-center"
+          >
+            <div className="w-full">
+              <ProfilePosts posts={posts} />
+            </div>
           </TabsContent>
 
-          <TabsContent value="saved" className="mt-6">
-            <div className="flex flex-col items-center justify-center py-12">
+          <TabsContent
+            value="saved"
+            className="mt-6 flex w-full justify-center"
+          >
+            <div className="flex w-full flex-col items-center justify-center py-12">
               <Book2Small className="size-12 text-muted-foreground" />
               <h3 className="mt-4 text-xl font-semibold">No saved posts</h3>
               <p className="mt-2 text-center text-muted-foreground">
@@ -116,8 +125,11 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
             </div>
           </TabsContent>
 
-          <TabsContent value="tagged" className="mt-6">
-            <div className="flex flex-col items-center justify-center py-12">
+          <TabsContent
+            value="tagged"
+            className="mt-6 flex w-full justify-center"
+          >
+            <div className="flex w-full flex-col items-center justify-center py-12">
               <Tag className="size-12 text-muted-foreground" />
               <h3 className="mt-4 text-xl font-semibold">No tagged posts</h3>
               <p className="mt-2 text-center text-muted-foreground">

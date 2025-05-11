@@ -11,6 +11,13 @@ export async function generateMetadata({
 }: {
   params: { userId: string };
 }): Promise<Metadata> {
+  if (params.userId === "messages ") {
+    return {
+      title: "Messages | " + siteConfig.name,
+      description: "Messages on " + siteConfig.name,
+    };
+  }
+
   const user = await getUserById(params.userId);
 
   if (!user) {

@@ -6,6 +6,10 @@ import {
   ImageIcon,
 } from "@radix-ui/react-icons";
 
+export * as RadixIcons from "@radix-ui/react-icons";
+export * as LucideIcons from "lucide-react";
+export * as NucleoIcons from "./ui/icons/nucleo";
+
 export type IconProps = React.HTMLAttributes<SVGElement>;
 
 export const Icons = {

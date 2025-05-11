@@ -24,7 +24,7 @@ export function ProfilePosts({ posts }: ProfilePostsProps) {
   }
 
   return (
-    <div className="grid grid-cols-3 gap-1 md:gap-4">
+    <div className="grid grid-cols-3 gap-1 md:gap-6 lg:gap-8">
       {posts.map((post) => (
         <Link
           key={post.id}
@@ -36,7 +36,7 @@ export function ProfilePosts({ posts }: ProfilePostsProps) {
             alt={post.images[0]?.alt ?? post.title ?? "Post image"}
             fill
             className="object-cover transition-all duration-200 hover:scale-105"
-            sizes="(max-width: 768px) 33vw, 300px"
+            sizes="(max-width: 640px) 33vw, (max-width: 1024px) 300px, 400px"
           />
 
           {post.images.length > 1 && (
@@ -44,19 +44,6 @@ export function ProfilePosts({ posts }: ProfilePostsProps) {
               <GridLayoutRows className="size-4 text-white" />
             </div>
           )}
-
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 transition-opacity duration-200 hover:bg-black/20 hover:opacity-100">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <Icons.heart className="size-4 text-white" />
-                <span className="text-sm font-semibold text-white">0</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Icons.message className="size-4 text-white" />
-                <span className="text-sm font-semibold text-white">0</span>
-              </div>
-            </div>
-          </div>
         </Link>
       ))}
     </div>
