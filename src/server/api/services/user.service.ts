@@ -8,7 +8,7 @@ import { users } from "~/server/db/schema/users";
  * @param id The user's primary ID
  * @returns The user object or throws an error if not found
  */
-export const findUserById = async (id: string) => {
+export const getUserById = async (id: string) => {
   try {
     const user = await db.query.users.findFirst({
       where: eq(users.id, id),
@@ -35,7 +35,7 @@ export const findUserById = async (id: string) => {
  * @param username The user's username
  * @returns The user object or throws an error if not found
  */
-export const findUserByUsername = async (username: string) => {
+export const getUserByUsername = async (username: string) => {
   try {
     const user = await db.query.users.findFirst({
       where: eq(users.username, username),
@@ -62,7 +62,7 @@ export const findUserByUsername = async (username: string) => {
  * @param email The user's email
  * @returns The user object or throws an error if not found
  */
-export const findUserByEmail = async (email: string) => {
+export const getUserByEmail = async (email: string) => {
   try {
     const user = await db.query.users.findFirst({
       where: eq(users.email, email),
@@ -89,7 +89,7 @@ export const findUserByEmail = async (email: string) => {
  * @param ids Array of user IDs
  * @returns Array of user objects (only returns found users)
  */
-export const findUsersByIds = async (ids: string[]) => {
+export const getUsersByIds = async (ids: string[]) => {
   try {
     // Use 'in' operator for querying multiple IDs
     const foundUsers = await db

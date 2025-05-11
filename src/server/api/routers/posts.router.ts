@@ -123,4 +123,56 @@ export const postsRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ input, ctx }) => deletePost(input.postId, ctx.userId)),
+
+  getByUserId: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        limit: z.number().min(1).max(100).default(12),
+        cursor: z
+          .object({
+            id: z.string(),
+            createdAt: z.date(),
+          })
+          .nullish(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { userId, limit, cursor } = input;
+
+      const items = await ctx.db
+        .select()
+        .from(posts)
+        .where(
+          cursor
+            ? and(
+                eq(posts.userId, userId),
+                or(
+                  gt(posts.createdAt, cursor.createdAt),
+                  and(
+                    eq(posts.createdAt, cursor.createdAt),
+                    gt(posts.id, cursor.id),
+                  ),
+                ),
+              )
+            : eq(posts.userId, userId),
+        )
+        .orderBy(desc(posts.createdAt), desc(posts.id))
+        .limit(limit + 1);
+
+      let nextCursor: typeof cursor | undefined = undefined;
+
+      if (items.length > limit) {
+        const nextItem = items.pop()!;
+        nextCursor = {
+          id: nextItem.id,
+          createdAt: nextItem.createdAt,
+        };
+      }
+
+      return {
+        items,
+        nextCursor,
+      };
+    }),
 });
