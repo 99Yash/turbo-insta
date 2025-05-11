@@ -1,11 +1,10 @@
-import { type User } from "@clerk/nextjs/server";
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { PostCarousel } from "~/components/utils/post-carousel";
 import { formatTimeToNow, getInitials } from "~/lib/utils";
-import { type Post } from "~/server/db/schema";
+import { type Post, type User } from "~/server/db/schema";
 import { ActionButtons } from "./action-buttons";
 import { AddComment } from "./forms/add-comment";
 
@@ -26,11 +25,11 @@ export function Post({ post, author }: PostProps) {
             <Link href={`/${author.id}`}>
               <Avatar className="size-8">
                 <AvatarImage
-                  src={author.imageUrl}
-                  alt={author.fullName ?? "VH"}
+                  src={author.imageUrl ?? ""}
+                  alt={author.name ?? "VH"}
                 />
                 <AvatarFallback>
-                  {getInitials(author.fullName ?? "VH")}
+                  {getInitials(author.name ?? "VH")}
                 </AvatarFallback>
               </Avatar>
             </Link>
@@ -40,7 +39,7 @@ export function Post({ post, author }: PostProps) {
                 href={`/${author.id}`}
                 className="transition-all duration-200 hover:text-muted-foreground"
               >
-                <p className="text-sm font-semibold">{author.fullName ?? ""}</p>
+                <p className="text-sm font-semibold">{author.name ?? ""}</p>
               </Link>
               <p className="mt-1 text-xs font-semibold text-muted-foreground">
                 • {formatTimeToNow(post.createdAt)}
@@ -58,8 +57,7 @@ export function Post({ post, author }: PostProps) {
           <div className="flex flex-col gap-3 pt-3">
             <ActionButtons postId={post.id} />
             <div className="text-sm">
-              <span className="font-semibold">{author?.firstName}</span>{" "}
-              {post.title}
+              <span className="font-semibold">{author.name}</span> {post.title}
             </div>
           </div>
 

@@ -48,13 +48,13 @@ export default async function UserProfilePage({
   });
 
   // Filter posts by this user
-  const userPosts = posts.items.filter((post) => post.userId === user.id);
+  const userPosts = posts.items.filter((post) => post.users?.id === user.id);
 
   return (
     <HydrateClient>
       <ProfileView
         user={user}
-        posts={userPosts}
+        posts={userPosts.map((post) => post.posts)}
         isCurrentUser={userId === user.id}
       />
     </HydrateClient>

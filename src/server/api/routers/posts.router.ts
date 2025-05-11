@@ -5,7 +5,7 @@ import {
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { likes, posts } from "~/server/db/schema";
+import { likes, posts, users } from "~/server/db/schema";
 import { createPost, deletePost } from "../services/post.service";
 import { createPostSchema } from "../validators/posts.validator";
 
@@ -34,6 +34,7 @@ export const postsRouter = createTRPCRouter({
       const items = await ctx.db
         .select()
         .from(posts)
+        .leftJoin(users, eq(posts.userId, users.id))
         .where(
           cursor
             ? or(
@@ -53,8 +54,8 @@ export const postsRouter = createTRPCRouter({
       if (items.length > limit) {
         const nextItem = items.pop()!;
         nextCursor = {
-          id: nextItem.id,
-          createdAt: nextItem.createdAt,
+          id: nextItem.posts.id,
+          createdAt: nextItem.posts.createdAt,
         };
       }
 

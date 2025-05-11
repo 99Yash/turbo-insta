@@ -1,11 +1,10 @@
 import { currentUser } from "@clerk/nextjs/server";
-import { users } from "~/lib/queries/user";
 import { api, HydrateClient } from "~/trpc/server";
 import { Create } from "./_components/forms/create";
 import { Post } from "./_components/post";
 
 export default async function Home() {
-  const posts = await api.posts.getAll({
+  const { items: posts } = await api.posts.getAll({
     limit: 10,
   });
 
@@ -16,11 +15,11 @@ export default async function Home() {
       <div className="flex flex-col py-8 pb-24 lg:pb-8">
         {user && <Create />}
         <div className="space-y-6">
-          {posts.items.map((post) => {
-            const author = users.find((user) => user.id === post.userId);
-            if (!author) return null;
-
-            return <Post key={post.id} post={post} author={author} />;
+          {posts.map((post) => {
+            if (!post.users) return null;
+            return (
+              <Post key={post.posts.id} post={post.posts} author={post.users} />
+            );
           })}
         </div>
       </div>
