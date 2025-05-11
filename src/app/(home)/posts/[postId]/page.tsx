@@ -6,8 +6,8 @@ import { AddComment } from "~/app/(home)/_components/forms/add-comment";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { PostCarousel } from "~/components/utils/post-carousel";
 import { siteConfig } from "~/config/site";
-import { users } from "~/lib/queries/user";
 import { formatTimeToNow, getInitials } from "~/lib/utils";
+import { getUserById } from "~/server/api/services/user.service";
 import { api, HydrateClient } from "~/trpc/server";
 import { ActionButtons } from "../../_components/action-buttons";
 
@@ -23,16 +23,16 @@ export const generateMetadata = async ({
   const post = await api.posts.getById({ postId: params.postId });
   if (!post) return { title: "Post not found" };
 
-  const author = users.find((user) => user.id === post?.userId);
+  const author = await getUserById(post.userId);
 
   if (!author) return { title: "Post not found" };
   return {
-    title: `${post.title} - ${author?.fullName} on ${siteConfig.name}`,
+    title: `${post.title} - ${author?.name} on ${siteConfig.name}`,
     description: post.title,
     openGraph: {
       type: "website",
       locale: "en_US",
-      title: `${author?.fullName} on ${siteConfig.name}`,
+      title: `${author?.name} on ${siteConfig.name}`,
       description: post.title ?? "",
       url: `${siteConfig.url}/posts/${post.id}`,
       images: post.images.map((image) => ({
@@ -45,7 +45,7 @@ export const generateMetadata = async ({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${author?.fullName} on ${siteConfig.name}`,
+      title: `${author?.name} on ${siteConfig.name}`,
       description: post.title ?? "",
       images: post.images.map((image) => image.url),
       site: siteConfig.url,
@@ -59,7 +59,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
   const post = await api.posts.getById({ postId: params.postId });
 
   if (!post) notFound();
-  const author = users.find((user) => user.id === post.userId);
+  const author = await getUserById(post.userId);
   if (!author) return notFound();
 
   return (
@@ -77,15 +77,15 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
             <Link href={`/${author.id}`}>
               <Avatar className="size-7">
                 <AvatarImage
-                  src={author.imageUrl}
-                  alt={author.fullName ?? "VH"}
+                  src={author.imageUrl ?? ""}
+                  alt={author.name ?? "VH"}
                 />
                 <AvatarFallback>
-                  {getInitials(author.fullName ?? "VH")}
+                  {getInitials(author.name ?? "VH")}
                 </AvatarFallback>
               </Avatar>
             </Link>
-            <span className="text-sm font-semibold">{author.fullName}</span>
+            <span className="text-sm font-semibold">{author.name}</span>
           </div>
 
           {post.title && (
@@ -94,19 +94,17 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
                 <Link href={`/${author.id}`}>
                   <Avatar className="size-7">
                     <AvatarImage
-                      src={author.imageUrl}
-                      alt={author.fullName ?? "VH"}
+                      src={author.imageUrl ?? ""}
+                      alt={author.name ?? "VH"}
                     />
                     <AvatarFallback>
-                      {getInitials(author.fullName ?? "VH")}
+                      {getInitials(author.name ?? "VH")}
                     </AvatarFallback>
                   </Avatar>
                 </Link>
                 <div className="flex flex-col gap-1">
                   <div>
-                    <span className="text-sm font-semibold">
-                      {author.fullName}
-                    </span>{" "}
+                    <span className="text-sm font-semibold">{author.name}</span>{" "}
                     <span className="text-sm">{post.title}</span>
                   </div>
                   <span className="text-xs text-muted-foreground">

@@ -43,12 +43,12 @@ export default async function UserProfilePage({
   }
 
   // Get all posts
-  const posts = await api.posts.getAll({
+  const { items: posts } = await api.posts.getAll({
     limit: 30,
   });
 
   // Filter posts by this user
-  const userPosts = posts.items.filter((post) => post.users?.id === user.id);
+  const userPosts = posts.filter((post) => post.users?.id === user.id);
 
   return (
     <HydrateClient>
