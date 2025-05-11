@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
 import { siteConfig } from "~/config/site";
@@ -34,6 +35,7 @@ interface UserProfilePageProps {
 export default async function UserProfilePage({
   params,
 }: UserProfilePageProps) {
+  const { userId } = await auth();
   const user = await getUserById(params.userId);
 
   if (!user) {
@@ -50,7 +52,11 @@ export default async function UserProfilePage({
 
   return (
     <HydrateClient>
-      <ProfileView user={user} posts={userPosts} />
+      <ProfileView
+        user={user}
+        posts={userPosts}
+        isCurrentUser={userId === user.id}
+      />
     </HydrateClient>
   );
 }

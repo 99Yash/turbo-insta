@@ -1,9 +1,8 @@
 "use client";
 
-import { BookmarkIcon, ExclamationTriangleIcon } from "@radix-ui/react-icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import { GridLayoutRows } from "~/components/ui/icons/nucleo";
+import { Book2Small, GridLayoutRows, Tag } from "~/components/ui/icons/nucleo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { getInitials } from "~/lib/utils";
 import { type Post, type User } from "~/server/db/schema";
@@ -12,11 +11,10 @@ import { ProfilePosts } from "./profile-posts";
 interface ProfileViewProps {
   user: User;
   posts: Post[];
+  isCurrentUser: boolean;
 }
 
-export function ProfileView({ user, posts }: ProfileViewProps) {
-  const isCurrentUser = user.id === posts[0]?.userId;
-
+export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
   return (
     <div className="container mx-auto max-w-4xl py-8">
       {/* Profile Header */}
@@ -92,14 +90,14 @@ export function ProfileView({ user, posts }: ProfileViewProps) {
               value="saved"
               className="flex items-center gap-2 px-4 py-3"
             >
-              <BookmarkIcon className="size-4" />
+              <Book2Small className="size-4" />
               <span className="hidden md:inline">Saved</span>
             </TabsTrigger>
             <TabsTrigger
               value="tagged"
               className="flex items-center gap-2 px-4 py-3"
             >
-              <ExclamationTriangleIcon className="size-4" />
+              <Tag className="size-4" />
               <span className="hidden md:inline">Tagged</span>
             </TabsTrigger>
           </TabsList>
@@ -110,7 +108,7 @@ export function ProfileView({ user, posts }: ProfileViewProps) {
 
           <TabsContent value="saved" className="mt-6">
             <div className="flex flex-col items-center justify-center py-12">
-              <BookmarkIcon className="size-12 text-muted-foreground" />
+              <Book2Small className="size-12 text-muted-foreground" />
               <h3 className="mt-4 text-xl font-semibold">No saved posts</h3>
               <p className="mt-2 text-center text-muted-foreground">
                 When you save posts, they will appear here.
@@ -120,7 +118,7 @@ export function ProfileView({ user, posts }: ProfileViewProps) {
 
           <TabsContent value="tagged" className="mt-6">
             <div className="flex flex-col items-center justify-center py-12">
-              <ExclamationTriangleIcon className="size-12 text-muted-foreground" />
+              <Tag className="size-12 text-muted-foreground" />
               <h3 className="mt-4 text-xl font-semibold">No tagged posts</h3>
               <p className="mt-2 text-center text-muted-foreground">
                 When people tag you in posts, they will appear here.

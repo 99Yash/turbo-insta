@@ -30,7 +30,11 @@ export default async function ProfilePage() {
 
   return (
     <HydrateClient>
-      <ProfileView user={user} posts={userPosts} />
+      <ProfileView
+        user={user}
+        posts={userPosts}
+        isCurrentUser={clerkUser.id === user.id}
+      />
     </HydrateClient>
   );
 }
