@@ -1,11 +1,11 @@
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
 import { eq } from "drizzle-orm";
-import { type NextApiRequest } from "next";
+import { type NextRequest } from "next/server";
 import { generateUniqueUsername } from "~/lib/queries/ai";
 import { db } from "~/server/db";
 import { users } from "~/server/db/schema/users";
 
-export async function POST(req: NextApiRequest) {
+export async function POST(req: NextRequest) {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
