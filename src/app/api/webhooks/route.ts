@@ -5,12 +5,6 @@ import { generateUniqueUsername } from "~/lib/queries/ai";
 import { db } from "~/server/db";
 import { users } from "~/server/db/schema/users";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
-
 export async function POST(req: NextApiRequest) {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
