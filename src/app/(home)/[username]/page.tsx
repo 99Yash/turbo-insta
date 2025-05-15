@@ -2,23 +2,23 @@ import { auth } from "@clerk/nextjs/server";
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
 import { siteConfig } from "~/config/site";
-import { getUserById } from "~/server/api/services/user.service";
+import { getUserByUsername } from "~/server/api/services/user.service";
 import { api, HydrateClient } from "~/trpc/server";
 import { ProfileView } from "../_components/profile/profile-view";
 
 export async function generateMetadata({
   params,
 }: {
-  params: { userId: string };
+  params: { username: string };
 }): Promise<Metadata> {
-  if (params.userId === "messages ") {
+  if (params.username === "messages") {
     return {
       title: "Messages | " + siteConfig.name,
       description: "Messages on " + siteConfig.name,
     };
   }
 
-  const user = await getUserById(params.userId);
+  const user = await getUserByUsername(params.username);
 
   if (!user) {
     return {
@@ -28,14 +28,14 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${user.name} (@${user.username ?? user.id}) | ${siteConfig.name}`,
+    title: `${user.name} (@${user.username}) | ${siteConfig.name}`,
     description: `View ${user.name}'s profile on ${siteConfig.name}`,
   };
 }
 
 interface UserProfilePageProps {
   params: {
-    userId: string;
+    username: string;
   };
 }
 
@@ -43,11 +43,9 @@ export default async function UserProfilePage({
   params,
 }: UserProfilePageProps) {
   const { userId } = await auth();
-  const user = await getUserById(params.userId);
+  const user = await getUserByUsername(params.username);
 
-  if (!user) {
-    return notFound();
-  }
+  if (!user) return notFound();
 
   // Get all posts
   const { items: posts } = await api.posts.getAll({
