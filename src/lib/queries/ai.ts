@@ -1,3 +1,5 @@
+import "server-only";
+
 import { generateText } from "ai";
 import { eq } from "drizzle-orm";
 import { openai_4o_mini } from "~/config/ai";
