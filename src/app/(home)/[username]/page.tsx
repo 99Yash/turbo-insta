@@ -30,6 +30,11 @@ export async function generateMetadata({
   return {
     title: `${user.name} (@${user.username}) | ${siteConfig.name}`,
     description: `View ${user.name}'s profile on ${siteConfig.name}`,
+    openGraph: {
+      title: `${user.name} (@${user.username}) | ${siteConfig.name}`,
+      description: `View ${user.name}'s profile on ${siteConfig.name}`,
+      images: [user.imageUrl ?? "/images/og.png"],
+    },
   };
 }
 
@@ -55,13 +60,32 @@ export default async function UserProfilePage({
   // Filter posts by this user
   const userPosts = posts.filter((post) => post.users?.id === user.id);
 
+  // Get post engagement data
+  const postsWithEngagement = await Promise.all(
+    userPosts.map(async (post) => {
+      const postId = post.posts.id;
+      // Get like counts
+      const likeData = await api.posts.getLikes({ postId });
+      // Get comment counts (if you have an API for this)
+      // Assuming you'd create a similar endpoint for comment counts
+
+      return {
+        ...post.posts,
+        likeCount: likeData?.count ?? 0,
+        commentCount: 0, // Replace with actual comment count if you have it
+      };
+    }),
+  );
+
   return (
-    <HydrateClient>
-      <ProfileView
-        user={user}
-        posts={userPosts.map((post) => post.posts)}
-        isCurrentUser={userId === user.id}
-      />
-    </HydrateClient>
+    <div className="min-h-screen bg-background">
+      <HydrateClient>
+        <ProfileView
+          user={user}
+          posts={postsWithEngagement}
+          isCurrentUser={userId === user.id}
+        />
+      </HydrateClient>
+    </div>
   );
 }

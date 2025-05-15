@@ -110,6 +110,14 @@ const config = {
           "0%": { transform: "translate(0%, 0%)", opacity: "1" },
           "100%": { transform: "translate(100%, 0%)", opacity: "0" },
         },
+        "fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        "slide-up": {
+          "0%": { transform: "translateY(20px)", opacity: "0" },
+          "100%": { transform: "translateY(0)", opacity: "1" },
+        },
       },
       animation: {
         shine: "shine 3s ease-out infinite",
@@ -120,10 +128,55 @@ const config = {
         "star-movement-bottom":
           "star-movement-bottom linear infinite alternate",
         "star-movement-top": "star-movement-top linear infinite alternate",
+        "fade-in": "fade-in 0.7s ease-out forwards",
+        "slide-up": "slide-up 0.8s ease-out forwards",
+      },
+      transitionDelay: {
+        "0": "0ms",
+        "200": "200ms",
+        "300": "300ms",
+        "400": "400ms",
+        "500": "500ms",
+        "600": "600ms",
+        "700": "700ms",
+        "800": "800ms",
       },
     },
   },
-  plugins: [animate, scrollbarHide],
+  plugins: [
+    animate,
+    scrollbarHide,
+    function ({
+      addUtilities,
+    }: {
+      addUtilities: (utilities: Record<string, Record<string, string>>) => void;
+    }) {
+      const newUtilities = {
+        ".animation-delay-200": {
+          "animation-delay": "200ms",
+        },
+        ".animation-delay-300": {
+          "animation-delay": "300ms",
+        },
+        ".animation-delay-400": {
+          "animation-delay": "400ms",
+        },
+        ".animation-delay-500": {
+          "animation-delay": "500ms",
+        },
+        ".animation-delay-600": {
+          "animation-delay": "600ms",
+        },
+        ".animation-delay-700": {
+          "animation-delay": "700ms",
+        },
+        ".animation-delay-800": {
+          "animation-delay": "800ms",
+        },
+      };
+      addUtilities(newUtilities);
+    },
+  ],
 } satisfies Config;
 
 export default withUt(config);

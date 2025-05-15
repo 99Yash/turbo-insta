@@ -6,6 +6,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarHeader,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+  SidebarSeparator,
+} from "~/components/ui/sidebar";
 import { siteConfig } from "~/config/site";
 import { cn, getInitials } from "~/lib/utils";
 
@@ -35,79 +49,145 @@ export function AppSidebar() {
   ];
 
   return (
-    <aside className="fixed bottom-0 z-10 w-full border-t bg-background lg:left-0 lg:top-0 lg:h-screen lg:w-64 lg:border-r lg:border-t-0">
-      <div className="flex h-16 items-center justify-center max-lg:hidden lg:h-20">
-        <Link href="/" className="flex items-center gap-2 text-xl font-bold">
-          <Icons.logo className="size-7" aria-hidden="true" />
-          {siteConfig.name}
-        </Link>
-      </div>
+    <SidebarProvider defaultOpen>
+      <Sidebar variant="inset" className="border-r border-border/40">
+        <SidebarHeader className="p-4">
+          <Link
+            href="/"
+            className="flex items-center gap-2 px-2 text-xl font-bold transition-colors hover:text-primary"
+          >
+            <Icons.logo className="size-7" aria-hidden="true" />
+            <span className="transition-opacity duration-200">
+              {siteConfig.name}
+            </span>
+          </Link>
+        </SidebarHeader>
 
-      <nav className="flex justify-around lg:block lg:px-4 lg:py-8">
-        {navItems.map((item) => {
-          const isActive =
-            item.href === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.href);
-          const Icon = isActive ? item.filledIcon : item.icon;
-          return (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={cn(
-                "flex items-center gap-4 rounded-md p-2 transition-colors duration-300 hover:bg-muted md:mb-2",
-                isActive && "font-bold",
-              )}
-            >
-              <Icon className={cn("size-6")} />
-              <span className="hidden text-sm font-semibold lg:inline">
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
-        <Link
-          href={`/${user?.username}`}
-          className={cn(
-            "flex items-center gap-4 rounded-md p-2 hover:bg-muted md:mt-auto",
-            pathname.startsWith(`/${user?.username}`) && "font-bold",
-          )}
-        >
-          <Avatar className="size-7 rounded-full">
-            <AvatarImage
-              src={user?.imageUrl ?? ""}
-              alt={user?.fullName ?? ""}
-            />
-            <AvatarFallback>
-              {getInitials(user?.fullName ?? "VH")}
-            </AvatarFallback>
-          </Avatar>
-          <span className="hidden lg:inline">Profile</span>
-        </Link>
-      </nav>
+        <SidebarContent className="px-2">
+          <SidebarGroup>
+            <SidebarGroupLabel>Navigation</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {navItems.map((item) => {
+                  const isActive =
+                    item.href === "/"
+                      ? pathname === "/"
+                      : pathname.startsWith(item.href);
+                  const Icon = isActive ? item.filledIcon : item.icon;
+                  return (
+                    <SidebarMenuItem key={item.label}>
+                      <Link href={item.href} passHref>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive}
+                          tooltip={item.label}
+                          className="flex items-center gap-3 transition-all duration-200"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Icon
+                              className={cn(
+                                "size-5",
+                                isActive && "text-primary",
+                              )}
+                            />
+                            <span
+                              className={cn(
+                                "font-medium transition-all duration-200",
+                                isActive && "text-primary",
+                              )}
+                            >
+                              {item.label}
+                            </span>
+                          </div>
+                        </SidebarMenuButton>
+                      </Link>
+                      {/* {item.badge && (
+                        <SidebarMenuBadge
+                          className={cn(
+                            "bg-muted/80",
+                            isActive && "bg-primary text-primary-foreground",
+                          )}
+                        >
+                          {item.badge}
+                        </SidebarMenuBadge>
+                      )} */}
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
 
-      <nav className="hidden lg:block lg:px-4 lg:py-8">
-        <Link
-          href="/settings"
-          className={cn(
-            "flex items-center gap-4 rounded-md p-2 hover:bg-muted",
-            pathname.startsWith("/settings") && "font-bold",
-          )}
-        >
-          <CogIcon className="size-6" />
-          <span className="hidden lg:inline">Settings</span>
-        </Link>
-        <Link
-          href="/signout"
-          className={cn(
-            "flex items-center gap-4 rounded-md p-2 hover:bg-muted",
-            pathname.startsWith("/signout") && "font-bold",
-          )}
-        >
-          <LogOutIcon className="size-6" />
-          <span className="hidden lg:inline">Logout</span>
-        </Link>
-      </nav>
-    </aside>
+          <SidebarSeparator className="my-3" />
+
+          <SidebarGroup>
+            <SidebarGroupLabel>Account</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <Link href={`/${user?.username}`}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname.startsWith(`/${user?.username}`)}
+                      tooltip="Profile"
+                      className="transition-all duration-200"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Avatar className="size-5 border border-border/30">
+                          <AvatarImage
+                            src={user?.imageUrl ?? ""}
+                            alt={user?.fullName ?? ""}
+                          />
+                          <AvatarFallback className="text-xs">
+                            {getInitials(user?.fullName ?? "VH")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">Profile</span>
+                      </div>
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        </SidebarContent>
+
+        <SidebarFooter className="border-t border-border/40 p-2">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <Link href="/settings" passHref>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname.startsWith("/settings")}
+                  tooltip="Settings"
+                  className="transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <CogIcon className="size-5" />
+                    <span className="font-medium">Settings</span>
+                  </div>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+
+            <SidebarMenuItem>
+              <Link href="/signout" passHref>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname.startsWith("/signout")}
+                  tooltip="Logout"
+                  className="t ext-destructive/80 mt-2 transition-all duration-200 hover:text-destructive"
+                >
+                  <div className="flex items-center gap-3">
+                    <LogOutIcon className="size-5" />
+                    <span className="font-medium">Logout</span>
+                  </div>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      </Sidebar>
+    </SidebarProvider>
   );
 }

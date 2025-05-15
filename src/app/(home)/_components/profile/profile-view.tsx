@@ -10,129 +10,149 @@ import { ProfilePosts } from "./profile-posts";
 
 interface ProfileViewProps {
   user: User;
-  posts: Post[];
+  posts: (Post & {
+    likeCount?: number;
+    commentCount?: number;
+  })[];
   isCurrentUser: boolean;
 }
 
 export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
   return (
-    <div className="container py-8">
+    <div className="mx-auto w-full max-w-5xl px-4 py-8 md:px-6 lg:px-8">
       {/* Profile Header */}
-      <div className="flex flex-col items-center md:flex-row md:items-start md:space-x-8">
-        <Avatar className="size-24 md:size-36 lg:size-40">
-          <AvatarImage src={user.imageUrl ?? ""} alt={user.name} />
-          <AvatarFallback className="text-2xl">
-            {getInitials(user.name)}
-          </AvatarFallback>
-        </Avatar>
+      <div className="animate-fade-in flex flex-col md:flex-row md:items-center md:gap-8">
+        <div className="animate-slide-up flex justify-center md:justify-start">
+          <Avatar className="size-24 shadow-md ring-2 ring-primary/10 md:size-32">
+            <AvatarImage src={user.imageUrl ?? ""} alt={user.name} />
+            <AvatarFallback className="text-2xl">
+              {getInitials(user.name)}
+            </AvatarFallback>
+          </Avatar>
+        </div>
 
-        <div className="mt-4 flex flex-1 flex-col md:mt-0">
+        <div className="animate-slide-up animation-delay-200 mt-6 flex flex-1 flex-col md:mt-0">
           <div className="flex flex-wrap items-center gap-4">
-            <h1 className="text-xl font-semibold">
-              {user.username ?? user.name}
-            </h1>
+            <h1 className="text-2xl font-bold">{user.username ?? user.name}</h1>
 
-            {/* //TODO: Add stuff for current user */}
             {isCurrentUser ? (
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="font-medium hover:bg-accent/80"
+                >
                   Edit profile
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="font-medium hover:bg-accent/80"
+                >
                   View archive
                 </Button>
               </div>
             ) : (
-              <div className="flex gap-2">
-                <Button variant="default" size="sm">
+              <div className="flex gap-3">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="bg-primary px-4 font-medium hover:bg-primary/90"
+                >
                   Follow
                 </Button>
-                <Button variant="outline" size="sm">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="font-medium hover:bg-accent/80"
+                >
                   Message
                 </Button>
               </div>
             )}
           </div>
 
-          <div className="mt-4 flex justify-center space-x-6">
-            <div className="flex flex-col items-center md:items-start">
-              <span className="font-semibold">{posts.length}</span>
-              <span className="text-sm text-muted-foreground">posts</span>
+          <div className="mt-4 flex space-x-10">
+            <div className="flex flex-col">
+              <span className="text-lg font-bold">{posts.length}</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                posts
+              </span>
             </div>
-            <div className="flex flex-col items-center md:items-start">
-              <span className="font-semibold">0</span>
-              <span className="text-sm text-muted-foreground">followers</span>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold">0</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                followers
+              </span>
             </div>
-            <div className="flex flex-col items-center md:items-start">
-              <span className="font-semibold">0</span>
-              <span className="text-sm text-muted-foreground">following</span>
+            <div className="flex flex-col">
+              <span className="text-lg font-bold">0</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                following
+              </span>
             </div>
           </div>
 
-          <div className="mt-4 flex max-md:justify-center">
-            <p className="font-semibold">{user.name}</p>
-            {user.bio && <p className="mt-1 text-sm">{user.bio}</p>}
+          <div className="mt-4">
+            <p className="text-base font-semibold">{user.name}</p>
+            {user.bio && (
+              <p className="mt-2 max-w-2xl text-sm leading-relaxed">
+                {user.bio}
+              </p>
+            )}
           </div>
         </div>
       </div>
 
       {/* Profile Tabs */}
-      <div className="mt-8 flex w-full flex-col items-center border-t">
+      <div className="animate-fade-in animation-delay-300 mt-8 w-full border-t">
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="flex h-auto w-full justify-center rounded-none border-b bg-transparent p-0">
             <TabsTrigger
               value="posts"
-              className="relative rounded-none py-2 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+              className="relative flex-1 rounded-none px-4 py-3 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
             >
-              <GridLayoutRows className="size-4" />
-              <span className="hidden md:inline">Posts</span>
+              <GridLayoutRows className="mr-2 size-4" />
+              <span className="text-sm font-medium">Posts</span>
             </TabsTrigger>
             <TabsTrigger
               value="saved"
-              className="relative rounded-none py-2 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+              className="relative flex-1 rounded-none px-4 py-3 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
             >
-              <Book2Small className="size-4" />
-              <span className="hidden md:inline">Saved</span>
+              <Book2Small className="mr-2 size-4" />
+              <span className="text-sm font-medium">Saved</span>
             </TabsTrigger>
             <TabsTrigger
               value="tagged"
-              className="relative rounded-none py-2 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+              className="relative flex-1 rounded-none px-4 py-3 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
             >
-              <Tag className="size-4" />
-              <span className="hidden md:inline">Tagged</span>
+              <Tag className="mr-2 size-4" />
+              <span className="text-sm font-medium">Tagged</span>
             </TabsTrigger>
           </TabsList>
 
           <TabsContent
             value="posts"
-            className="mt-6 flex w-full justify-center"
+            className="animate-slide-up animation-delay-400 mt-6"
           >
-            <div className="w-full">
-              <ProfilePosts posts={posts} />
-            </div>
+            <ProfilePosts posts={posts} />
           </TabsContent>
 
-          <TabsContent
-            value="saved"
-            className="mt-6 flex w-full justify-center"
-          >
-            <div className="flex w-full flex-col items-center justify-center py-12">
-              <Book2Small className="size-12 text-muted-foreground" />
+          <TabsContent value="saved" className="mt-6">
+            <div className="flex w-full flex-col items-center justify-center py-16">
+              <Book2Small className="size-16 text-muted-foreground" />
               <h3 className="mt-4 text-xl font-semibold">No saved posts</h3>
-              <p className="mt-2 text-center text-muted-foreground">
+              <p className="mt-2 max-w-md text-center text-sm text-muted-foreground">
                 When you save posts, they will appear here.
               </p>
             </div>
           </TabsContent>
 
-          <TabsContent
-            value="tagged"
-            className="mt-6 flex w-full justify-center"
-          >
-            <div className="flex w-full flex-col items-center justify-center py-12">
-              <Tag className="size-12 text-muted-foreground" />
+          <TabsContent value="tagged" className="mt-6">
+            <div className="flex w-full flex-col items-center justify-center py-16">
+              <Tag className="size-16 text-muted-foreground" />
               <h3 className="mt-4 text-xl font-semibold">No tagged posts</h3>
-              <p className="mt-2 text-center text-muted-foreground">
+              <p className="mt-2 max-w-md text-center text-sm text-muted-foreground">
                 When people tag you in posts, they will appear here.
               </p>
             </div>

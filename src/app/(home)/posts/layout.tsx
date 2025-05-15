@@ -1,13 +1,10 @@
 import { redirect } from "next/navigation";
 import { getCachedUser } from "~/lib/queries/user";
-import { AppSidebar } from "./_components/app-sidebar";
+import { AppSidebar } from "../_components/app-sidebar";
 
-interface LayoutProps
-  extends React.PropsWithChildren<{
-    modal: React.ReactNode;
-  }> {}
-
-export default async function LobbyLayout({ children, modal }: LayoutProps) {
+export default async function LobbyLayout({
+  children,
+}: React.PropsWithChildren) {
   const user = await getCachedUser();
 
   if (!user) {
@@ -22,7 +19,6 @@ export default async function LobbyLayout({ children, modal }: LayoutProps) {
       <div className="flex-1">
         <div className="mx-auto max-w-[470px]">{children}</div>
       </div>
-      {modal}
     </div>
   );
 }
