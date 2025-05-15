@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
+import { Dialog, DialogContent } from "~/components/ui/dialog";
 import { Book2Small, GridLayoutRows, Tag } from "~/components/ui/icons/nucleo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { getInitials } from "~/lib/utils";
 import { type Post, type User } from "~/server/db/schema";
+import { ProfileEditForm } from "./profile-edit-form";
 import { ProfilePosts } from "./profile-posts";
 
 interface ProfileViewProps {
@@ -18,11 +21,13 @@ interface ProfileViewProps {
 }
 
 export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8 md:px-6 lg:px-8">
       {/* Profile Header */}
-      <div className="animate-fade-in flex flex-col md:flex-row md:items-center md:gap-8">
-        <div className="animate-slide-up flex justify-center md:justify-start">
+      <div className="animate-fade-in animation-delay-200 flex flex-col md:flex-row md:items-center md:gap-8">
+        <div className="flex justify-center md:justify-start">
           <Avatar className="size-24 shadow-md ring-2 ring-primary/10 md:size-32">
             <AvatarImage src={user.imageUrl ?? ""} alt={user.name} />
             <AvatarFallback className="text-2xl">
@@ -31,7 +36,7 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
           </Avatar>
         </div>
 
-        <div className="animate-slide-up animation-delay-200 mt-6 flex flex-1 flex-col md:mt-0">
+        <div className="animation-delay-200 mt-6 flex flex-1 flex-col md:mt-0">
           <div className="flex flex-wrap items-center gap-4">
             <h1 className="text-2xl font-bold">{user.username ?? user.name}</h1>
 
@@ -41,6 +46,7 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
                   variant="outline"
                   size="sm"
                   className="font-medium hover:bg-accent/80"
+                  onClick={() => setIsEditModalOpen(true)}
                 >
                   Edit profile
                 </Button>
@@ -159,6 +165,19 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Edit Profile Modal */}
+      {isCurrentUser && (
+        <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+          <DialogContent className="sm:max-w-[600px]">
+            <ProfileEditForm
+              user={user}
+              onSuccess={() => setIsEditModalOpen(false)}
+              onCancel={() => setIsEditModalOpen(false)}
+            />
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

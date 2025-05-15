@@ -105,3 +105,62 @@ export const getUsersByIds = async (ids: string[]) => {
     });
   }
 };
+
+/**
+ * Update a user's profile
+ * @param userId The user's ID
+ * @param data The updated profile data
+ * @returns The updated user object
+ */
+export const updateUserProfile = async (
+  userId: string,
+  data: {
+    name: string;
+    username: string;
+    bio: string | null;
+    imageUrl: string | null;
+  },
+) => {
+  try {
+    // Check if the username is already taken by another user
+    if (data.username) {
+      const existingUser = await db.query.users.findFirst({
+        where: eq(users.username, data.username),
+      });
+
+      if (existingUser && existingUser.id !== userId) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "Username is already taken",
+        });
+      }
+    }
+
+    // Update the user profile
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        name: data.name,
+        username: data.username,
+        bio: data.bio,
+        imageUrl: data.imageUrl,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning();
+
+    if (!updatedUser) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "User not found",
+      });
+    }
+
+    return updatedUser;
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+};
