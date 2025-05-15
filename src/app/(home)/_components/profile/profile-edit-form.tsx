@@ -65,7 +65,6 @@ export function ProfileEditForm({
   const [isPending, setIsPending] = React.useState(false);
   const { startUpload, isUploading } = useUploadThing("profileImage");
 
-  // Initialize the form with existing user data
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
@@ -76,7 +75,6 @@ export function ProfileEditForm({
     mode: "onChange",
   });
 
-  // Get the mutation hook for updating user profile
   const updateProfileMutation = api.user.updateProfile.useMutation({
     onSuccess: () => {
       toast.success("Profile updated successfully");
@@ -89,7 +87,18 @@ export function ProfileEditForm({
     },
   });
 
-  // Function to handle form submission
+  React.useEffect(() => {
+    const bioValue = form.watch("bio");
+    if (bioValue && bioValue.length > 160) {
+      form.setError("bio", {
+        type: "manual",
+        message: "Bio cannot exceed 160 characters",
+      });
+    } else {
+      form.clearErrors("bio");
+    }
+  }, [user, form]);
+
   async function onSubmit(data: ProfileFormValues) {
     try {
       setIsPending(true);
