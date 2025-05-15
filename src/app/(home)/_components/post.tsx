@@ -22,7 +22,7 @@ export function Post({ post, author }: PostProps) {
       <div className="w-full">
         <div className="border-0 shadow-none">
           <div className="flex flex-row items-center gap-1.5 px-1 py-3.5">
-            <Link href={`/${author.id}`}>
+            <Link href={`/${author.username}`}>
               <Avatar className="size-8">
                 <AvatarImage
                   src={author.imageUrl ?? ""}
@@ -36,7 +36,7 @@ export function Post({ post, author }: PostProps) {
 
             <div className="flex flex-1 items-center gap-2">
               <Link
-                href={`/${author.id}`}
+                href={`/${author.username}`}
                 className="transition-all duration-200 hover:text-muted-foreground"
               >
                 <p className="text-sm font-semibold">{author.name ?? ""}</p>
