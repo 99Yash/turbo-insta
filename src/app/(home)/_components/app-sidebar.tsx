@@ -67,10 +67,10 @@ export function AppSidebar() {
           );
         })}
         <Link
-          href={`/${user?.id}`}
+          href={`/${user?.username}`}
           className={cn(
             "flex items-center gap-4 rounded-md p-2 hover:bg-muted md:mt-auto",
-            pathname.startsWith(`/${user?.id}`) && "font-bold",
+            pathname.startsWith(`/${user?.username}`) && "font-bold",
           )}
         >
           <Avatar className="size-7 rounded-full">
