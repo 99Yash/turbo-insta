@@ -70,7 +70,7 @@ export function CommentsList({ postId }: CommentsListProps) {
 
           return (
             <div key={comment.id} className="flex items-start px-4 text-sm">
-              <Link href={`/${comment.user.id}`}>
+              <Link href={`/${comment.user.username}`}>
                 <Avatar className="mr-2 size-7">
                   <AvatarImage
                     src={comment.user.imageUrl ?? ""}
@@ -84,7 +84,7 @@ export function CommentsList({ postId }: CommentsListProps) {
               <div className="flex flex-1 flex-col">
                 <span className="space-x-1">
                   <Link
-                    href={`/${comment.user.id}`}
+                    href={`/${comment.user.username}`}
                     className="font-semibold hover:underline"
                   >
                     {comment.user.name}
