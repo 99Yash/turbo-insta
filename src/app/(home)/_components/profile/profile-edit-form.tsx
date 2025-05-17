@@ -76,9 +76,15 @@ export function ProfileEditForm({
   });
 
   const updateProfileMutation = api.user.updateProfile.useMutation({
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
       toast.success("Profile updated successfully");
-      router.refresh();
+
+      if (variables.username !== user.username) {
+        router.replace(`/${variables.username}`);
+      } else {
+        router.refresh();
+      }
+
       if (onSuccess) onSuccess();
     },
     onError: (error) => {
