@@ -12,12 +12,12 @@ export const generateAltText = async (imagePath: string) => {
     `Create an alt text for the image. ` +
     `Be concise. ` +
     `Use adjectives when necessary. ` +
-    `Use simple language. `;
+    `Use simple language. ` +
+    `No more than 18 words.`;
 
   const { text } = await generateText({
     model: openai_4o_mini,
     system: systemPrompt,
-    maxTokens: 25,
     abortSignal: AbortSignal.timeout(5000),
     messages: [
       {

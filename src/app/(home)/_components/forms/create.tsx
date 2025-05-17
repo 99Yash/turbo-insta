@@ -50,8 +50,12 @@ export function Create() {
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
 
   const { uploadFiles, progresses } = useUpload("postImage");
+  const utils = api.useUtils();
 
   const createPostMutation = api.posts.create.useMutation({
+    onSuccess: async () => {
+      await utils.posts.getAll.invalidate();
+    },
     onError: (error) => {
       showErrorToast(error);
     },
