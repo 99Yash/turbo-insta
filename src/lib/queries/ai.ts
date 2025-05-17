@@ -12,7 +12,6 @@ export const generateAltText = async (imagePath: string) => {
     `Create an alt text for the image. ` +
     `Be concise. ` +
     `Use adjectives when necessary. ` +
-    `Do not pass 99 characters. ` +
     `Use simple language. `;
 
   const { text } = await generateText({

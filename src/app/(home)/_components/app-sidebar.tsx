@@ -50,7 +50,11 @@ export function AppSidebar() {
 
   return (
     <SidebarProvider defaultOpen>
-      <Sidebar variant="inset" className="border-r border-border/40">
+      <Sidebar
+        variant="floating"
+        collapsible="icon"
+        className="border-r border-border/40"
+      >
         <SidebarHeader className="p-4">
           <Link
             href="/"
