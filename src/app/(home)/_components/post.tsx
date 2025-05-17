@@ -1,10 +1,17 @@
+"use client";
+
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
+import { Modal } from "~/components/ui/modal";
 import { PostCarousel } from "~/components/utils/post-carousel";
-import { formatTimeToNow, getInitials } from "~/lib/utils";
+import { useAuth } from "~/hooks/use-auth";
+import { formatTimeToNow, getInitials, showErrorToast } from "~/lib/utils";
 import { type Post, type User } from "~/server/db/schema";
+import { api } from "~/trpc/react";
 import { ActionButtons } from "./action-buttons";
 import { AddComment } from "./forms/add-comment";
 
@@ -14,6 +21,28 @@ interface PostProps {
 }
 
 export function Post({ post, author }: PostProps) {
+  const { userId } = useAuth();
+  const isAuthor = userId === author.id;
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const router = useRouter();
+  const utils = api.useUtils();
+
+  const deletePost = api.posts.delete.useMutation({
+    onSuccess: async () => {
+      await utils.posts.getAll.invalidate();
+      await utils.posts.getByUserId.invalidate({ userId: author.id });
+      router.refresh();
+    },
+    onError: (error) => {
+      showErrorToast(error);
+    },
+  });
+
+  const handleDelete = async () => {
+    await deletePost.mutateAsync({ postId: post.id });
+    setShowDeleteDialog(false);
+  };
+
   return (
     <article
       key={post.id}
@@ -46,10 +75,17 @@ export function Post({ post, author }: PostProps) {
               </p>
             </div>
 
-            <Button variant="ghost" size="icon" className="size-8 rounded-full">
-              <DotsHorizontalIcon aria-hidden className="size-4" />
-              <span className="sr-only">More options</span>
-            </Button>
+            {isAuthor && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-8 rounded-full"
+                onClick={() => setShowDeleteDialog(true)}
+              >
+                <DotsHorizontalIcon aria-hidden className="size-4" />
+                <span className="sr-only">More options</span>
+              </Button>
+            )}
           </div>
 
           <PostCarousel files={post.images} />
@@ -64,6 +100,31 @@ export function Post({ post, author }: PostProps) {
           <AddComment postId={post.id} />
         </div>
       </div>
+
+      <Modal showModal={showDeleteDialog} setShowModal={setShowDeleteDialog}>
+        <div className="flex flex-col space-y-4 p-6">
+          <h2 className="text-lg font-semibold">Delete post</h2>
+          <p className="text-sm text-muted-foreground">
+            Are you sure you want to delete this post? This action cannot be
+            undone.
+          </p>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowDeleteDialog(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={deletePost.isPending}
+            >
+              {deletePost.isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </article>
   );
 }
