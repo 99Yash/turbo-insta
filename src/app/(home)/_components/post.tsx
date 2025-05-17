@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
+import { Loading } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { PostCarousel } from "~/components/utils/post-carousel";
 import { useAuth } from "~/hooks/use-auth";
@@ -102,13 +103,13 @@ export function Post({ post, author }: PostProps) {
       </div>
 
       <Modal showModal={showDeleteDialog} setShowModal={setShowDeleteDialog}>
-        <div className="flex flex-col space-y-4 p-6">
+        <div className="flex flex-col gap-4">
           <h2 className="text-lg font-semibold">Delete post</h2>
           <p className="text-sm text-muted-foreground">
             Are you sure you want to delete this post? This action cannot be
             undone.
           </p>
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex justify-end gap-2">
             <Button
               variant="outline"
               onClick={() => setShowDeleteDialog(false)}
@@ -120,7 +121,7 @@ export function Post({ post, author }: PostProps) {
               onClick={handleDelete}
               disabled={deletePost.isPending}
             >
-              {deletePost.isPending ? "Deleting..." : "Delete"}
+              {deletePost.isPending ? <Loading className="size-4" /> : "Delete"}
             </Button>
           </div>
         </div>

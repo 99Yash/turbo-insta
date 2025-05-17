@@ -99,6 +99,13 @@
       "when": 1746858735444,
       "tag": "0013_free_husk",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "6",
+      "when": 1747457351244,
+      "tag": "0014_strong_proudstar",
+      "breakpoints": true
     }
   ]
 }

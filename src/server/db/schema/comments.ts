@@ -12,8 +12,12 @@ export const comments = pgTable(
       .$defaultFn(() => generateId())
       .primaryKey(),
     text: varchar("text", { length: 256 }),
-    userId: varchar("user_id", { length: 32 }).notNull(), // clerk user id
-    postId: varchar("post_id", { length: 32 }).notNull(),
+    userId: varchar("user_id", { length: 32 })
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(), // clerk user id
+    postId: varchar("post_id", { length: 32 })
+      .references(() => posts.id, { onDelete: "cascade" })
+      .notNull(),
     ...lifecycleDates,
   },
   (example) => ({

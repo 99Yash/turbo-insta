@@ -11,8 +11,12 @@ export const likes = pgTable(
     id: varchar("id")
       .$defaultFn(() => generateId())
       .primaryKey(),
-    userId: varchar("user_id", { length: 32 }).notNull(), // clerk user id
-    postId: varchar("post_id", { length: 32 }).notNull(),
+    userId: varchar("user_id", { length: 32 })
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(), // clerk user id
+    postId: varchar("post_id", { length: 32 })
+      .references(() => posts.id, { onDelete: "cascade" })
+      .notNull(),
     ...lifecycleDates,
   },
   (example) => ({

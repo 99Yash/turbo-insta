@@ -15,7 +15,9 @@ export const posts = pgTable(
       .primaryKey(),
     title: varchar("title", { length: 256 }),
     images: json("images").$type<StoredFile[]>().notNull(),
-    userId: varchar("user_id", { length: 32 }).notNull(), // clerk user id
+    userId: varchar("user_id", { length: 32 })
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(), // clerk user id
     ...lifecycleDates,
   },
   (example) => ({
