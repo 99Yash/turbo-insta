@@ -74,15 +74,18 @@ export const commentsRouter = createTRPCRouter({
         ...new Set(postComments.map((comment) => comment.userId)),
       ];
 
-      const authors = await ctx.db
-        .select({
-          id: users.id,
-          name: users.name,
-          imageUrl: users.imageUrl,
-          username: users.username,
-        })
-        .from(users)
-        .where(inArray(users.id, userIds));
+      const authors =
+        userIds.length > 0
+          ? await ctx.db
+              .select({
+                id: users.id,
+                name: users.name,
+                imageUrl: users.imageUrl,
+                username: users.username,
+              })
+              .from(users)
+              .where(inArray(users.id, userIds))
+          : [];
 
       const commentsWithUser = postComments.map((comment) => {
         const user = authors.find((u) => u.id === comment.userId);
