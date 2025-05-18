@@ -11,7 +11,7 @@ export const comments = pgTable(
     id: varchar("id")
       .$defaultFn(() => generateId())
       .primaryKey(),
-    text: varchar("text", { length: 256 }),
+    text: varchar("text", { length: 1024 }),
     userId: varchar("user_id", { length: 32 })
       .references(() => users.id, { onDelete: "cascade" })
       .notNull(), // clerk user id

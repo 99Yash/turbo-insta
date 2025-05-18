@@ -25,10 +25,6 @@ export function CommentsList({ postId }: CommentsListProps) {
       },
     );
 
-  const handleLoadMore = async () => {
-    await fetchNextPage();
-  };
-
   if (status === "pending") {
     return (
       <div className="flex flex-col space-y-4 px-4 py-2">
@@ -104,7 +100,7 @@ export function CommentsList({ postId }: CommentsListProps) {
             variant="ghost"
             size="sm"
             className="h-8 w-8 rounded-full p-0"
-            onClick={handleLoadMore}
+            onClick={async () => await fetchNextPage()}
             disabled={isFetchingNextPage}
           >
             {isFetchingNextPage ? (
@@ -115,9 +111,7 @@ export function CommentsList({ postId }: CommentsListProps) {
             <span className="sr-only">Load more comments</span>
           </Button>
         </div>
-      ) : (
-        <div className="h-8 border-t px-4" />
-      )}
+      ) : null}
     </div>
   );
 }
