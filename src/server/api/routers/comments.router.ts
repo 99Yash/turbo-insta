@@ -112,7 +112,7 @@ export const commentsRouter = createTRPCRouter({
       }
 
       return {
-        postComments: commentsWithUser,
+        comments: commentsWithUser,
         nextCursor,
       };
     }),

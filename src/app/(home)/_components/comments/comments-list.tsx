@@ -1,9 +1,10 @@
 "use client";
 
+import { Plus } from "lucide-react";
 import Link from "next/link";
-import * as React from "react";
-import { useInView } from "react-intersection-observer";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
+import { Loading } from "~/components/ui/icons";
 import { Skeleton } from "~/components/ui/skeleton";
 import { formatTimeToNow, getInitials } from "~/lib/utils";
 import { api } from "~/trpc/react";
@@ -13,26 +14,20 @@ interface CommentsListProps {
 }
 
 export function CommentsList({ postId }: CommentsListProps) {
-  const { ref, inView } = useInView();
-
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     api.comments.getByPostId.useInfiniteQuery(
       {
         postId,
-        limit: 13,
+        limit: 1,
       },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
       },
     );
 
-  React.useEffect(() => {
-    if (inView && hasNextPage && !isFetchingNextPage) {
-      void (async () => {
-        await fetchNextPage();
-      })();
-    }
-  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  const handleLoadMore = async () => {
+    await fetchNextPage();
+  };
 
   if (status === "pending") {
     return (
@@ -63,9 +58,9 @@ export function CommentsList({ postId }: CommentsListProps) {
   }
 
   return (
-    <div className="flex w-full flex-col space-y-4 overflow-hidden py-2">
+    <div className="flex w-full flex-col gap-4 py-2">
       {data.pages.map((page) =>
-        page.postComments.map((comment) => {
+        page.comments.map((comment) => {
           if (!comment.user) return null;
 
           return (
@@ -89,7 +84,9 @@ export function CommentsList({ postId }: CommentsListProps) {
                   >
                     {comment.user.username}
                   </Link>
-                  <span className="break-words">{comment.text}</span>
+                  <span className="whitespace-pre-wrap break-words">
+                    {comment.text}
+                  </span>
                 </p>
                 <div className="mt-1 flex space-x-3 text-xs text-muted-foreground">
                   <span>{formatTimeToNow(comment.createdAt)}</span>
@@ -102,14 +99,25 @@ export function CommentsList({ postId }: CommentsListProps) {
       )}
 
       {hasNextPage ? (
-        <div ref={ref} className="h-8 border-t px-4">
-          {isFetchingNextPage && (
-            <div className="text-center text-sm text-muted-foreground">
-              Loading more comments...
-            </div>
-          )}
+        <div className="flex justify-center py-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 rounded-full p-0"
+            onClick={handleLoadMore}
+            disabled={isFetchingNextPage}
+          >
+            {isFetchingNextPage ? (
+              <Loading className="h-4 w-4" />
+            ) : (
+              <Plus className="h-4 w-4" />
+            )}
+            <span className="sr-only">Load more comments</span>
+          </Button>
         </div>
-      ) : null}
+      ) : (
+        <div className="h-8 border-t px-4" />
+      )}
     </div>
   );
 }
