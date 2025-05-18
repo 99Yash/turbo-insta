@@ -1,6 +1,5 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
 import { CogIcon, Heart, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -22,9 +21,9 @@ import {
 } from "~/components/ui/sidebar";
 import { siteConfig } from "~/config/site";
 import { cn, getInitials } from "~/lib/utils";
+import { type User } from "~/server/db/schema";
 
-export function AppSidebar() {
-  const { user } = useUser();
+export function AppSidebar({ user }: { user: User }) {
   const pathname = usePathname();
 
   const navItems = [
@@ -140,10 +139,10 @@ export function AppSidebar() {
                         <Avatar className="size-5 border border-border/30">
                           <AvatarImage
                             src={user?.imageUrl ?? ""}
-                            alt={user?.fullName ?? ""}
+                            alt={user?.name ?? ""}
                           />
                           <AvatarFallback className="text-xs">
-                            {getInitials(user?.fullName ?? "VH")}
+                            {getInitials(user?.name ?? "VH")}
                           </AvatarFallback>
                         </Avatar>
                         <span className="font-medium">Profile</span>

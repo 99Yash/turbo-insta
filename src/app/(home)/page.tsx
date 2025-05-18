@@ -1,4 +1,5 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { getCachedUser } from "~/lib/queries/user";
 import { api, HydrateClient } from "~/trpc/server";
 import { AppSidebar } from "./_components/app-sidebar";
 import { Create } from "./_components/forms/create";
@@ -9,12 +10,16 @@ export default async function Home() {
     limit: 10,
   });
 
-  const user = await currentUser();
+  const user = await getCachedUser();
+
+  if (!user) {
+    redirect("/signin");
+  }
 
   return (
     <div className="flex h-full">
       <div className="fixed left-0 top-0 z-20 h-full border-r border-border">
-        <AppSidebar />
+        <AppSidebar user={user} />
       </div>
       <div className="flex-1">
         <div className="mx-auto max-w-[470px]">
