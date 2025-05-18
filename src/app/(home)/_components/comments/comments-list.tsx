@@ -82,17 +82,15 @@ export function CommentsList({ postId }: CommentsListProps) {
                 </Avatar>
               </Link>
               <div className="flex min-w-0 flex-1 flex-col">
-                <div className="flex flex-wrap">
+                <p className="inline">
                   <Link
                     href={`/${comment.user.username}`}
-                    className="mr-1.5 shrink-0 font-semibold hover:underline"
+                    className="mr-1 font-semibold hover:underline"
                   >
                     {comment.user.username}
                   </Link>
-                  <span className="min-w-0 max-w-full break-words">
-                    {comment.text}
-                  </span>
-                </div>
+                  <span className="break-words">{comment.text}</span>
+                </p>
                 <div className="mt-1 flex space-x-3 text-xs text-muted-foreground">
                   <span>{formatTimeToNow(comment.createdAt)}</span>
                   <button className="font-semibold">Reply</button>
