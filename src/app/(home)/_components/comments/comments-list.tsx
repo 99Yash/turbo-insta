@@ -18,7 +18,7 @@ export function CommentsList({ postId }: CommentsListProps) {
     api.comments.getByPostId.useInfiniteQuery(
       {
         postId,
-        limit: 1,
+        limit: 10,
       },
       {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
