@@ -6,7 +6,7 @@ import { AddComment } from "~/app/(home)/_components/forms/add-comment";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { PostCarousel } from "~/components/utils/post-carousel";
 import { siteConfig } from "~/config/site";
-import { formatTimeToNow, getInitials } from "~/lib/utils";
+import { formatDate, formatTimeToNow, getInitials } from "~/lib/utils";
 import { getUserById } from "~/server/api/services/user.service";
 import { api, HydrateClient } from "~/trpc/server";
 import { ActionButtons } from "../../_components/action-buttons";
@@ -27,13 +27,15 @@ export const generateMetadata = async ({
 
   if (!author) return { title: "Post not found" };
   return {
-    title: `${post.title} - ${author?.name} on ${siteConfig.name}`,
+    title: `${author?.name} on ${siteConfig.name}`,
     description: post.title,
     openGraph: {
       type: "website",
       locale: "en_US",
-      title: `${author?.name} on ${siteConfig.name}`,
-      description: post.title ?? "",
+      title: `${author?.name}'s post on ${siteConfig.name}`,
+      description:
+        post.title ??
+        `Look at ${author.name}'s post from ${formatDate(post.createdAt)}`,
       url: `${siteConfig.url}/posts/${post.id}`,
       images: post.images.map((image) => ({
         url: image.url,
@@ -46,7 +48,9 @@ export const generateMetadata = async ({
     twitter: {
       card: "summary_large_image",
       title: `${author?.name} on ${siteConfig.name}`,
-      description: post.title ?? "",
+      description:
+        post.title ??
+        `Look at ${author.name}'s post from ${formatDate(post.createdAt)}`,
       images: post.images.map((image) => image.url),
       site: siteConfig.url,
       creator: "@YashGouravKar1",
@@ -85,7 +89,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
                 </AvatarFallback>
               </Avatar>
             </Link>
-            <span className="text-sm font-semibold">{author.name}</span>
+            <span className="text-sm font-semibold">{author.username}</span>
           </div>
 
           {post.title && (
