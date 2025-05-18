@@ -104,7 +104,9 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
                 </Link>
                 <div className="flex flex-col gap-1">
                   <div>
-                    <span className="text-sm font-semibold">{author.name}</span>{" "}
+                    <span className="text-sm font-semibold">
+                      {author.username}
+                    </span>{" "}
                     <span className="text-sm">{post.title}</span>
                   </div>
                   <span className="text-xs text-muted-foreground">

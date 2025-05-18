@@ -28,10 +28,13 @@ export function AddComment({ postId }: { postId: string }) {
     },
   });
 
+  const trpcUtils = api.useUtils();
+
   const addComment = api.comments.create.useMutation({
     onSuccess: () => {
       toast.success("Comment added successfully");
       form.reset();
+      void trpcUtils.comments.getByPostId.invalidate({ postId });
     },
     onError: (error) => {
       showErrorToast(error);

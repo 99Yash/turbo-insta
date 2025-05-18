@@ -63,7 +63,7 @@ export function CommentsList({ postId }: CommentsListProps) {
   }
 
   return (
-    <div className="flex flex-col space-y-4 py-2">
+    <div className="flex w-full flex-col space-y-4 overflow-hidden py-2">
       {data.pages.map((page) =>
         page.postComments.map((comment) => {
           if (!comment.user) return null;
@@ -81,18 +81,18 @@ export function CommentsList({ postId }: CommentsListProps) {
                   </AvatarFallback>
                 </Avatar>
               </Link>
-              <div className="flex flex-1 flex-col">
-                <span className="space-x-1">
+              <div className="flex min-w-0 flex-1 flex-col">
+                <div className="flex flex-wrap">
                   <Link
                     href={`/${comment.user.username}`}
-                    className="font-semibold hover:underline"
+                    className="mr-1.5 shrink-0 font-semibold hover:underline"
                   >
-                    {comment.user.name}
+                    {comment.user.username}
                   </Link>
-                  <span className="flex-wrap whitespace-pre break-words">
+                  <span className="min-w-0 max-w-full break-words">
                     {comment.text}
                   </span>
-                </span>
+                </div>
                 <div className="mt-1 flex space-x-3 text-xs text-muted-foreground">
                   <span>{formatTimeToNow(comment.createdAt)}</span>
                   <button className="font-semibold">Reply</button>
