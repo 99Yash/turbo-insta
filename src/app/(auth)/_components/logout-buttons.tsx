@@ -2,7 +2,6 @@
 
 import { SignOutButton } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-
 import { Button, buttonVariants } from "~/components/ui/button";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useMounted } from "~/hooks/use-mounted";
@@ -24,7 +23,7 @@ export function LogOutButtons() {
         <span className="sr-only">Previous page</span>
       </Button>
       {mounted ? (
-        <SignOutButton redirectUrl={window.location.origin}>
+        <SignOutButton redirectUrl={"/signin"}>
           <Button size="sm" className="w-full">
             Log out
             <span className="sr-only">Log out</span>
