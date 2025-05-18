@@ -129,6 +129,18 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
 
           <div className="border-t bg-background px-2 py-3">
             <ActionButtons postId={post.id} />
+            <p className="text-xs font-medium text-muted-foreground">
+              {formatTimeToNow(
+                post.createdAt,
+                {
+                  showDateAfterDays: 10,
+                },
+                {
+                  addSuffix: true,
+                  locale: undefined,
+                },
+              )}
+            </p>
             <AddComment postId={post.id} />
           </div>
         </div>

@@ -1,7 +1,10 @@
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { type User } from "@clerk/nextjs/server";
 import { type ClassValue, clsx } from "clsx";
-import { formatDistanceToNowStrict } from "date-fns";
+import {
+  formatDistanceToNowStrict,
+  type FormatDistanceToNowStrictOptions,
+} from "date-fns";
 import { customAlphabet } from "nanoid";
 import { toast } from "sonner";
 import { twMerge } from "tailwind-merge";
@@ -172,7 +175,7 @@ export const formatDistanceLocale = {
   almostXYears: "{{count}}y",
 };
 
-function formatDistance(token: string, count: number): string {
+export function formatDistance(token: string, count: number): string {
   const result = formatDistanceLocale[
     token as keyof typeof formatDistanceLocale
   ].replace("{{count}}", count.toString());
@@ -184,6 +187,7 @@ function formatDistance(token: string, count: number): string {
 export function formatTimeToNow(
   date: Date,
   { showDateAfterDays = Infinity }: { showDateAfterDays?: number } = {},
+  options?: FormatDistanceToNowStrictOptions,
 ): string {
   const daysDiff = Math.floor(
     (new Date().getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
@@ -198,5 +202,6 @@ export function formatTimeToNow(
       formatDistance,
     },
     addSuffix: true,
+    ...options,
   });
 }

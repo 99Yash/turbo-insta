@@ -105,7 +105,7 @@ export function ActionButtons({ postId }: { postId: string }) {
         onOpenChange={setIsShareOpen}
         postId={postId}
       />
-      <p className="mt-2 text-sm font-semibold">
+      <p className="mt-3.5 text-sm font-bold">
         {likesData
           ? `${likesData.count} ${likesData.count === 1 ? "like" : "likes"}`
           : "\u00A0"}
