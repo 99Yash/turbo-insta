@@ -27,7 +27,7 @@ export function CommentsList({ postId }: CommentsListProps) {
 
   if (status === "pending") {
     return (
-      <div className="flex flex-col space-y-4 p-3">
+      <div className="flex flex-col space-y-4 px-2 py-4">
         {Array.from({ length: 12 }).map((_, i) => (
           <div key={i} className="flex items-start px-4 text-sm">
             <Skeleton className="mr-2 size-7 rounded-full" />
@@ -60,7 +60,10 @@ export function CommentsList({ postId }: CommentsListProps) {
           if (!comment.user) return null;
 
           return (
-            <div key={comment.id} className="flex items-start p-3 text-sm">
+            <div
+              key={comment.id}
+              className="flex items-start px-2 py-4 text-sm"
+            >
               <Link href={`/${comment.user.username}`}>
                 <Avatar className="mr-2 size-7">
                   <AvatarImage

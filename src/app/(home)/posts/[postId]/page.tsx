@@ -77,7 +77,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
           />
         </div>
         <div className="flex max-w-[450px] flex-col">
-          <div className="flex items-center gap-1.5 border-b px-4 py-3">
+          <div className="flex items-center gap-1.5 border-b px-2 py-4">
             <Link href={`/${author.username}`}>
               <Avatar className="size-7">
                 <AvatarImage
@@ -94,7 +94,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
 
           <div className="h-[calc(100%-8rem)] overflow-y-auto scrollbar-hide">
             {post.title && (
-              <div className="p-3">
+              <div className="px-2 py-4">
                 <div className="flex items-start gap-2">
                   <Link href={`/${author.username}`}>
                     <Avatar className="size-7">
@@ -127,7 +127,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
             <CommentsList postId={post.id} />
           </div>
 
-          <div className="border-t bg-background px-2 py-3">
+          <div className="border-t bg-background px-2 py-4">
             <ActionButtons postId={post.id} />
             <p className="border-b pb-3.5 text-xs font-medium text-muted-foreground">
               {formatTimeToNow(
