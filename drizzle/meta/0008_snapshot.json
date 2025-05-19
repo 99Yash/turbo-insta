@@ -62,16 +62,12 @@
       "indexes": {
         "url_idx": {
           "name": "url_idx",
-          "columns": [
-            "url"
-          ],
+          "columns": ["url"],
           "isUnique": false
         },
         "post_id_idx": {
           "name": "post_id_idx",
-          "columns": [
-            "post_id"
-          ],
+          "columns": ["post_id"],
           "isUnique": false
         }
       },
@@ -80,12 +76,8 @@
           "name": "images_post_id_posts_id_fk",
           "tableFrom": "images",
           "tableTo": "posts",
-          "columnsFrom": [
-            "post_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["post_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -139,9 +131,7 @@
       "indexes": {
         "title_idx": {
           "name": "title_idx",
-          "columns": [
-            "title"
-          ],
+          "columns": ["title"],
           "isUnique": false
         }
       },

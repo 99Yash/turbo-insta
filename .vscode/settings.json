@@ -1,14 +1,9 @@
 {
-	"typescript.preferences.autoImportFileExcludePatterns": [
-		"@radix-ui/*",
-		"lucide-react/*",
-		"framer-motion/*",
-		"react-hook-form/*",
-	],
-	"cSpell.words": [
-		"nucleo",
-		"Repligram",
-		"svix",
-		"UPLOADTHING"
-	]
+  "typescript.preferences.autoImportFileExcludePatterns": [
+    "@radix-ui/*",
+    "lucide-react/*",
+    "framer-motion/*",
+    "react-hook-form/*"
+  ],
+  "cSpell.words": ["nucleo", "Repligram", "svix", "UPLOADTHING"]
 }

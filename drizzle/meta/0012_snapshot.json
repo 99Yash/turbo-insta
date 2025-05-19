@@ -50,9 +50,7 @@
       "indexes": {
         "post_id_idx": {
           "name": "post_id_idx",
-          "columns": [
-            "post_id"
-          ],
+          "columns": ["post_id"],
           "isUnique": false
         }
       },
@@ -100,16 +98,12 @@
       "indexes": {
         "post_id_like_idx": {
           "name": "post_id_like_idx",
-          "columns": [
-            "post_id"
-          ],
+          "columns": ["post_id"],
           "isUnique": false
         },
         "user_id_like_idx": {
           "name": "user_id_like_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },
@@ -163,16 +157,12 @@
       "indexes": {
         "title_idx": {
           "name": "title_idx",
-          "columns": [
-            "title"
-          ],
+          "columns": ["title"],
           "isUnique": false
         },
         "user_id_idx": {
           "name": "user_id_idx",
-          "columns": [
-            "user_id"
-          ],
+          "columns": ["user_id"],
           "isUnique": false
         }
       },

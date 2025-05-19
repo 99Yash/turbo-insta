@@ -44,9 +44,7 @@
       "indexes": {
         "title_idx": {
           "name": "title_idx",
-          "columns": [
-            "title"
-          ],
+          "columns": ["title"],
           "isUnique": false
         }
       },

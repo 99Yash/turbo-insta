@@ -26,7 +26,7 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8 md:px-6 lg:px-8">
       {/* Profile Header */}
-      <div className="animate-fade-in animation-delay-200 flex flex-col md:flex-row md:items-center md:gap-8">
+      <div className="flex animate-fade-in flex-col animation-delay-200 md:flex-row md:items-center md:gap-8">
         <div className="flex justify-center md:justify-start">
           <Avatar className="size-24 shadow-md ring-2 ring-primary/10 md:size-32">
             <AvatarImage src={user.imageUrl ?? ""} alt={user.name} />
@@ -36,7 +36,7 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
           </Avatar>
         </div>
 
-        <div className="animation-delay-200 mt-6 flex flex-1 flex-col md:mt-0">
+        <div className="mt-6 flex flex-1 flex-col animation-delay-200 md:mt-0">
           <div className="flex flex-wrap items-center gap-4">
             <h1 className="text-2xl font-bold">{user.username ?? user.name}</h1>
 
@@ -111,7 +111,7 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
       </div>
 
       {/* Profile Tabs */}
-      <div className="animate-fade-in animation-delay-300 mt-8 w-full border-t">
+      <div className="mt-8 w-full animate-fade-in border-t animation-delay-300">
         <Tabs defaultValue="posts" className="w-full">
           <TabsList className="flex h-auto w-full justify-center rounded-none border-b bg-transparent p-0">
             <TabsTrigger
@@ -139,7 +139,7 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
 
           <TabsContent
             value="posts"
-            className="animate-slide-up animation-delay-400 mt-6"
+            className="mt-6 animate-slide-up animation-delay-400"
           >
             <ProfilePosts posts={posts} />
           </TabsContent>
