@@ -129,7 +129,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
 
           <div className="border-t bg-background px-2 py-3">
             <ActionButtons postId={post.id} />
-            <p className="text-xs font-medium text-muted-foreground">
+            <p className="border-b pb-3.5 text-xs font-medium text-muted-foreground">
               {formatTimeToNow(
                 post.createdAt,
                 {
