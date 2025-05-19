@@ -78,7 +78,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
         </div>
         <div className="flex max-w-[450px] flex-col">
           <div className="flex items-center gap-1.5 border-b px-4 py-3">
-            <Link href={`/${author.id}`}>
+            <Link href={`/${author.username}`}>
               <Avatar className="size-7">
                 <AvatarImage
                   src={author.imageUrl ?? ""}
@@ -95,7 +95,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
           {post.title && (
             <div className="px-4 py-3">
               <div className="flex items-start gap-2">
-                <Link href={`/${author.id}`}>
+                <Link href={`/${author.username}`}>
                   <Avatar className="size-7">
                     <AvatarImage
                       src={author.imageUrl ?? ""}
@@ -110,7 +110,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
                   <div>
                     <span className="text-sm font-semibold">
                       {author.username}
-                    </span>{" "}
+                    </span>
                     <span className="text-sm">{post.title}</span>
                   </div>
                   <span className="text-xs text-muted-foreground">
