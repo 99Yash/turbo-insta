@@ -92,38 +92,38 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
             <span className="text-sm font-semibold">{author.username}</span>
           </div>
 
-          {post.title && (
-            <div className="px-4 py-3">
-              <div className="flex items-start gap-2">
-                <Link href={`/${author.username}`}>
-                  <Avatar className="size-7">
-                    <AvatarImage
-                      src={author.imageUrl ?? ""}
-                      alt={author.name ?? "VH"}
-                    />
-                    <AvatarFallback>
-                      {getInitials(author.name ?? "VH")}
-                    </AvatarFallback>
-                  </Avatar>
-                </Link>
-                <div className="flex flex-col gap-1">
-                  <div>
-                    <span className="text-sm font-semibold">
-                      {author.username}
+          <div className="h-[calc(100%-8rem)] overflow-y-auto scrollbar-hide">
+            {post.title && (
+              <div className="px-4 py-3">
+                <div className="flex items-start gap-2">
+                  <Link href={`/${author.username}`}>
+                    <Avatar className="size-7">
+                      <AvatarImage
+                        src={author.imageUrl ?? ""}
+                        alt={author.name ?? "VH"}
+                      />
+                      <AvatarFallback>
+                        {getInitials(author.name ?? "VH")}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Link>
+                  <div className="flex flex-col gap-1">
+                    <div>
+                      <span className="text-sm font-semibold">
+                        {author.username}
+                      </span>{" "}
+                      <span className="text-sm">{post.title}</span>
+                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {formatTimeToNow(post.createdAt, {
+                        showDateAfterDays: 10,
+                      })}
                     </span>
-                    <span className="text-sm">{post.title}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {formatTimeToNow(post.createdAt, {
-                      showDateAfterDays: 10,
-                    })}
-                  </span>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="h-[calc(100%-8rem)] overflow-y-auto scrollbar-hide">
             <CommentsList postId={post.id} />
           </div>
 
