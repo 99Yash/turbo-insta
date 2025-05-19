@@ -19,7 +19,6 @@
     "start": "next start"
   },
   "dependencies": {
-    "@ably/chat": "^0.5.1",
     "@ai-sdk/google": "^1.1.16",
     "@ai-sdk/openai": "^1.1.12",
     "@clerk/nextjs": "^6.19.1",

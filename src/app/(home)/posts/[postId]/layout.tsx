@@ -31,7 +31,7 @@ export default function ModalLayout({ children }: React.PropsWithChildren) {
     <Dialog defaultOpen={true}>
       <DialogContent
         ref={contentRef}
-        className="max-w-screen-2xl overflow-hidden p-0"
+        className="max-w-screen-2xl overflow-hidden p-0 focus-within:ring-0 focus-visible:outline-none focus-visible:ring-0"
       >
         {children}
       </DialogContent>

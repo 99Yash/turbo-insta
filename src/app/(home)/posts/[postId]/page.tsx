@@ -27,12 +27,12 @@ export const generateMetadata = async ({
 
   if (!author) return { title: "Post not found" };
   return {
-    title: `${author?.name} on ${siteConfig.name}`,
+    title: `${author?.name} on ${siteConfig.name} ${post.title ? `• ${post.title}` : ""}`,
     description: post.title,
     openGraph: {
       type: "website",
       locale: "en_US",
-      title: `${author?.name}'s post on ${siteConfig.name}`,
+      title: `${author?.name}'s post on ${siteConfig.name} ${post.title ? `• ${post.title}` : ""}`,
       description:
         post.title ??
         `Look at ${author.name}'s post from ${formatDate(post.createdAt)}`,
@@ -47,7 +47,7 @@ export const generateMetadata = async ({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${author?.name} on ${siteConfig.name}`,
+      title: `${author?.name} on ${siteConfig.name} ${post.title ? `• ${post.title}` : ""}`,
       description:
         post.title ??
         `Look at ${author.name}'s post from ${formatDate(post.createdAt)}`,
@@ -94,7 +94,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
 
           <div className="h-[calc(100%-8rem)] overflow-y-auto scrollbar-hide">
             {post.title && (
-              <div className="px-4 py-3">
+              <div className="p-3">
                 <div className="flex items-start gap-2">
                   <Link href={`/${author.username}`}>
                     <Avatar className="size-7">
