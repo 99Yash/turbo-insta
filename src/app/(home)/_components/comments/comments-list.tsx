@@ -77,7 +77,7 @@ function UserHoverCard({ user, children }: UserHoverCardProps) {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-0.5 p-1">
+          <div className="grid grid-cols-3 gap-1 p-1">
             {isLoading ? (
               // Loading state - show skeletons
               Array.from({ length: 3 }).map((_, i) => (
