@@ -1,10 +1,15 @@
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, count, desc, eq, gt, or } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { generateAltText } from "~/lib/queries/ai";
 import { db } from "~/server/db";
-import { posts } from "~/server/db/schema";
-import { type CreatePostInput } from "../schema/posts.schema";
+import { likes, posts } from "~/server/db/schema";
+import {
+  type CreatePostInput,
+  type getPostByIdSchema,
+  type GetPostsByUserIdInput,
+} from "../schema/posts.schema";
+import { type WithUser } from "../schema/user.schema";
 
 export const utapi = new UTApi({
   apiKey: process.env.UPLOADTHING_SECRET,
@@ -53,8 +58,10 @@ export const createPost = async (input: CreatePostInput, userId: string) => {
   }
 };
 
-export const deletePost = async (postId: string, userId: string) => {
+export const deletePost = async (input: WithUser<typeof getPostByIdSchema>) => {
   try {
+    const { postId, userId } = input;
+
     const [post] = await db
       .select()
       .from(posts)
@@ -82,4 +89,59 @@ export const deletePost = async (postId: string, userId: string) => {
       message: getTRPCErrorFromUnknown(e).message,
     });
   }
+};
+
+export async function getPostsByUserId(input: GetPostsByUserIdInput) {
+  const { userId, limit, cursor } = input;
+
+  const items = await db
+    .select()
+    .from(posts)
+    .where(
+      cursor
+        ? and(
+            eq(posts.userId, userId),
+            or(
+              gt(posts.createdAt, cursor.createdAt),
+              and(
+                eq(posts.createdAt, cursor.createdAt),
+                gt(posts.id, cursor.id),
+              ),
+            ),
+          )
+        : eq(posts.userId, userId),
+    )
+    .orderBy(desc(posts.createdAt), desc(posts.id))
+    .limit(limit + 1);
+
+  let nextCursor: typeof cursor | undefined = undefined;
+
+  if (items.length > limit) {
+    const nextItem = items.pop()!;
+    nextCursor = {
+      id: nextItem.id,
+      createdAt: nextItem.createdAt,
+    };
+  }
+
+  return {
+    items,
+    nextCursor,
+  };
+}
+
+export const getUserTopPosts = async (userId: string) => {
+  const postsWithLikes = await db
+    .select({
+      post: posts,
+      likeCount: count(likes.id),
+    })
+    .from(posts)
+    .leftJoin(likes, eq(posts.id, likes.postId))
+    .where(eq(posts.userId, userId))
+    .groupBy(posts.id)
+    .orderBy(desc(count(likes.id)), desc(posts.createdAt))
+    .limit(3);
+
+  return postsWithLikes;
 };
