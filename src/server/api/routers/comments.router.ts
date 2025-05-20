@@ -1,19 +1,16 @@
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import { and, desc, eq, inArray, lt, or } from "drizzle-orm";
-import { z } from "zod";
 import { comments } from "~/server/db/schema";
 import { users } from "~/server/db/schema/users";
+import {
+  createCommentSchema,
+  getCommentsSchema,
+} from "../schema/comments.schema";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
-import { MAX_COMMENT_CHAR_LENGTH } from "../validators/posts.validator";
 
 export const commentsRouter = createTRPCRouter({
   create: protectedProcedure
-    .input(
-      z.object({
-        text: z.string().min(1).max(MAX_COMMENT_CHAR_LENGTH),
-        postId: z.string(),
-      }),
-    )
+    .input(createCommentSchema)
     .mutation(async ({ input, ctx }) => {
       try {
         const [comment] = await ctx.db
@@ -35,18 +32,7 @@ export const commentsRouter = createTRPCRouter({
     }),
 
   getByPostId: publicProcedure
-    .input(
-      z.object({
-        postId: z.string(),
-        limit: z.number().min(1).max(50).default(20),
-        cursor: z
-          .object({
-            id: z.string(),
-            createdAt: z.date(),
-          })
-          .nullish(),
-      }),
-    )
+    .input(getCommentsSchema)
     .query(async ({ input, ctx }) => {
       const { postId, limit, cursor } = input;
 
