@@ -176,4 +176,29 @@ export const postsRouter = createTRPCRouter({
         nextCursor,
       };
     }),
+
+  getUserTopPosts: publicProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        limit: z.number().min(1).max(10).default(3),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const { userId, limit } = input;
+
+      const postsWithLikes = await ctx.db
+        .select({
+          post: posts,
+          likeCount: count(likes.id),
+        })
+        .from(posts)
+        .leftJoin(likes, eq(posts.id, likes.postId))
+        .where(eq(posts.userId, userId))
+        .groupBy(posts.id)
+        .orderBy(desc(count(likes.id)), desc(posts.createdAt))
+        .limit(limit);
+
+      return postsWithLikes;
+    }),
 });
