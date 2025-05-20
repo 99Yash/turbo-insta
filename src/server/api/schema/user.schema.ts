@@ -41,3 +41,7 @@ export function withUser<T extends z.AnyZodObject>(schema: T) {
     } & T["shape"]
   >;
 }
+
+export type WithUser<T extends z.AnyZodObject> = z.infer<
+  ReturnType<typeof withUser<T>>
+>;
