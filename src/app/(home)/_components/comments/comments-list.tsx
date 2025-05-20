@@ -54,7 +54,7 @@ export function CommentsList({ postId }: CommentsListProps) {
   }
 
   return (
-    <div className="flex w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-2">
       {data.pages.map((page) =>
         page.comments.map((comment) => {
           if (!comment.user) return null;
