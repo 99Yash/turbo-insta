@@ -1,5 +1,5 @@
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
-import { and, desc, eq, gt, inArray, or } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import { comments } from "~/server/db/schema";
 import { users } from "~/server/db/schema/users";
@@ -54,21 +54,23 @@ export const commentsRouter = createTRPCRouter({
         .select()
         .from(comments)
         .where(
-          cursor
-            ? and(
-                eq(comments.postId, postId),
-                or(
-                  gt(comments.createdAt, cursor.createdAt),
+          and(
+            eq(comments.postId, postId),
+            cursor
+              ? or(
+                  // Get comments created before the cursor date
+                  lt(comments.createdAt, cursor.createdAt),
+                  // Or get comments created at the same time but with smaller ID
                   and(
                     eq(comments.createdAt, cursor.createdAt),
-                    gt(comments.id, cursor.id),
+                    lt(comments.id, cursor.id),
                   ),
-                ),
-              )
-            : undefined,
+                )
+              : undefined,
+          ),
         )
         .orderBy(desc(comments.createdAt), desc(comments.id))
-        .limit(limit);
+        .limit(limit + 1);
 
       const userIds = [
         ...new Set(postComments.map((comment) => comment.userId)),
