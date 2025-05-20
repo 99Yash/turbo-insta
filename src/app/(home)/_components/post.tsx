@@ -30,6 +30,7 @@ export function Post({ post, author }: PostProps) {
 
   const deletePost = api.posts.delete.useMutation({
     onSuccess: async () => {
+      setShowDeleteDialog(false);
       await utils.posts.getAll.invalidate();
       await utils.posts.getByUserId.invalidate({ userId: author.id });
       router.refresh();
@@ -41,7 +42,6 @@ export function Post({ post, author }: PostProps) {
 
   const handleDelete = async () => {
     await deletePost.mutateAsync({ postId: post.id });
-    setShowDeleteDialog(false);
   };
 
   return (

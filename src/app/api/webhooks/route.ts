@@ -1,3 +1,4 @@
+import { clerkClient } from "@clerk/nextjs/server";
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
 import { eq } from "drizzle-orm";
 import { type NextRequest } from "next/server";
@@ -45,7 +46,12 @@ export async function POST(req: NextRequest) {
           isVerified: false,
         });
 
-        console.info(`Created user in database: ${username}`);
+        console.info(`Created user in database with username: ${username}`);
+
+        const cc = await clerkClient();
+        await cc.users.updateUser(clerkId, {
+          username,
+        });
       } catch (error) {
         console.error("Error creating user in database:", error);
         return new Response("Failed to create user", { status: 500 });
@@ -81,7 +87,12 @@ export async function POST(req: NextRequest) {
           })
           .where(eq(users.id, clerkId));
 
-        console.info(`Updated user in database: ${username}`);
+        console.info(`Updated user in database with username: ${username}`);
+
+        const cc = await clerkClient();
+        await cc.users.updateUser(clerkId, {
+          username,
+        });
       } catch (error) {
         console.error("Error updating user in database:", error);
         return new Response("Failed to update user", { status: 500 });
