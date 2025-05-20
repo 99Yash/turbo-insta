@@ -3,7 +3,6 @@
 import { Plus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
@@ -16,40 +15,6 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { formatTimeToNow, getInitials } from "~/lib/utils";
 import { type User } from "~/server/db/schema";
 import { api } from "~/trpc/react";
-
-// Hover Card Test Wrapper
-function HoverCardTester() {
-  const [isOpen, setIsOpen] = useState(false);
-
-  return (
-    <div className="mb-4 rounded border p-4">
-      <h3 className="mb-2 text-sm font-medium">
-        Hover Card Test (click to toggle):
-      </h3>
-      <div className="flex flex-col gap-4">
-        <Button variant="outline" onClick={() => setIsOpen(!isOpen)}>
-          Toggle Hover Card Test
-        </Button>
-
-        <HoverCard open={isOpen} onOpenChange={setIsOpen}>
-          <HoverCardTrigger asChild>
-            <Button variant="outline">Hover or Click Me</Button>
-          </HoverCardTrigger>
-          <HoverCardContent className="w-64">
-            <div className="space-y-2">
-              <h4 className="text-sm font-semibold">
-                This is a test hover card
-              </h4>
-              <p className="text-xs">
-                If you can see this, hover cards are working correctly.
-              </p>
-            </div>
-          </HoverCardContent>
-        </HoverCard>
-      </div>
-    </div>
-  );
-}
 
 interface UserHoverCardProps {
   user: Partial<User>;
