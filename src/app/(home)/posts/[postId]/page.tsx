@@ -84,7 +84,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
           <div className="flex items-center gap-1.5 border-b px-3.5 py-4">
             <UserHoverCard user={author}>
               <div className="flex items-center gap-2">
-                <Link href={`/${author.username}`}>
+                <Link href={`/${author.username}`} role="button">
                   <Avatar className="size-7">
                     <AvatarImage
                       src={author.imageUrl ?? ""}
@@ -95,7 +95,9 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
                     </AvatarFallback>
                   </Avatar>
                 </Link>
-                <span className="text-sm font-semibold">{author.username}</span>
+                <span className="text-sm font-semibold" role="button">
+                  {author.username}
+                </span>
               </div>
             </UserHoverCard>
           </div>
@@ -104,22 +106,26 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
             {post.title && (
               <div className="px-3.5 py-4">
                 <div className="flex items-start gap-2">
-                  <Link href={`/${author.username}`}>
-                    <Avatar className="size-7">
-                      <AvatarImage
-                        src={author.imageUrl ?? ""}
-                        alt={author.name ?? "VH"}
-                      />
-                      <AvatarFallback>
-                        {getInitials(author.name ?? "VH")}
-                      </AvatarFallback>
-                    </Avatar>
-                  </Link>
+                  <UserHoverCard user={author}>
+                    <Link href={`/${author.username}`} role="button">
+                      <Avatar className="size-7">
+                        <AvatarImage
+                          src={author.imageUrl ?? ""}
+                          alt={author.name ?? "VH"}
+                        />
+                        <AvatarFallback>
+                          {getInitials(author.name ?? "VH")}
+                        </AvatarFallback>
+                      </Avatar>
+                    </Link>
+                  </UserHoverCard>
                   <div className="flex flex-col gap-1">
                     <div>
-                      <span className="text-sm font-semibold">
-                        {author.username}
-                      </span>{" "}
+                      <UserHoverCard user={author}>
+                        <span className="text-sm font-semibold" role="button">
+                          {author.username}
+                        </span>
+                      </UserHoverCard>{" "}
                       <span className="text-sm">{post.title}</span>
                     </div>
                     <span className="text-xs text-muted-foreground">

@@ -82,8 +82,9 @@ export function CommentsList({ postId }: CommentsListProps) {
                 <p className="inline">
                   <UserHoverCard user={comment.user}>
                     <Link
+                      role="button"
                       href={`/${comment.user.username}`}
-                      className="mr-1 font-semibold hover:underline"
+                      className="mr-1 font-semibold"
                     >
                       {comment.user.username}
                     </Link>
