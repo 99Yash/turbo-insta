@@ -75,7 +75,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
         <div className="relative flex-1 basis-0 border-none">
           <PostCarousel
             files={post.images}
-            className="h-full border-none shadow-none"
+            className="h-full rounded-none border-r border-r-muted-foreground/20 shadow-none"
             modal
             optimize={false}
           />
@@ -135,7 +135,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
             <CommentsList postId={post.id} />
           </div>
 
-          <div className="border-t bg-background py-4">
+          <div className="border-t py-4">
             <div className="px-2">
               <ActionButtons postId={post.id} />
               <p className="pb-3.5 text-xs font-medium text-muted-foreground">

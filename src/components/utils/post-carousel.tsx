@@ -100,7 +100,7 @@ export function PostCarousel({
         >
           {files.map((f, index) => (
             <section
-              className="relative min-w-0 flex-[0_0_100%] rounded border border-muted-foreground/20"
+              className="relative min-w-0 flex-[0_0_100%] rounded"
               key={f.url}
             >
               <div

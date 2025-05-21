@@ -89,7 +89,10 @@ export function Post({ post, author }: PostProps) {
             )}
           </div>
 
-          <PostCarousel files={post.images} />
+          <PostCarousel
+            files={post.images}
+            className="rounded-sm border border-muted-foreground/20"
+          />
 
           <div className="flex flex-col gap-3 pt-3">
             <ActionButtons postId={post.id} />
