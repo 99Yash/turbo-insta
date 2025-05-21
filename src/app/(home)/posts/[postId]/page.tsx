@@ -71,7 +71,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
 
   return (
     <HydrateClient>
-      <div className="flex h-[calc(100vh-4rem)] w-full gap-2">
+      <div className="flex h-[calc(100vh-4rem)] w-full rounded-none">
         <div className="relative flex-1 basis-0 border-none">
           <PostCarousel
             files={post.images}
@@ -135,21 +135,26 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
             <CommentsList postId={post.id} />
           </div>
 
-          <div className="border-t bg-background px-2 py-4">
-            <ActionButtons postId={post.id} />
-            <p className="border-b pb-3.5 text-xs font-medium text-muted-foreground">
-              {formatTimeToNow(
-                post.createdAt,
-                {
-                  showDateAfterDays: 10,
-                },
-                {
-                  addSuffix: true,
-                  locale: undefined,
-                },
-              )}
-            </p>
-            <AddComment postId={post.id} />
+          <div className="border-t bg-background py-4">
+            <div className="px-2">
+              <ActionButtons postId={post.id} />
+              <p className="pb-3.5 text-xs font-medium text-muted-foreground">
+                {formatTimeToNow(
+                  post.createdAt,
+                  {
+                    showDateAfterDays: 10,
+                  },
+                  {
+                    addSuffix: true,
+                    locale: undefined,
+                  },
+                )}
+              </p>
+            </div>
+            <div className="border-b"></div>
+            <div className="px-2">
+              <AddComment postId={post.id} />
+            </div>
           </div>
         </div>
       </div>
