@@ -81,7 +81,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
           />
         </div>
         <div className="flex w-[450px] flex-col">
-          <div className="flex items-center gap-1.5 border-b px-2 py-4">
+          <div className="flex items-center gap-1.5 border-b px-3.5 py-4">
             <UserHoverCard user={author}>
               <div className="flex items-center gap-2">
                 <Link href={`/${author.username}`}>
@@ -102,7 +102,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
 
           <div className="h-[calc(100%-8rem)] overflow-y-auto scrollbar-hide">
             {post.title && (
-              <div className="px-2 py-4">
+              <div className="px-3.5 py-4">
                 <div className="flex items-start gap-2">
                   <Link href={`/${author.username}`}>
                     <Avatar className="size-7">
