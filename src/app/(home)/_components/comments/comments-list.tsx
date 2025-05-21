@@ -84,7 +84,7 @@ export function CommentsList({ postId }: CommentsListProps) {
                     <Link
                       role="button"
                       href={`/${comment.user.username}`}
-                      className="mr-1 font-semibold"
+                      className="mr-1 font-semibold transition-colors duration-200 hover:text-muted-foreground"
                     >
                       {comment.user.username}
                     </Link>

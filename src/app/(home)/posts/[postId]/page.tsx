@@ -95,7 +95,10 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
                     </AvatarFallback>
                   </Avatar>
                 </Link>
-                <span className="text-sm font-semibold" role="button">
+                <span
+                  role="button"
+                  className="text-sm font-semibold transition-colors duration-200 hover:text-muted-foreground"
+                >
                   {author.username}
                 </span>
               </div>
@@ -122,7 +125,10 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
                   <div className="flex flex-col gap-1">
                     <div>
                       <UserHoverCard user={author}>
-                        <span className="text-sm font-semibold" role="button">
+                        <span
+                          className="text-sm font-semibold transition-colors duration-200 hover:text-muted-foreground"
+                          role="button"
+                        >
                           {author.username}
                         </span>
                       </UserHoverCard>{" "}
