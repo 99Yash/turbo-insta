@@ -144,14 +144,14 @@ export function CommentsList({ postId }: CommentsListProps) {
 
   if (status === "pending") {
     return (
-      <div className="flex flex-col space-y-4 px-2 py-4">
+      <div className="flex flex-col gap-4 space-y-4 px-2">
         {Array.from({ length: 12 }).map((_, i) => (
-          <div key={i} className="flex items-start px-4 text-sm">
+          <div key={i} className="flex items-start text-sm">
             <Skeleton className="mr-2 size-7 rounded-full" />
             <div className="flex-1 space-y-2">
               <div className="flex items-center space-x-2">
-                <Skeleton className="h-3.5 w-24" />
-                <Skeleton className="h-3.5 w-32" />
+                <Skeleton className="h-3.5 w-40" />
+                <Skeleton className="h-3.5 w-56" />
               </div>
               <div className="flex space-x-3">
                 <Skeleton className="h-2.5 w-10" />
