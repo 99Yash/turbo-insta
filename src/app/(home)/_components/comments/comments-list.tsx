@@ -12,7 +12,7 @@ import {
 } from "~/components/ui/hover-card";
 import { Loading } from "~/components/ui/icons";
 import { Skeleton } from "~/components/ui/skeleton";
-import { formatTimeToNow, getInitials } from "~/lib/utils";
+import { formatNumber, formatTimeToNow, getInitials } from "~/lib/utils";
 import { type User } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 
@@ -64,7 +64,9 @@ function UserHoverCard({ user, children }: UserHoverCardProps) {
 
           <div className="flex justify-around border-b border-t py-3">
             <div className="flex flex-col items-center">
-              <span className="font-semibold">{userTopPosts?.length}</span>
+              <span className="font-semibold">
+                {formatNumber(userTopPosts?.length ?? 0)}
+              </span>
               <span className="text-xs text-muted-foreground">posts</span>
             </div>
             <div className="flex flex-col items-center">

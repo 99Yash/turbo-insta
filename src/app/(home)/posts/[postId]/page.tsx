@@ -74,6 +74,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
             files={post.images}
             className="h-full border-none shadow-none"
             modal
+            optimize={false}
           />
         </div>
         <div className="flex max-w-[450px] flex-col">

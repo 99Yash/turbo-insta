@@ -21,6 +21,7 @@ interface PostCarouselProps extends React.HTMLAttributes<HTMLDivElement> {
   files: StoredFile[] | null;
   options?: CarouselOptions;
   modal?: boolean;
+  optimize?: boolean;
 }
 
 export function PostCarousel({
@@ -28,6 +29,7 @@ export function PostCarousel({
   className,
   options,
   modal = false,
+  optimize = true,
   ...props
 }: PostCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel(options);
@@ -109,18 +111,38 @@ export function PostCarousel({
                     : "aspect-square",
                 )}
               >
-                <Image
-                  aria-label={`Slide ${index + 1} of ${files.length}`}
-                  role="group"
-                  key={index}
-                  aria-roledescription="slide"
-                  src={f.url}
-                  alt={`Listing product image ${index + 1} of ${files.length}`}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-contain"
-                  priority={index === 0}
-                />
+                {optimize ? (
+                  <Image
+                    aria-label={`Slide ${index + 1} of ${files.length}`}
+                    role="group"
+                    key={f.id}
+                    aria-roledescription="slide"
+                    src={f.url}
+                    alt={
+                      f.alt ??
+                      `Listing product image ${index + 1} of ${files.length}`
+                    }
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-contain"
+                    priority={index === 0}
+                  />
+                ) : (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    aria-label={`Slide ${index + 1} of ${files.length}`}
+                    role="group"
+                    key={f.id}
+                    loading={index === 0 ? "eager" : "lazy"}
+                    aria-roledescription="slide"
+                    src={f.url}
+                    alt={
+                      f.alt ??
+                      `Listing product image ${index + 1} of ${files.length}`
+                    }
+                    className="h-full w-full object-contain"
+                  />
+                )}
               </div>
             </section>
           ))}
