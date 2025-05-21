@@ -48,10 +48,12 @@ export const generateMetadata = async ({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${post.title ? `${post.title} •` : ""} ${author.name} on ${siteConfig.name}`,
-      description:
-        post.title ??
-        `Look at ${author.name}'s post from ${formatDate(post.createdAt)}`,
+      title: post.title
+        ? `${post.title}`
+        : `${author.name} on ${siteConfig.name}`,
+      description: post.title
+        ? `${post.title} • ${author.name} on ${siteConfig.name}`
+        : `Look at ${author.name}'s post from ${formatDate(post.createdAt)}`,
       images: post.images.map((image) => image.url),
       site: siteConfig.url,
       creator: "@YashGouravKar1",
