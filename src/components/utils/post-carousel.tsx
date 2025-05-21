@@ -140,7 +140,8 @@ export function PostCarousel({
                       f.alt ??
                       `Listing product image ${index + 1} of ${files.length}`
                     }
-                    className="h-full w-full object-contain"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-cover"
                   />
                 )}
               </div>
