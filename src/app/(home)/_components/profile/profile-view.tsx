@@ -8,7 +8,7 @@ import { Book2Small, GridLayoutRows, Tag } from "~/components/ui/icons/nucleo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { getInitials } from "~/lib/utils";
 import { type Post, type User } from "~/server/db/schema";
-import { ProfileEditForm } from "./profile-edit-form";
+import { ProfileEditForm } from "../forms/edit-profile";
 import { ProfilePosts } from "./profile-posts";
 
 interface ProfileViewProps {

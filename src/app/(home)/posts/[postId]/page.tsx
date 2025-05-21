@@ -10,6 +10,7 @@ import { formatDate, formatTimeToNow, getInitials } from "~/lib/utils";
 import { getUserById } from "~/server/api/services/user.service";
 import { api, HydrateClient } from "~/trpc/server";
 import { ActionButtons } from "../../_components/action-buttons";
+import { UserHoverCard } from "../../_components/profile/profile-mini";
 
 interface PostModalPageProps {
   params: {
@@ -77,20 +78,24 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
             optimize={false}
           />
         </div>
-        <div className="flex max-w-[450px] flex-col">
+        <div className="flex w-[450px] flex-col">
           <div className="flex items-center gap-1.5 border-b px-2 py-4">
-            <Link href={`/${author.username}`}>
-              <Avatar className="size-7">
-                <AvatarImage
-                  src={author.imageUrl ?? ""}
-                  alt={author.name ?? "VH"}
-                />
-                <AvatarFallback>
-                  {getInitials(author.name ?? "VH")}
-                </AvatarFallback>
-              </Avatar>
-            </Link>
-            <span className="text-sm font-semibold">{author.username}</span>
+            <UserHoverCard user={author}>
+              <div className="flex items-center gap-2">
+                <Link href={`/${author.username}`}>
+                  <Avatar className="size-7">
+                    <AvatarImage
+                      src={author.imageUrl ?? ""}
+                      alt={author.name ?? "VH"}
+                    />
+                    <AvatarFallback>
+                      {getInitials(author.name ?? "VH")}
+                    </AvatarFallback>
+                  </Avatar>
+                </Link>
+                <span className="text-sm font-semibold">{author.username}</span>
+              </div>
+            </UserHoverCard>
           </div>
 
           <div className="h-[calc(100%-8rem)] overflow-y-auto scrollbar-hide">
