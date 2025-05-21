@@ -28,12 +28,12 @@ export const generateMetadata = async ({
 
   if (!author) return { title: "Post not found" };
   return {
-    title: `${author?.name} on ${siteConfig.name} ${post.title ? `• ${post.title}` : ""}`,
+    title: `${post.title ? `${post.title} •` : ""} ${author.name} on ${siteConfig.name}`,
     description: post.title,
     openGraph: {
       type: "website",
       locale: "en_US",
-      title: `${author?.name}'s post on ${siteConfig.name} ${post.title ? `• ${post.title}` : ""}`,
+      title: `${post.title ? `${post.title} •` : ""} ${author.name} on ${siteConfig.name}`,
       description:
         post.title ??
         `Look at ${author.name}'s post from ${formatDate(post.createdAt)}`,
@@ -48,7 +48,7 @@ export const generateMetadata = async ({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${author?.name} on ${siteConfig.name} ${post.title ? `• ${post.title}` : ""}`,
+      title: `${post.title ? `${post.title} •` : ""} ${author.name} on ${siteConfig.name}`,
       description:
         post.title ??
         `Look at ${author.name}'s post from ${formatDate(post.createdAt)}`,
