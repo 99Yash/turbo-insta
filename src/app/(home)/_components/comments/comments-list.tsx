@@ -3,6 +3,7 @@
 import { MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Loading } from "~/components/ui/icons";
@@ -39,7 +40,7 @@ export function CommentsList({ postId }: CommentsListProps) {
     },
   });
 
-  const { refetch } = api.comments.getByPostId.useInfiniteQuery(
+  const { refetch, isRefetching } = api.comments.getByPostId.useInfiniteQuery(
     {
       postId,
       limit: 10,
@@ -82,7 +83,22 @@ export function CommentsList({ postId }: CommentsListProps) {
 
   if (status === "error") {
     return (
-      <div className="p-4 text-sm text-destructive">Error loading comments</div>
+      <div className="flex h-full items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-2 text-center text-sm text-destructive">
+          <div className="flex items-center gap-2">
+            <Icons.activity className="h-4 w-4" />
+            <span>Error loading comments</span>
+          </div>
+          <Button
+            disabled={isRefetching}
+            variant="outline"
+            size="sm"
+            onClick={() => void refetch()}
+          >
+            Retry
+          </Button>
+        </div>
+      </div>
     );
   }
 
