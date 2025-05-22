@@ -368,7 +368,7 @@ export const Icons = {
       <title>Home</title>
       <path
         d="M9.005 16.545a2.997 2.997 0 0 1 2.997-2.997A2.997 2.997 0 0 1 15 16.545V22h7V11.543L12 2 2 11.543V22h7.005Z"
-        fill="none"
+        fill="currentColor"
         stroke="currentColor"
         strokeLinejoin="round"
         strokeWidth="2"
@@ -395,6 +395,31 @@ export const Icons = {
       ></path>
       <path
         d="M17.79 10.132a.659.659 0 0 0-.962-.873l-2.556 2.05a.63.63 0 0 1-.758.002L11.06 9.47a1.576 1.576 0 0 0-2.277.42l-2.567 3.98a.659.659 0 0 0 .961.875l2.556-2.049a.63.63 0 0 1 .759-.002l2.452 1.84a1.576 1.576 0 0 0 2.278-.42Z"
+        fillRule="evenodd"
+      ></path>
+    </svg>
+  ),
+  messageFilled: (props: IconProps) => (
+    <svg
+      aria-label="Messenger"
+      fill="currentColor"
+      height="24"
+      role="img"
+      viewBox="0 0 24 24"
+      width="24"
+      {...props}
+    >
+      <title>Messenger</title>
+      <path
+        d="M12.003 2.001a9.705 9.705 0 1 1 0 19.4 10.876 10.876 0 0 1-2.895-.384.798.798 0 0 0-.533.04l-1.984.876a.801.801 0 0 1-1.123-.708l-.054-1.78a.806.806 0 0 0-.27-.569 9.49 9.49 0 0 1-3.14-7.175 9.65 9.65 0 0 1 10-9.7Z"
+        fill="currentColor"
+        stroke="currentColor"
+        strokeMiterlimit="10"
+        strokeWidth="1.739"
+      ></path>
+      <path
+        d="M17.79 10.132a.659.659 0 0 0-.962-.873l-2.556 2.05a.63.63 0 0 1-.758.002L11.06 9.47a1.576 1.576 0 0 0-2.277.42l-2.567 3.98a.659.659 0 0 0 .961.875l2.556-2.049a.63.63 0 0 1 .759-.002l2.452 1.84a1.576 1.576 0 0 0 2.278-.42Z"
+        fill="currentColor"
         fillRule="evenodd"
       ></path>
     </svg>

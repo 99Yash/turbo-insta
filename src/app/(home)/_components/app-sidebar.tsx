@@ -36,7 +36,7 @@ export function AppSidebar({ user }: { user: User }) {
     },
     {
       icon: Icons.message,
-      filledIcon: Icons.message,
+      filledIcon: Icons.messageFilled,
       label: "Messages",
       href: "/messages",
     },
