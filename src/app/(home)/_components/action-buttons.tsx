@@ -68,7 +68,7 @@ export function ActionButtons({ postId }: { postId: string }) {
             className={cn(
               "size-6 transition-colors duration-200",
               isLiked
-                ? "fill-pink-500 text-pink-500"
+                ? "fill-rose-500 text-rose-500"
                 : "hover:text-muted-foreground",
             )}
             aria-hidden="true"

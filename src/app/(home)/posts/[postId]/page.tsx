@@ -148,7 +148,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
           </div>
 
           <div className="border-t py-4">
-            <div className="px-2">
+            <div className="px-3.5">
               <ActionButtons postId={post.id} />
               <p className="pb-3.5 text-xs font-medium text-muted-foreground">
                 {formatTimeToNow(
@@ -164,7 +164,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
               </p>
             </div>
             <div className="border-b"></div>
-            <div className="px-2">
+            <div className="px-3.5">
               <AddComment postId={post.id} />
             </div>
           </div>
