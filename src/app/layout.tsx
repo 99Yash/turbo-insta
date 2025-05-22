@@ -18,28 +18,28 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Repligram",
-  description: "A social media platform for sharing your thoughts and ideas.",
+  title: siteConfig.name,
+  description: siteConfig.description,
   icons: {
     shortcut: "/images/logo.svg",
     apple: "/images/logo.svg",
   },
   openGraph: {
-    title: "Repligram",
-    description: "A social media platform for sharing your thoughts and ideas.",
+    title: siteConfig.name,
+    description: siteConfig.description,
     images: [
       {
         url: siteConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: "Repligram",
+        alt: siteConfig.name,
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Repligram",
-    description: "A social media platform for sharing your thoughts and ideas.",
+    title: siteConfig.name,
+    description: siteConfig.description,
     images: [siteConfig.ogImage],
     creator: "@YashGouravKar1",
     site: siteConfig.url,
