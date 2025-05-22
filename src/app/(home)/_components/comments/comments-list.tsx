@@ -164,45 +164,49 @@ export function CommentsList({ postId }: CommentsListProps) {
       ) : null}
 
       {/* Delete Comment Modal */}
-      <Modal
-        showModal={!!commentToDelete}
-        setShowModal={(show) => {
-          if (!show) setCommentToDelete(null);
-        }}
-      >
-        <div className="flex flex-col items-center gap-4">
-          <h3 className="text-xl font-semibold">Delete Comment</h3>
-          <p className="text-center text-muted-foreground">
-            Are you sure you want to delete this comment? This action cannot be
-            undone.
-          </p>
-          <div className="mt-2 flex w-full gap-2">
-            <Button
-              variant="outline"
-              className="flex-1"
-              onClick={() => setCommentToDelete(null)}
-              disabled={deleteCommentMutation.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              className="flex-1"
-              onClick={handleDeleteComment}
-              disabled={deleteCommentMutation.isPending}
-            >
-              {deleteCommentMutation.isPending ? (
-                <Loading className="h-4 w-4" />
-              ) : (
-                <>
-                  <Trash2 className="mr-2 h-4 w-4" />
-                  Delete
-                </>
-              )}
-            </Button>
+      <div>
+        <Modal
+          showModal={!!commentToDelete}
+          setShowModal={(show) => {
+            if (!show) setCommentToDelete(null);
+          }}
+        >
+          <div className="flex flex-col items-center gap-4">
+            <h3 className="text-xl font-semibold">Delete Comment</h3>
+            <p className="text-center text-muted-foreground">
+              Are you sure you want to delete this comment? This action cannot
+              be undone.
+            </p>
+            <div className="mt-2 flex w-full gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setCommentToDelete(null);
+                }}
+                disabled={deleteCommentMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={handleDeleteComment}
+                disabled={deleteCommentMutation.isPending}
+              >
+                {deleteCommentMutation.isPending ? (
+                  <Loading className="h-4 w-4" />
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </>
+                )}
+              </Button>
+            </div>
           </div>
-        </div>
-      </Modal>
+        </Modal>
+      </div>
     </div>
   );
 }
