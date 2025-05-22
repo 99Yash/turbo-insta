@@ -1,17 +1,14 @@
 "use client";
 
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
-import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { Button } from "~/components/ui/button";
 import { PostCarousel } from "~/components/utils/post-carousel";
 import { useAuth } from "~/hooks/use-auth";
 import { formatTimeToNow, getInitials } from "~/lib/utils";
 import { type Post, type User } from "~/server/db/schema";
 import { ActionButtons } from "./action-buttons";
 import { AddComment } from "./forms/add-comment";
-import { DeletePostModal } from "./forms/delete-post";
+import { PostActions } from "./forms/post-actions";
 
 interface PostProps {
   post: Post;
@@ -21,7 +18,6 @@ interface PostProps {
 export function Post({ post, author }: PostProps) {
   const { userId } = useAuth();
   const isAuthor = userId === author.id;
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   return (
     <article
@@ -55,17 +51,7 @@ export function Post({ post, author }: PostProps) {
               </p>
             </div>
 
-            {isAuthor && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="size-8 rounded-full"
-                onClick={() => setShowDeleteDialog(true)}
-              >
-                <DotsHorizontalIcon aria-hidden className="size-4" />
-                <span className="sr-only">More options</span>
-              </Button>
-            )}
+            {isAuthor && <PostActions postId={post.id} authorId={author.id} />}
           </div>
 
           <PostCarousel
@@ -84,12 +70,6 @@ export function Post({ post, author }: PostProps) {
           <AddComment postId={post.id} />
         </div>
       </div>
-
-      <DeletePostModal
-        isOpen={showDeleteDialog}
-        setOpen={setShowDeleteDialog}
-        postId={post.id}
-      />
     </article>
   );
 }

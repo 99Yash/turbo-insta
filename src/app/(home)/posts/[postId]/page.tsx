@@ -10,6 +10,7 @@ import { formatDate, formatTimeToNow, getInitials } from "~/lib/utils";
 import { getUserById } from "~/server/api/services/user.service";
 import { api, HydrateClient } from "~/trpc/server";
 import { ActionButtons } from "../../_components/action-buttons";
+import { PostActions } from "../../_components/forms/post-actions";
 import { UserHoverCard } from "../../_components/profile/profile-mini";
 
 interface PostModalPageProps {
@@ -81,7 +82,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
           />
         </div>
         <div className="flex w-[450px] flex-col">
-          <div className="flex items-center gap-1.5 border-b px-3.5 py-4">
+          <div className="flex items-center justify-between border-b px-3.5 py-4">
             <UserHoverCard user={author}>
               <div className="flex items-center gap-2">
                 <Link href={`/${author.username}`} role="button">
@@ -103,6 +104,8 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
                 </span>
               </div>
             </UserHoverCard>
+
+            <PostActions postId={post.id} authorId={author.id} />
           </div>
 
           <div className="h-[calc(100%-8rem)] overflow-y-auto scrollbar-hide">
