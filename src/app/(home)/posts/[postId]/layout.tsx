@@ -18,7 +18,7 @@ export default function ModalLayout({ children }: React.PropsWithChildren) {
         onInteractOutside={(_e) => {
           router.back();
         }}
-        className="max-w-screen-xl overflow-hidden rounded-none border-none bg-transparent p-0 outline-none focus-within:ring-0 focus-visible:outline-none focus-visible:ring-0"
+        className="max-w-screen-xl overflow-hidden border-none bg-transparent p-0 outline-none focus-within:ring-0 focus-visible:outline-none focus-visible:ring-0 sm:rounded-none"
       >
         {children}
       </DialogContent>
