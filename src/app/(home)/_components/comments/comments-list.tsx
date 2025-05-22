@@ -91,12 +91,12 @@ export function CommentsList({ postId }: CommentsListProps) {
       {data.pages.map((page) =>
         page.comments.map((comment) => {
           if (!comment.user) return null;
-          const isCurrentUserComment = comment.userId === userId;
+          const isCurrentUser = comment.userId === userId;
 
           return (
             <div
               key={comment.id}
-              className="flex items-start px-3.5 py-4 text-sm"
+              className="group flex items-start px-3.5 py-4 text-sm"
             >
               <div className="flex items-start">
                 <UserHoverCard user={comment.user}>
@@ -129,9 +129,9 @@ export function CommentsList({ postId }: CommentsListProps) {
                 <div className="mt-1 flex space-x-3 text-xs text-muted-foreground">
                   <span>{formatTimeToNow(comment.createdAt)}</span>
                   <button className="font-semibold">Reply</button>
-                  {isCurrentUserComment && (
+                  {isCurrentUser && (
                     <button
-                      className="font-semibold"
+                      className="font-semibold opacity-0 transition-opacity duration-200 group-hover:opacity-100"
                       onClick={() => setCommentToDelete(comment.id)}
                     >
                       <MoreHorizontal className="h-3.5 w-3.5" />
