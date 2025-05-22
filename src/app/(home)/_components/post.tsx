@@ -69,7 +69,7 @@ export function Post({ post, author }: PostProps) {
                 href={`/${author.username}`}
                 className="transition-all duration-200 hover:text-muted-foreground"
               >
-                <p className="text-sm font-semibold">{author.name ?? ""}</p>
+                <p className="text-sm font-semibold">{author.username}</p>
               </Link>
               <p className="mt-1 text-xs font-semibold text-muted-foreground">
                 • {formatTimeToNow(post.createdAt)}
@@ -97,7 +97,8 @@ export function Post({ post, author }: PostProps) {
           <div className="flex flex-col gap-3 pt-3">
             <ActionButtons postId={post.id} />
             <div className="text-sm">
-              <span className="font-semibold">{author.name}</span> {post.title}
+              <span className="font-semibold">{author.username}</span>{" "}
+              {post.title}
             </div>
           </div>
 
