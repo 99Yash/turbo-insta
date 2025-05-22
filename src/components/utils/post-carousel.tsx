@@ -202,7 +202,7 @@ export function PostCarousel({
         variant="ghost"
         size="icon"
         className={cn(
-          "absolute right-1.5 top-1/2 z-20 mr-0.5 aspect-square size-6 rounded-full bg-muted text-foreground opacity-90",
+          "absolute right-1.5 top-1/2 z-20 mr-0.5 aspect-square size-6 rounded-full bg-muted text-foreground",
           nextBtnDisabled && "hidden",
         )}
         onClick={scrollNext}
