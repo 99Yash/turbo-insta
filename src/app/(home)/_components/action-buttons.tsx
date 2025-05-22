@@ -3,7 +3,7 @@
 import { BookmarkIcon } from "@radix-ui/react-icons";
 import { motion } from "framer-motion";
 import { Heart, MessageCircleIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React, { type Dispatch, type SetStateAction, useState } from "react";
 import { toast } from "sonner";
 import { Icons } from "~/components/icons";
@@ -19,6 +19,7 @@ export function ActionButtons({ postId }: { postId: string }) {
   const [isShareOpen, setIsShareOpen] = React.useState(false);
 
   const router = useRouter();
+  const pathname = usePathname();
 
   const {
     data: likesData,
@@ -77,7 +78,11 @@ export function ActionButtons({ postId }: { postId: string }) {
           <span className="sr-only">Like</span>
           <MessageCircleIcon
             role="button"
-            onClick={() => router.push(`/posts/${postId}`)}
+            onClick={() =>
+              pathname.includes("/posts")
+                ? document.getElementById("add-comment")?.focus()
+                : router.push(`/posts/${postId}`)
+            }
             className="size-6 -rotate-90 transition-colors duration-200 hover:text-muted-foreground"
             aria-hidden="true"
             aria-label="Comment"
