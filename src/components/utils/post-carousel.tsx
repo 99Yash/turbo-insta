@@ -134,10 +134,7 @@ export function PostCarousel({
                     key={f.id}
                     aria-roledescription="slide"
                     src={f.url}
-                    alt={
-                      f.alt ??
-                      `Listing product image ${index + 1} of ${files.length}`
-                    }
+                    alt={f.alt ?? `Post image ${index + 1} of ${files.length}`}
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-contain"
@@ -145,7 +142,7 @@ export function PostCarousel({
                   />
                 ) : (
                   <div className="relative h-full w-full">
-                    {/* Loading spinner */}
+                    {/* Loading placeholder */}
                     {loadingStates[f.id] && (
                       <div className="absolute inset-0 flex animate-pulse items-center justify-center bg-muted">
                         <Icons.placeholder className="size-8 animate-pulse text-muted-foreground" />
@@ -183,8 +180,7 @@ export function PostCarousel({
                         setErrorStates((prev) => ({ ...prev, [f.id]: true }));
                       }}
                       alt={
-                        f.alt ??
-                        `Listing product image ${index + 1} of ${files.length}`
+                        f.alt ?? `Post image ${index + 1} of ${files.length}`
                       }
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className={cn(
