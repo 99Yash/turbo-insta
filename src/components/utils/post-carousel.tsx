@@ -34,6 +34,12 @@ export function PostCarousel({
 }: PostCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel(options);
   const [selectedIndex, setSelectedIndex] = React.useState(0);
+  const [loadingStates, setLoadingStates] = React.useState<
+    Record<string, boolean>
+  >({});
+  const [errorStates, setErrorStates] = React.useState<Record<string, boolean>>(
+    {},
+  );
 
   const [prevBtnDisabled, setPrevBtnDisabled] = React.useState(true);
   const [nextBtnDisabled, setNextBtnDisabled] = React.useState(true);
@@ -67,6 +73,16 @@ export function PostCarousel({
     (index: number) => emblaApi && emblaApi.scrollTo(index),
     [emblaApi],
   );
+
+  React.useEffect(() => {
+    if (files) {
+      const initialLoadingStates: Record<string, boolean> = {};
+      files.forEach((file) => {
+        initialLoadingStates[file.id] = true;
+      });
+      setLoadingStates(initialLoadingStates);
+    }
+  }, [files]);
 
   if (!files || files.length === 0) {
     return null;
@@ -128,21 +144,58 @@ export function PostCarousel({
                     priority={index === 0}
                   />
                 ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    aria-label={`Slide ${index + 1} of ${files.length}`}
-                    role="group"
-                    key={f.id}
-                    loading={index === 0 ? "eager" : "lazy"}
-                    aria-roledescription="slide"
-                    src={f.url}
-                    alt={
-                      f.alt ??
-                      `Listing product image ${index + 1} of ${files.length}`
-                    }
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-cover"
-                  />
+                  <div className="relative h-full w-full">
+                    {/* Loading spinner */}
+                    {loadingStates[f.id] && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Icons.spinner className="size-8 animate-spin text-muted-foreground" />
+                      </div>
+                    )}
+                    {/* Error placeholder */}
+                    {errorStates[f.id] && (
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Icons.placeholder className="size-12 text-red-500" />
+                      </div>
+                    )}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      aria-label={`Slide ${index + 1} of ${files.length}`}
+                      role="group"
+                      key={f.id}
+                      loading={index === 0 ? "eager" : "lazy"}
+                      aria-roledescription="slide"
+                      src={f.url}
+                      onLoadStart={() => {
+                        setLoadingStates((prev) => ({ ...prev, [f.id]: true }));
+                        setErrorStates((prev) => ({ ...prev, [f.id]: false }));
+                      }}
+                      onLoad={() => {
+                        setLoadingStates((prev) => ({
+                          ...prev,
+                          [f.id]: false,
+                        }));
+                      }}
+                      onError={() => {
+                        setLoadingStates((prev) => ({
+                          ...prev,
+                          [f.id]: false,
+                        }));
+                        setErrorStates((prev) => ({ ...prev, [f.id]: true }));
+                      }}
+                      alt={
+                        f.alt ??
+                        `Listing product image ${index + 1} of ${files.length}`
+                      }
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className={cn(
+                        "h-full w-full object-cover",
+                        (loadingStates[f.id] ??
+                          (false || errorStates[f.id]) ??
+                          false) &&
+                          "opacity-0",
+                      )}
+                    />
+                  </div>
                 )}
               </div>
             </section>
