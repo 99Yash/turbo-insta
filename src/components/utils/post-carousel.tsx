@@ -141,7 +141,7 @@ export function PostCarousel({
                     priority={index === 0}
                   />
                 ) : (
-                  <div className="relative h-full w-full">
+                  <>
                     {/* Loading placeholder */}
                     {loadingStates[f.id] && (
                       <div className="absolute inset-0 flex animate-pulse items-center justify-center bg-muted">
@@ -184,14 +184,14 @@ export function PostCarousel({
                       }
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className={cn(
-                        "h-full w-full object-cover",
+                        "object-cover xl:h-full xl:w-full",
                         (loadingStates[f.id] ??
                           (false || errorStates[f.id]) ??
                           false) &&
                           "opacity-0",
                       )}
                     />
-                  </div>
+                  </>
                 )}
               </div>
             </section>
