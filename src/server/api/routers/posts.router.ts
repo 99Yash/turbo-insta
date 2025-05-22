@@ -133,9 +133,13 @@ export const postsRouter = createTRPCRouter({
         await deletePost({ ...input, userId: ctx.userId }),
     ),
 
-  getByUserId: publicProcedure
-    .input(getPostsByUserIdSchema)
-    .query(async ({ input }) => await getPostsByUserId(input)),
+  getByUserId: publicProcedure.input(getPostsByUserIdSchema).query(
+    async ({ input, ctx }) =>
+      await getPostsByUserId({
+        ...input,
+        userId: input.userId ?? ctx.auth.userId,
+      }),
+  ),
 
   getUserTopPosts: publicProcedure
     .input(

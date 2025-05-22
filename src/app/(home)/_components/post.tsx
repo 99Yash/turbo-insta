@@ -2,19 +2,16 @@
 
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import { Loading } from "~/components/ui/icons";
-import { Modal } from "~/components/ui/modal";
 import { PostCarousel } from "~/components/utils/post-carousel";
 import { useAuth } from "~/hooks/use-auth";
-import { formatTimeToNow, getInitials, showErrorToast } from "~/lib/utils";
+import { formatTimeToNow, getInitials } from "~/lib/utils";
 import { type Post, type User } from "~/server/db/schema";
-import { api } from "~/trpc/react";
 import { ActionButtons } from "./action-buttons";
 import { AddComment } from "./forms/add-comment";
+import { DeletePostModal } from "./forms/delete-post";
 
 interface PostProps {
   post: Post;
@@ -25,24 +22,6 @@ export function Post({ post, author }: PostProps) {
   const { userId } = useAuth();
   const isAuthor = userId === author.id;
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const router = useRouter();
-  const utils = api.useUtils();
-
-  const deletePost = api.posts.delete.useMutation({
-    onSuccess: async () => {
-      setShowDeleteDialog(false);
-      await utils.posts.getAll.invalidate();
-      await utils.posts.getByUserId.invalidate({ userId: author.id });
-      router.refresh();
-    },
-    onError: (error) => {
-      showErrorToast(error);
-    },
-  });
-
-  const handleDelete = async () => {
-    await deletePost.mutateAsync({ postId: post.id });
-  };
 
   return (
     <article
@@ -106,30 +85,11 @@ export function Post({ post, author }: PostProps) {
         </div>
       </div>
 
-      <Modal showModal={showDeleteDialog} setShowModal={setShowDeleteDialog}>
-        <div className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold">Delete post</h2>
-          <p className="text-sm text-muted-foreground">
-            Are you sure you want to delete this post? This action cannot be
-            undone.
-          </p>
-          <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowDeleteDialog(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={deletePost.isPending}
-            >
-              {deletePost.isPending ? <Loading className="size-4" /> : "Delete"}
-            </Button>
-          </div>
-        </div>
-      </Modal>
+      <DeletePostModal
+        isOpen={showDeleteDialog}
+        setOpen={setShowDeleteDialog}
+        postId={post.id}
+      />
     </article>
   );
 }
