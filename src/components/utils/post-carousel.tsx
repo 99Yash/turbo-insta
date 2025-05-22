@@ -147,8 +147,8 @@ export function PostCarousel({
                   <div className="relative h-full w-full">
                     {/* Loading spinner */}
                     {loadingStates[f.id] && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <Icons.spinner className="size-8 animate-spin text-muted-foreground" />
+                      <div className="absolute inset-0 flex animate-pulse items-center justify-center bg-muted">
+                        <Icons.placeholder className="size-8 animate-pulse text-muted-foreground" />
                       </div>
                     )}
                     {/* Error placeholder */}
