@@ -19,3 +19,9 @@ export const getCommentsSchema = z.object({
 });
 
 export type GetCommentsInput = z.infer<typeof getCommentsSchema>;
+
+export const deleteCommentSchema = z.object({
+  commentId: z.string(),
+});
+
+export type DeleteCommentInput = z.infer<typeof deleteCommentSchema>;

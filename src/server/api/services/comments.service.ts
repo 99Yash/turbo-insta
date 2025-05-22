@@ -5,6 +5,7 @@ import { comments, users } from "~/server/db/schema";
 import {
   type GetCommentsInput,
   type createCommentSchema,
+  type deleteCommentSchema,
 } from "../schema/comments.schema";
 import { type WithUser } from "../schema/user.schema";
 
@@ -99,6 +100,37 @@ export const getComments = async (input: GetCommentsInput) => {
       comments: commentsWithUser,
       nextCursor,
     };
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+};
+
+export const deleteComment = async ({
+  commentId,
+  userId,
+}: WithUser<typeof deleteCommentSchema>) => {
+  try {
+    // First check if the comment exists and belongs to the user
+    const [comment] = await db
+      .select()
+      .from(comments)
+      .where(and(eq(comments.id, commentId), eq(comments.userId, userId)))
+      .limit(1);
+
+    if (!comment) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Comment not found or you don't have permission to delete it",
+      });
+    }
+
+    // Delete the comment
+    await db.delete(comments).where(eq(comments.id, commentId));
+
+    return { success: true };
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,

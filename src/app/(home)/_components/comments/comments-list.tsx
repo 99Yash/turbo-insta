@@ -1,11 +1,14 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Loading } from "~/components/ui/icons";
+import { Modal } from "~/components/ui/modal";
 import { Skeleton } from "~/components/ui/skeleton";
+import { useAuth } from "~/hooks/use-auth";
 import { formatTimeToNow, getInitials } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { UserHoverCard } from "../profile/profile-mini";
@@ -15,6 +18,8 @@ interface CommentsListProps {
 }
 
 export function CommentsList({ postId }: CommentsListProps) {
+  const { userId } = useAuth();
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     api.comments.getByPostId.useInfiniteQuery(
       {
@@ -25,6 +30,33 @@ export function CommentsList({ postId }: CommentsListProps) {
         getNextPageParam: (lastPage) => lastPage.nextCursor,
       },
     );
+
+  const deleteCommentMutation = api.comments.delete.useMutation({
+    onSuccess: () => {
+      setCommentToDelete(null);
+      // Refetch comments after deletion
+      void refetch();
+    },
+  });
+
+  const { refetch } = api.comments.getByPostId.useInfiniteQuery(
+    {
+      postId,
+      limit: 10,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      enabled: false, // Don't run this query automatically
+    },
+  );
+
+  const handleDeleteComment = () => {
+    if (!commentToDelete) return;
+
+    deleteCommentMutation.mutate({
+      commentId: commentToDelete,
+    });
+  };
 
   if (status === "pending") {
     return (
@@ -59,6 +91,7 @@ export function CommentsList({ postId }: CommentsListProps) {
       {data.pages.map((page) =>
         page.comments.map((comment) => {
           if (!comment.user) return null;
+          const isCurrentUserComment = comment.userId === userId;
 
           return (
             <div
@@ -96,6 +129,14 @@ export function CommentsList({ postId }: CommentsListProps) {
                 <div className="mt-1 flex space-x-3 text-xs text-muted-foreground">
                   <span>{formatTimeToNow(comment.createdAt)}</span>
                   <button className="font-semibold">Reply</button>
+                  {isCurrentUserComment && (
+                    <button
+                      className="font-semibold"
+                      onClick={() => setCommentToDelete(comment.id)}
+                    >
+                      <MoreHorizontal className="h-3.5 w-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -121,6 +162,47 @@ export function CommentsList({ postId }: CommentsListProps) {
           </Button>
         </div>
       ) : null}
+
+      {/* Delete Comment Modal */}
+      <Modal
+        showModal={!!commentToDelete}
+        setShowModal={(show) => {
+          if (!show) setCommentToDelete(null);
+        }}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <h3 className="text-xl font-semibold">Delete Comment</h3>
+          <p className="text-center text-muted-foreground">
+            Are you sure you want to delete this comment? This action cannot be
+            undone.
+          </p>
+          <div className="mt-2 flex w-full gap-2">
+            <Button
+              variant="outline"
+              className="flex-1"
+              onClick={() => setCommentToDelete(null)}
+              disabled={deleteCommentMutation.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1"
+              onClick={handleDeleteComment}
+              disabled={deleteCommentMutation.isPending}
+            >
+              {deleteCommentMutation.isPending ? (
+                <Loading className="h-4 w-4" />
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
