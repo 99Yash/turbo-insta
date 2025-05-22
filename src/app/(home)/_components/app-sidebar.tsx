@@ -60,10 +60,7 @@ export function AppSidebar({ user }: { user: User }) {
             href="/"
             className="flex items-center gap-2 px-2 text-xl font-bold transition-colors hover:text-primary"
           >
-            <Icons.logo
-              className="size-7 -rotate-12 text-fuchsia-300"
-              aria-hidden="true"
-            />
+            <Icons.logo className="size-7" aria-hidden="true" />
             <span className="transition-opacity duration-200">
               {siteConfig.name}
             </span>

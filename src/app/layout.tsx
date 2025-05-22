@@ -21,8 +21,8 @@ export const metadata: Metadata = {
   title: "Repligram",
   description: "A social media platform for sharing your thoughts and ideas.",
   icons: {
-    shortcut: "/images/repligram.webp",
-    apple: "/images/repligram.webp",
+    shortcut: "/images/logo.svg",
+    apple: "/images/logo.svg",
   },
   openGraph: {
     title: "Repligram",
