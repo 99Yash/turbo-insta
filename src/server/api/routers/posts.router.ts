@@ -16,7 +16,7 @@ import {
   deletePost,
   getPostsByUserId,
   getUserTopPosts,
-} from "../services/post.service";
+} from "../services/posts.service";
 
 export const postsRouter = createTRPCRouter({
   create: protectedProcedure

@@ -270,7 +270,7 @@ export function PostCarousel({
             <Button
               variant="outline"
               size="sm"
-              className="absolute right-4 top-4 z-20 h-6 rounded-md bg-background/80 px-2 text-xs font-semibold backdrop-blur-md hover:bg-background/90"
+              className="absolute bottom-4 right-4 z-20 h-6 rounded-md bg-background/80 px-2 text-xs font-semibold backdrop-blur-md hover:bg-background/90"
             >
               ALT
             </Button>
