@@ -40,6 +40,8 @@ export function PostCarousel({
   const [errorStates, setErrorStates] = React.useState<Record<string, boolean>>(
     {},
   );
+  const [containerHeight, setContainerHeight] = React.useState<number>(0);
+  const imageRefs = React.useRef<Record<string, HTMLImageElement>>({});
 
   const [prevBtnDisabled, setPrevBtnDisabled] = React.useState(true);
   const [nextBtnDisabled, setNextBtnDisabled] = React.useState(true);
@@ -84,6 +86,23 @@ export function PostCarousel({
     }
   }, [files]);
 
+  const handleImageLoad = React.useCallback(
+    (fileId: string, img: HTMLImageElement) => {
+      imageRefs.current[fileId] = img;
+
+      // Calculate the maximum height among all loaded images
+      const heights = Object.values(imageRefs.current).map(
+        (image) => image.offsetHeight,
+      );
+      const maxHeight = Math.max(...heights);
+
+      if (maxHeight > containerHeight) {
+        setContainerHeight(maxHeight);
+      }
+    },
+    [containerHeight],
+  );
+
   if (!files || files.length === 0) {
     return null;
   }
@@ -124,8 +143,15 @@ export function PostCarousel({
                   "relative w-full",
                   modal
                     ? "flex h-[calc(100vh-4rem)] items-center justify-center"
-                    : "aspect-square",
+                    : optimize
+                      ? "flex items-center justify-center"
+                      : "aspect-square",
                 )}
+                style={
+                  optimize && containerHeight > 0
+                    ? { height: containerHeight }
+                    : undefined
+                }
               >
                 {optimize ? (
                   <Image
@@ -135,17 +161,23 @@ export function PostCarousel({
                     aria-roledescription="slide"
                     src={f.url}
                     alt={f.alt ?? `Post image ${index + 1} of ${files.length}`}
-                    fill
+                    width={1080}
+                    height={720}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-contain"
+                    className="max-h-[55vh] w-full object-cover"
                     priority={index === 0}
+                    onLoad={(e) => {
+                      const img = e.currentTarget;
+                      handleImageLoad(f.id, img);
+                    }}
                   />
                 ) : (
                   <>
                     {/* Loading placeholder */}
                     {loadingStates[f.id] && (
-                      <div className="absolute inset-0 flex animate-pulse items-center justify-center bg-muted">
+                      <div className="absolute inset-0 flex animate-pulse flex-col items-center justify-center bg-muted">
                         <Icons.placeholder className="size-8 animate-pulse text-muted-foreground" />
+                        <Icons.spinner className="size-8 animate-spin text-muted-foreground" />
                       </div>
                     )}
                     {/* Error placeholder */}
