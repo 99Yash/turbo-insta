@@ -198,11 +198,13 @@ export function PostCarousel({
                         setLoadingStates((prev) => ({ ...prev, [f.id]: true }));
                         setErrorStates((prev) => ({ ...prev, [f.id]: false }));
                       }}
-                      onLoad={() => {
+                      onLoad={(e) => {
                         setLoadingStates((prev) => ({
                           ...prev,
                           [f.id]: false,
                         }));
+                        const img = e.currentTarget;
+                        handleImageLoad(f.id, img);
                       }}
                       onError={() => {
                         setLoadingStates((prev) => ({
