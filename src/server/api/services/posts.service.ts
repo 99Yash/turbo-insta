@@ -94,13 +94,6 @@ export const deletePost = async (input: WithUser<typeof getPostByIdSchema>) => {
 export async function getPostsByUserId(input: GetPostsByUserIdInput) {
   const { userId, limit, cursor } = input;
 
-  if (!userId) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "User ID is required",
-    });
-  }
-
   const items = await db
     .select()
     .from(posts)
