@@ -31,6 +31,8 @@ export const userSchema = z.object({
   userId: z.string(),
 });
 
+export type GetUserInput = z.infer<typeof userSchema>;
+
 export const optionalUserSchema = z.object({
   userId: z.string().optional().nullable(),
 });

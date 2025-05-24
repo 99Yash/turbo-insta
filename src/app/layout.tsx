@@ -5,10 +5,11 @@ import { Analytics } from "@vercel/analytics/react";
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
 import TailwindIndicator from "~/components/tailwind-indicator";
-import { ThemeProvider } from "~/components/theme-provider";
 import { Toaster } from "~/components/ui/sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { siteConfig } from "~/config/site";
+import { AblyContextProvider } from "~/lib/providers/ably-provider";
+import { ThemeProvider } from "~/lib/providers/theme-provider";
 import { TRPCReactProvider } from "~/trpc/react";
 import { cn } from "../lib/utils";
 
@@ -66,7 +67,9 @@ export default function RootLayout({
                 enableSystem={false}
                 disableTransitionOnChange={false}
               >
-                <div className="h-full">{children}</div>
+                <AblyContextProvider>
+                  <div className="h-full">{children}</div>
+                </AblyContextProvider>
               </ThemeProvider>
             </TooltipProvider>
             <Toaster />

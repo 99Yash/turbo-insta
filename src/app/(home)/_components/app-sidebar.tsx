@@ -1,11 +1,10 @@
 "use client";
 
-import { CogIcon, Heart, LogOutIcon } from "lucide-react";
+import { CogIcon, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { HeartFill } from "~/components/ui/icons/nucleo";
 import {
   Sidebar,
   SidebarContent,
@@ -26,6 +25,8 @@ import { type User } from "~/server/db/schema";
 
 export function AppSidebar({ user }: { user: User }) {
   const pathname = usePathname();
+  // const { notifications, clearNotifications, removeNotification, unreadCount } =
+  //   useNotifications();
 
   const navItems = [
     {
@@ -39,12 +40,6 @@ export function AppSidebar({ user }: { user: User }) {
       filledIcon: Icons.messageFilled,
       label: "Messages",
       href: "/messages",
-    },
-    {
-      icon: Heart,
-      filledIcon: HeartFill,
-      label: "Notifications",
-      href: "/notifications",
     },
   ];
 
@@ -105,16 +100,6 @@ export function AppSidebar({ user }: { user: User }) {
                           </div>
                         </SidebarMenuButton>
                       </Link>
-                      {/* {item.badge && (
-                        <SidebarMenuBadge
-                          className={cn(
-                            "bg-muted/80",
-                            isActive && "bg-primary text-primary-foreground",
-                          )}
-                        >
-                          {item.badge}
-                        </SidebarMenuBadge>
-                      )} */}
                     </SidebarMenuItem>
                   );
                 })}
