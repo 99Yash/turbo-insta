@@ -96,93 +96,117 @@ export const deletePost = async (input: WithUser<typeof getPostByIdSchema>) => {
 export async function getPostsByUserId(input: GetPostsByUserIdInput) {
   const { userId, limit, cursor } = input;
 
-  const items = await db
-    .select()
-    .from(posts)
-    .where(
-      cursor
-        ? and(
-            eq(posts.userId, userId),
-            or(
-              gt(posts.createdAt, cursor.createdAt),
-              and(
-                eq(posts.createdAt, cursor.createdAt),
-                gt(posts.id, cursor.id),
+  try {
+    const items = await db
+      .select()
+      .from(posts)
+      .where(
+        cursor
+          ? and(
+              eq(posts.userId, userId),
+              or(
+                gt(posts.createdAt, cursor.createdAt),
+                and(
+                  eq(posts.createdAt, cursor.createdAt),
+                  gt(posts.id, cursor.id),
+                ),
               ),
-            ),
-          )
-        : eq(posts.userId, userId),
-    )
-    .orderBy(desc(posts.createdAt), desc(posts.id))
-    .limit(limit + 1);
+            )
+          : eq(posts.userId, userId),
+      )
+      .orderBy(desc(posts.createdAt), desc(posts.id))
+      .limit(limit + 1);
 
-  let nextCursor: typeof cursor | undefined = undefined;
+    let nextCursor: typeof cursor | undefined = undefined;
 
-  if (items.length > limit) {
-    const nextItem = items.pop()!;
-    nextCursor = {
-      id: nextItem.id,
-      createdAt: nextItem.createdAt,
+    if (items.length > limit) {
+      const nextItem = items.pop()!;
+      nextCursor = {
+        id: nextItem.id,
+        createdAt: nextItem.createdAt,
+      };
+    }
+
+    return {
+      items,
+      nextCursor,
     };
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
   }
-
-  return {
-    items,
-    nextCursor,
-  };
 }
 
 export const getUserTopPosts = async (userId: string) => {
-  const postsWithLikes = await db
-    .select({
-      post: posts,
-      likeCount: count(likes.id),
-    })
-    .from(posts)
-    .leftJoin(likes, eq(posts.id, likes.postId))
-    .where(eq(posts.userId, userId))
-    .groupBy(posts.id)
-    .orderBy(desc(count(likes.id)), desc(posts.createdAt))
-    .limit(3);
+  try {
+    const postsWithLikes = await db
+      .select({
+        post: posts,
+        likeCount: count(likes.id),
+      })
+      .from(posts)
+      .leftJoin(likes, eq(posts.id, likes.postId))
+      .where(eq(posts.userId, userId))
+      .groupBy(posts.id)
+      .orderBy(desc(count(likes.id)), desc(posts.createdAt))
+      .limit(3);
 
-  return postsWithLikes;
+    return postsWithLikes;
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
 };
 
 export const getPosts = async (input: GetPostsInput) => {
   const limit = 8;
   const { cursor } = input;
 
-  const items = await db
-    .select()
-    .from(posts)
-    .leftJoin(users, eq(posts.userId, users.id))
-    .where(
-      cursor
-        ? or(
-            lt(posts.createdAt, cursor.createdAt),
-            and(eq(posts.createdAt, cursor.createdAt), lt(posts.id, cursor.id)),
-          )
-        : undefined,
-    )
-    .orderBy(desc(posts.createdAt), desc(posts.id))
-    .limit(limit + 1);
+  try {
+    const items = await db
+      .select()
+      .from(posts)
+      .leftJoin(users, eq(posts.userId, users.id))
+      .where(
+        cursor
+          ? or(
+              lt(posts.createdAt, cursor.createdAt),
+              and(
+                eq(posts.createdAt, cursor.createdAt),
+                lt(posts.id, cursor.id),
+              ),
+            )
+          : undefined,
+      )
+      .orderBy(desc(posts.createdAt), desc(posts.id))
+      .limit(limit + 1);
 
-  let nextCursor: typeof cursor | undefined = undefined;
+    let nextCursor: typeof cursor | undefined = undefined;
 
-  if (items.length > limit) {
-    items.pop();
+    if (items.length > limit) {
+      items.pop();
 
-    const lastReturnedItem = items[items.length - 1]!;
-    nextCursor = {
-      id: lastReturnedItem.posts.id,
-      createdAt: lastReturnedItem.posts.createdAt,
+      const lastReturnedItem = items[items.length - 1]!;
+      nextCursor = {
+        id: lastReturnedItem.posts.id,
+        createdAt: lastReturnedItem.posts.createdAt,
+      };
+    }
+
+    return {
+      items,
+      nextCursor,
     };
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
   }
-
-  return {
-    items,
-    nextCursor,
-  };
 };
 
 export async function getPostLikes(
@@ -190,46 +214,67 @@ export async function getPostLikes(
 ) {
   const { postId, userId } = input;
 
-  const [c] = await db
-    .select({ count: count() })
-    .from(likes)
-    .where(eq(likes.postId, postId));
-
-  if (userId) {
-    const [likedPost] = await db
-      .select({
-        id: likes.id,
-      })
+  try {
+    const [c] = await db
+      .select({ count: count() })
       .from(likes)
-      .where(and(eq(likes.userId, userId), eq(likes.postId, postId)));
+      .where(eq(likes.postId, postId));
+
+    if (userId) {
+      const [likedPost] = await db
+        .select({
+          id: likes.id,
+        })
+        .from(likes)
+        .where(and(eq(likes.userId, userId), eq(likes.postId, postId)));
+
+      return {
+        count: c?.count ?? 0,
+        hasLiked: !!likedPost,
+      };
+    }
 
     return {
       count: c?.count ?? 0,
-      hasLiked: !!likedPost,
+      hasLiked: false,
     };
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
   }
-
-  return {
-    count: c?.count ?? 0,
-    hasLiked: false,
-  };
 }
 
 export async function getPostById(input: GetPostByIdInput) {
   const { postId } = input;
 
-  const [post] = await db.select().from(posts).where(eq(posts.id, postId));
+  try {
+    const [post] = await db.select().from(posts).where(eq(posts.id, postId));
 
-  return post;
+    return post;
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
 }
 
 export async function getPostComments(input: GetPostByIdInput) {
   const { postId } = input;
 
-  const postComments = await db
-    .select()
-    .from(comments)
-    .where(eq(comments.postId, postId));
+  try {
+    const postComments = await db
+      .select()
+      .from(comments)
+      .where(eq(comments.postId, postId));
 
-  return postComments;
+    return postComments;
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
 }
