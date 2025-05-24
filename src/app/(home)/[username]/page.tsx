@@ -52,16 +52,13 @@ export default async function UserProfilePage({
 
   if (!user) return notFound();
 
-  // Get all posts
   const { items: posts } = await api.posts.getByUserId({
     userId: user.id,
   });
 
-  // Get post engagement data
   const postsWithEngagement = await Promise.all(
     posts.map(async (post) => {
       const postId = post.id;
-      // Get like counts
       const likeData = await api.posts.getLikes({ postId });
       const commentData = await api.posts.getComments({ postId });
 

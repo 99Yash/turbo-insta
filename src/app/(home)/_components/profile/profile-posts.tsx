@@ -66,7 +66,7 @@ export function ProfilePosts({ posts }: ProfilePostsProps) {
 
           {/* Post title on hover */}
           <div className="absolute bottom-0 left-0 right-0 z-20 p-3 opacity-0 transition-all duration-300 group-hover:opacity-100">
-            <p className="truncate text-sm font-medium text-white drop-shadow-md">
+            <p className="truncate text-center text-sm font-medium text-white drop-shadow-md">
               {post.title ?? "Post"}
             </p>
           </div>
