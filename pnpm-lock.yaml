@@ -123,8 +123,8 @@ importers:
         specifier: ^1.4.1
         version: 1.4.1(next@14.2.21(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
       ably:
-        specifier: ^2.6.3
-        version: 2.6.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        specifier: ^2.9.0
+        version: 2.9.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       ai:
         specifier: ^4.1.41
         version: 4.1.41(react@18.3.1)(zod@3.24.1)
@@ -2017,8 +2017,8 @@ packages:
       vue-router:
         optional: true
 
-  ably@2.6.3:
-    resolution: {integrity: sha512-M3YP4+fX1SrJXPPf5wTIWTZoKKqygxTYvrEGuqorOXFo19/ezbSIPZaY+U2znFfuK82k/LAEF7Q4sJ4oIgO1AA==}
+  ably@2.9.0:
+    resolution: {integrity: sha512-ddaurgvYHGmVVZkd5U2xJgLrbVdtAIw1RunfuZroE/ZTsmK2+vUnAZ7aKhR20cwOFP3QyLFYs6IfvwaijnIPlA==}
     engines: {node: '>=16'}
     peerDependencies:
       react: '>=16.8.0'
@@ -4387,8 +4387,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  ulid@2.3.0:
-    resolution: {integrity: sha512-keqHubrlpvT6G2wH0OEfSW4mquYRcbe/J8NMmveoQOjUqmo+hXtO+ORCpWhdbZ7k72UtY61BL7haGxW6enBnjw==}
+  ulid@2.4.0:
+    resolution: {integrity: sha512-fIRiVTJNcSRmXKPZtGzFQv9WRrZ3M9eoptl/teFJvjOzmpU+/K/JH6HZ8deBfb5vMEpicJcLn7JmvdknlMq7Zg==}
     hasBin: true
 
   unbox-primitive@1.0.2:
@@ -6155,12 +6155,13 @@ snapshots:
       next: 14.2.21(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react: 18.3.1
 
-  ably@2.6.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  ably@2.9.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@ably/msgpack-js': 0.4.0
+      dequal: 2.0.3
       fastestsmallesttextencoderdecoder: 1.0.22
       got: 11.8.6
-      ulid: 2.3.0
+      ulid: 2.4.0
       ws: 8.18.1
     optionalDependencies:
       react: 18.3.1
@@ -8807,7 +8808,7 @@ snapshots:
 
   typescript@5.7.2: {}
 
-  ulid@2.3.0: {}
+  ulid@2.4.0: {}
 
   unbox-primitive@1.0.2:
     dependencies:
