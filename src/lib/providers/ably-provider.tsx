@@ -11,6 +11,7 @@ export function AblyContextProvider({
 }) {
   const ablyClient = new Ably.Realtime({
     authUrl: `${env.NEXT_PUBLIC_APP_URL}/api/trpc/utils.getSocketAuthToken`,
+    transports: ["web_socket"],
     // authCallback: (_tokenParams, callback) => {
     //   const { data: tokenResponse, error } =
     //     api.utils.getSocketAuthToken.useQuery(undefined, {
