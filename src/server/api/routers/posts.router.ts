@@ -14,6 +14,7 @@ import {
   createPost,
   deletePost,
   getPostById,
+  getPostComments,
   getPostLikes,
   getPosts,
   getPostsByUserId,
@@ -45,6 +46,12 @@ export const postsRouter = createTRPCRouter({
     .input(getPostByIdSchema)
     .query(async ({ input, ctx }) => {
       return getPostLikes({ ...input, userId: ctx.auth.userId ?? undefined });
+    }),
+
+  getComments: publicProcedure
+    .input(getPostByIdSchema)
+    .query(async ({ input }) => {
+      return getPostComments(input);
     }),
 
   delete: protectedProcedure

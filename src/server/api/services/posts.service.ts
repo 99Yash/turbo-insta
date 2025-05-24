@@ -3,7 +3,7 @@ import { and, count, desc, eq, gt, lt, or } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { generateAltText } from "~/lib/queries/ai";
 import { db } from "~/server/db";
-import { likes, posts, users } from "~/server/db/schema";
+import { comments, likes, posts, users } from "~/server/db/schema";
 import {
   type CreatePostInput,
   type GetPostByIdInput,
@@ -221,4 +221,15 @@ export async function getPostById(input: GetPostByIdInput) {
   const [post] = await db.select().from(posts).where(eq(posts.id, postId));
 
   return post;
+}
+
+export async function getPostComments(input: GetPostByIdInput) {
+  const { postId } = input;
+
+  const postComments = await db
+    .select()
+    .from(comments)
+    .where(eq(comments.postId, postId));
+
+  return postComments;
 }

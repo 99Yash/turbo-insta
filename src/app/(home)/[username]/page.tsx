@@ -63,13 +63,12 @@ export default async function UserProfilePage({
       const postId = post.id;
       // Get like counts
       const likeData = await api.posts.getLikes({ postId });
-      // Get comment counts (if you have an API for this)
-      // Assuming you'd create a similar endpoint for comment counts
+      const commentData = await api.posts.getComments({ postId });
 
       return {
         ...post,
         likeCount: likeData?.count ?? 0,
-        commentCount: 0, // Replace with actual comment count if you have it
+        commentCount: commentData?.length ?? 0,
       };
     }),
   );
