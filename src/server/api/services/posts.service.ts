@@ -71,8 +71,8 @@ export const deletePost = async (input: WithUser<typeof getPostByIdSchema>) => {
 
     if (!post) {
       throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "Post not found or you don't have permission to delete it",
+        code: "NOT_FOUND",
+        message: "Post not found",
       });
     }
 
@@ -149,7 +149,7 @@ export const getUserTopPosts = async (userId: string) => {
 };
 
 export const getPosts = async (input: GetPostsInput) => {
-  const limit = 2;
+  const limit = 8;
   const { cursor } = input;
 
   const items = await db
