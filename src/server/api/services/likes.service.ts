@@ -4,7 +4,7 @@ import { db } from "~/server/db";
 import { likes, posts, users } from "~/server/db/schema";
 import { type toggleLikeSchema } from "../schema/likes.schema";
 import { type WithUser } from "../schema/user.schema";
-import { publishLikeNotification } from "./notifications.service";
+import { publishNotification } from "./notifications.service";
 
 export async function toggleLike(input: WithUser<typeof toggleLikeSchema>) {
   const { postId, userId } = input;
@@ -71,7 +71,7 @@ export async function toggleLike(input: WithUser<typeof toggleLikeSchema>) {
 
     // Send notification only if someone else is liking the post (not the owner)
     if (postWithOwner.postOwnerId !== userId) {
-      await publishLikeNotification({
+      await publishNotification({
         type: "like",
         postId,
         postOwnerId: postWithOwner.postOwnerId,
