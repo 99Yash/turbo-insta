@@ -1,15 +1,11 @@
 import { redirect } from "next/navigation";
 import { getCachedUser } from "~/lib/queries/user";
-import { api, HydrateClient } from "~/trpc/server";
+import { HydrateClient } from "~/trpc/server";
 import { AppSidebar } from "./_components/app-sidebar";
 import { Create } from "./_components/forms/create";
-import { Post } from "./_components/post";
+import { InfinitePosts } from "./_components/infinite-posts";
 
 export default async function Home() {
-  const { items: posts } = await api.posts.getAll({
-    limit: 10,
-  });
-
   const user = await getCachedUser();
 
   if (!user) {
@@ -26,18 +22,7 @@ export default async function Home() {
           <HydrateClient>
             <div className="flex flex-col py-8 pb-24 lg:pb-8">
               {user && <Create />}
-              <div className="space-y-6">
-                {posts.map((post) => {
-                  if (!post.users) return null;
-                  return (
-                    <Post
-                      key={post.posts.id}
-                      post={post.posts}
-                      author={post.users}
-                    />
-                  );
-                })}
-              </div>
+              <InfinitePosts />
             </div>
           </HydrateClient>
         </div>

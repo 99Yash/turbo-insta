@@ -1,4 +1,4 @@
-import { and, count, desc, eq, gt, or } from "drizzle-orm";
+import { and, count, desc, eq, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import {
   createTRPCRouter,
@@ -28,7 +28,6 @@ export const postsRouter = createTRPCRouter({
   getAll: publicProcedure
     .input(
       z.object({
-        limit: z.number().min(1).max(100).default(10),
         cursor: z
           .object({
             id: z.string(),
@@ -38,7 +37,8 @@ export const postsRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      const { limit, cursor } = input;
+      const limit = 2;
+      const { cursor } = input;
 
       const items = await ctx.db
         .select()
@@ -47,10 +47,10 @@ export const postsRouter = createTRPCRouter({
         .where(
           cursor
             ? or(
-                gt(posts.createdAt, cursor.createdAt),
+                lt(posts.createdAt, cursor.createdAt),
                 and(
                   eq(posts.createdAt, cursor.createdAt),
-                  gt(posts.id, cursor.id),
+                  lt(posts.id, cursor.id),
                 ),
               )
             : undefined,
