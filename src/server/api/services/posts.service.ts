@@ -1,15 +1,17 @@
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
-import { and, count, desc, eq, gt, or } from "drizzle-orm";
+import { and, count, desc, eq, gt, lt, or } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { generateAltText } from "~/lib/queries/ai";
 import { db } from "~/server/db";
-import { likes, posts } from "~/server/db/schema";
+import { likes, posts, users } from "~/server/db/schema";
 import {
   type CreatePostInput,
+  type GetPostByIdInput,
   type getPostByIdSchema,
   type GetPostsByUserIdInput,
+  type GetPostsInput,
 } from "../schema/posts.schema";
-import { type WithUser } from "../schema/user.schema";
+import { type WithOptionalUser, type WithUser } from "../schema/user.schema";
 
 export const utapi = new UTApi({
   apiKey: process.env.UPLOADTHING_SECRET,
@@ -145,3 +147,78 @@ export const getUserTopPosts = async (userId: string) => {
 
   return postsWithLikes;
 };
+
+export const getPosts = async (input: GetPostsInput) => {
+  const limit = 2;
+  const { cursor } = input;
+
+  const items = await db
+    .select()
+    .from(posts)
+    .leftJoin(users, eq(posts.userId, users.id))
+    .where(
+      cursor
+        ? or(
+            lt(posts.createdAt, cursor.createdAt),
+            and(eq(posts.createdAt, cursor.createdAt), lt(posts.id, cursor.id)),
+          )
+        : undefined,
+    )
+    .orderBy(desc(posts.createdAt), desc(posts.id))
+    .limit(limit + 1);
+
+  let nextCursor: typeof cursor | undefined = undefined;
+
+  if (items.length > limit) {
+    items.pop();
+
+    const lastReturnedItem = items[items.length - 1]!;
+    nextCursor = {
+      id: lastReturnedItem.posts.id,
+      createdAt: lastReturnedItem.posts.createdAt,
+    };
+  }
+
+  return {
+    items,
+    nextCursor,
+  };
+};
+
+export async function getPostLikes(
+  input: WithOptionalUser<typeof getPostByIdSchema>,
+) {
+  const { postId, userId } = input;
+
+  const [c] = await db
+    .select({ count: count() })
+    .from(likes)
+    .where(eq(likes.postId, postId));
+
+  if (userId) {
+    const [likedPost] = await db
+      .select({
+        id: likes.id,
+      })
+      .from(likes)
+      .where(and(eq(likes.userId, userId), eq(likes.postId, postId)));
+
+    return {
+      count: c?.count ?? 0,
+      hasLiked: !!likedPost,
+    };
+  }
+
+  return {
+    count: c?.count ?? 0,
+    hasLiked: false,
+  };
+}
+
+export async function getPostById(input: GetPostByIdInput) {
+  const { postId } = input;
+
+  const [post] = await db.select().from(posts).where(eq(posts.id, postId));
+
+  return post;
+}

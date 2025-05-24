@@ -19,7 +19,11 @@ export function InfinitePosts() {
   } = api.posts.getAll.useInfiniteQuery(
     {},
     {
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      getNextPageParam: (lastPage) => {
+        console.log("getNextPageParam called with:", lastPage);
+        console.log("nextCursor:", lastPage.nextCursor);
+        return lastPage.nextCursor;
+      },
     },
   );
 
@@ -27,7 +31,13 @@ export function InfinitePosts() {
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [target] = entries;
+      console.log("Intersection observer triggered:", {
+        isIntersecting: target?.isIntersecting,
+        hasNextPage,
+        isFetchingNextPage,
+      });
       if (target?.isIntersecting && hasNextPage && !isFetchingNextPage) {
+        console.log("Fetching next page...");
         void fetchNextPage();
       }
     },
@@ -69,6 +79,18 @@ export function InfinitePosts() {
   }
 
   const allPosts = data?.pages.flatMap((page) => page.items) ?? [];
+
+  console.log("Infinite Posts Debug:", {
+    totalPages: data?.pages.length,
+    totalPosts: allPosts.length,
+    hasNextPage,
+    isFetchingNextPage,
+    pages: data?.pages.map((page, i) => ({
+      pageIndex: i,
+      itemCount: page.items.length,
+      nextCursor: page.nextCursor,
+    })),
+  });
 
   return (
     <div ref={scrollElementRef} className="space-y-6">

@@ -31,6 +31,10 @@ export const userSchema = z.object({
   userId: z.string(),
 });
 
+export const optionalUserSchema = z.object({
+  userId: z.string().optional().nullable(),
+});
+
 export function withUser<T extends z.AnyZodObject>(schema: T) {
   return z.object({
     ...schema.shape,
@@ -42,6 +46,21 @@ export function withUser<T extends z.AnyZodObject>(schema: T) {
   >;
 }
 
+export function withOptionalUser<T extends z.AnyZodObject>(schema: T) {
+  return z.object({
+    ...schema.shape,
+    ...optionalUserSchema.shape,
+  }) as z.ZodObject<
+    {
+      userId: z.ZodOptional<z.ZodString>;
+    } & T["shape"]
+  >;
+}
+
 export type WithUser<T extends z.AnyZodObject> = z.infer<
   ReturnType<typeof withUser<T>>
+>;
+
+export type WithOptionalUser<T extends z.AnyZodObject> = z.infer<
+  ReturnType<typeof withOptionalUser<T>>
 >;

@@ -34,3 +34,14 @@ export const getPostByIdSchema = z.object({
 });
 
 export type GetPostByIdInput = z.infer<typeof getPostByIdSchema>;
+
+export const getPostsSchema = z.object({
+  cursor: z
+    .object({
+      id: z.string(),
+      createdAt: z.date(),
+    })
+    .nullish(),
+});
+
+export type GetPostsInput = z.infer<typeof getPostsSchema>;

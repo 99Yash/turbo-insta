@@ -1,19 +1,21 @@
-import { and, count, desc, eq, lt, or } from "drizzle-orm";
 import { z } from "zod";
 import {
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
 } from "~/server/api/trpc";
-import { likes, posts, users } from "~/server/db/schema";
 import {
   createPostSchema,
   getPostByIdSchema,
   getPostsByUserIdSchema,
+  getPostsSchema,
 } from "../schema/posts.schema";
 import {
   createPost,
   deletePost,
+  getPostById,
+  getPostLikes,
+  getPosts,
   getPostsByUserId,
   getUserTopPosts,
 } from "../services/posts.service";
@@ -25,54 +27,9 @@ export const postsRouter = createTRPCRouter({
       return createPost(input, ctx.userId);
     }),
 
-  getAll: publicProcedure
-    .input(
-      z.object({
-        cursor: z
-          .object({
-            id: z.string(),
-            createdAt: z.date(),
-          })
-          .nullish(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const limit = 2;
-      const { cursor } = input;
-
-      const items = await ctx.db
-        .select()
-        .from(posts)
-        .leftJoin(users, eq(posts.userId, users.id))
-        .where(
-          cursor
-            ? or(
-                lt(posts.createdAt, cursor.createdAt),
-                and(
-                  eq(posts.createdAt, cursor.createdAt),
-                  lt(posts.id, cursor.id),
-                ),
-              )
-            : undefined,
-        )
-        .orderBy(desc(posts.createdAt), desc(posts.id))
-        .limit(limit + 1);
-
-      let nextCursor: typeof cursor | undefined = undefined;
-
-      if (items.length > limit) {
-        const nextItem = items.pop()!;
-        nextCursor = {
-          id: nextItem.posts.id,
-          createdAt: nextItem.posts.createdAt,
-        };
-      }
-
-      return {
-        items,
-        nextCursor,
-      };
-    }),
+  getAll: publicProcedure.input(getPostsSchema).query(async ({ input }) => {
+    return getPosts(input);
+  }),
 
   getById: publicProcedure
     .input(
@@ -80,50 +37,14 @@ export const postsRouter = createTRPCRouter({
         postId: z.string(),
       }),
     )
-    .query(async ({ input, ctx }) => {
-      const [post] = await ctx.db
-        .select()
-        .from(posts)
-        .where(eq(posts.id, input.postId))
-        .limit(1);
-      return post;
+    .query(async ({ input }) => {
+      return getPostById(input);
     }),
 
   getLikes: publicProcedure
-    .input(
-      z.object({
-        postId: z.string(),
-      }),
-    )
+    .input(getPostByIdSchema)
     .query(async ({ input, ctx }) => {
-      const [c] = await ctx.db
-        .select({ count: count() })
-        .from(likes)
-        .where(eq(likes.postId, input.postId));
-
-      if (ctx.auth.userId) {
-        const [likedPost] = await ctx.db
-          .select({
-            id: likes.id,
-          })
-          .from(likes)
-          .where(
-            and(
-              eq(likes.userId, ctx.auth.userId),
-              eq(likes.postId, input.postId),
-            ),
-          );
-
-        return {
-          count: c?.count ?? 0,
-          hasLiked: !!likedPost,
-        };
-      }
-
-      return {
-        count: c?.count ?? 0,
-        hasLiked: false,
-      };
+      return getPostLikes({ ...input, userId: ctx.auth.userId ?? undefined });
     }),
 
   delete: protectedProcedure
