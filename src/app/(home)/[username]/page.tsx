@@ -53,24 +53,21 @@ export default async function UserProfilePage({
   if (!user) return notFound();
 
   // Get all posts
-  const { items: posts } = await api.posts.getAll({
-    limit: 30,
+  const { items: posts } = await api.posts.getByUserId({
+    userId: user.id,
   });
-
-  // Filter posts by this user
-  const userPosts = posts.filter((post) => post.users?.id === user.id);
 
   // Get post engagement data
   const postsWithEngagement = await Promise.all(
-    userPosts.map(async (post) => {
-      const postId = post.posts.id;
+    posts.map(async (post) => {
+      const postId = post.id;
       // Get like counts
       const likeData = await api.posts.getLikes({ postId });
       // Get comment counts (if you have an API for this)
       // Assuming you'd create a similar endpoint for comment counts
 
       return {
-        ...post.posts,
+        ...post,
         likeCount: likeData?.count ?? 0,
         commentCount: 0, // Replace with actual comment count if you have it
       };
