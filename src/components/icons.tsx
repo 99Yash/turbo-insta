@@ -33,9 +33,9 @@ export const Icons = {
           fill="none"
           points="9.5 2.75 11.412 7.587 16.25 9.5 11.412 11.413 9.5 16.25 7.587 11.413 2.75 9.5 7.587 7.587 9.5 2.75"
           stroke="oklch(83.3% 0.145 321.434)"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="1.5"
         ></polygon>
       </g>
     </svg>
