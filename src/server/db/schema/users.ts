@@ -2,7 +2,7 @@ import { relations } from "drizzle-orm";
 import { boolean, index, pgTable, text, varchar } from "drizzle-orm/pg-core";
 import { commentReplies, comments } from "./comments";
 import { commentLikes, likes } from "./likes";
-import { posts } from "./posts";
+import { bookmarks, posts } from "./posts";
 import { lifecycleDates } from "./utils";
 
 export const users = pgTable(
@@ -29,6 +29,7 @@ export const userRelations = relations(users, ({ many }) => ({
   likes: many(likes),
   commentReplies: many(commentReplies),
   commentLikes: many(commentLikes),
+  bookmarks: many(bookmarks),
 }));
 
 export type User = typeof users.$inferSelect;
