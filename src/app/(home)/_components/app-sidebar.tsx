@@ -58,7 +58,7 @@ export function AppSidebar({ user }: { user: User }) {
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-2">
+      <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -71,28 +71,29 @@ export function AppSidebar({ user }: { user: User }) {
                 const Icon = isActive ? item.filledIcon : item.icon;
                 return (
                   <SidebarMenuItem key={item.label}>
-                    <Link href={item.href} passHref>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        tooltip={item.label}
-                        className="flex items-center gap-3 transition-all duration-200"
+                    <SidebarMenuButton
+                      asChild
+                      isActive={isActive}
+                      tooltip={item.label}
+                      className="transition-all duration-200"
+                    >
+                      <Link
+                        href={item.href}
+                        className="flex items-center gap-3"
                       >
-                        <div className="flex items-center gap-3">
-                          <Icon
-                            className={cn("size-5", isActive && "text-primary")}
-                          />
-                          <span
-                            className={cn(
-                              "font-medium transition-all duration-200",
-                              isActive && "text-primary",
-                            )}
-                          >
-                            {item.label}
-                          </span>
-                        </div>
-                      </SidebarMenuButton>
-                    </Link>
+                        <Icon
+                          className={cn("size-5", isActive && "text-primary")}
+                        />
+                        <span
+                          className={cn(
+                            "font-medium transition-all duration-200",
+                            isActive && "text-primary",
+                          )}
+                        >
+                          {item.label}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
               })}
@@ -107,27 +108,28 @@ export function AppSidebar({ user }: { user: User }) {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <Link href={`/${user?.username}`}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname.startsWith(`/${user?.username}`)}
-                    tooltip="Profile"
-                    className="transition-all duration-200"
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname.startsWith(`/${user?.username}`)}
+                  tooltip="Profile"
+                  className="transition-all duration-200"
+                >
+                  <Link
+                    href={`/${user?.username}`}
+                    className="flex items-center gap-3"
                   >
-                    <div className="flex items-center gap-3">
-                      <Avatar className="size-5 border border-border/30">
-                        <AvatarImage
-                          src={user?.imageUrl ?? ""}
-                          alt={user?.name ?? ""}
-                        />
-                        <AvatarFallback className="text-xs">
-                          {getInitials(user?.name ?? "VH")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium">Profile</span>
-                    </div>
-                  </SidebarMenuButton>
-                </Link>
+                    <Avatar className="size-5 border border-border/30">
+                      <AvatarImage
+                        src={user?.imageUrl ?? ""}
+                        alt={user?.name ?? ""}
+                      />
+                      <AvatarFallback className="text-xs">
+                        {getInitials(user?.name ?? "VH")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="font-medium">Profile</span>
+                  </Link>
+                </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
@@ -137,35 +139,31 @@ export function AppSidebar({ user }: { user: User }) {
       <SidebarFooter className="border-t border-border/40 p-2">
         <SidebarMenu>
           <SidebarMenuItem>
-            <Link href="/settings" passHref>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname.startsWith("/settings")}
-                tooltip="Settings"
-                className="transition-all duration-200"
-              >
-                <div className="flex items-center gap-3">
-                  <CogIcon className="size-5" />
-                  <span className="font-medium">Settings</span>
-                </div>
-              </SidebarMenuButton>
-            </Link>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname.startsWith("/settings")}
+              tooltip="Settings"
+              className="transition-all duration-200"
+            >
+              <Link href="/settings" className="flex items-center gap-3">
+                <CogIcon className="size-5" />
+                <span className="font-medium">Settings</span>
+              </Link>
+            </SidebarMenuButton>
           </SidebarMenuItem>
 
           <SidebarMenuItem>
-            <Link href="/signout" passHref>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname.startsWith("/signout")}
-                tooltip="Logout"
-                className="mt-2"
-              >
-                <div className="flex items-center gap-3">
-                  <LogOutIcon className="size-5" />
-                  <span className="font-medium">Logout</span>
-                </div>
-              </SidebarMenuButton>
-            </Link>
+            <SidebarMenuButton
+              asChild
+              isActive={pathname.startsWith("/signout")}
+              tooltip="Logout"
+              className="mt-2"
+            >
+              <Link href="/signout" className="flex items-center gap-3">
+                <LogOutIcon className="size-5" />
+                <span className="font-medium">Logout</span>
+              </Link>
+            </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Icons } from "~/components/icons";
+import { Button } from "~/components/ui/button";
 import { SidebarProvider, useSidebar } from "~/components/ui/sidebar";
 import { useMediaQuery } from "~/hooks/use-media-query";
 import { type User } from "~/server/db/schema";
@@ -17,14 +19,26 @@ function SidebarLayoutContent({
   children,
   maxWidth = "max-w-[670px]",
 }: ResponsiveSidebarLayoutProps) {
-  const { isMobile } = useSidebar();
+  const { isMobile, toggleSidebar } = useSidebar();
 
   if (isMobile) {
-    // On mobile, sidebar is an overlay, use normal layout
+    // On mobile, sidebar is an overlay with trigger button at top
     return (
       <div className="flex h-full min-h-screen w-full">
         <AppSidebar user={user} />
         <div className="min-w-0 flex-1 bg-background">
+          {/* Mobile trigger button positioned at top */}
+          <div className="sticky top-0 z-40 flex items-center justify-start border-b border-border/40 bg-background/95 px-4 py-3 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleSidebar}
+              className="h-9 w-9 hover:bg-accent"
+              aria-label="Toggle sidebar"
+            >
+              <Icons.menu className="h-5 w-5" />
+            </Button>
+          </div>
           <div className={`mx-auto ${maxWidth} p-4`}>{children}</div>
         </div>
       </div>

@@ -48,6 +48,7 @@ export async function generateUniqueUsername(name: string): Promise<string> {
     - "John Smith" -> "johny8"
     - "Sarah Johnson" -> "sarahj"
     - "Michael Brown" -> "mikeb42"
+    Usernames should be unique and memorable. It cannot be "settings" or "signout" or "messages" or "notifications" or "profile" or "home" or "search" or "explore".
   `;
 
   let attempts = 0;
