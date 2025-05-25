@@ -7,11 +7,7 @@ import { Book2Small } from "~/components/ui/icons/nucleo";
 import { api } from "~/trpc/react";
 import { Post } from "../post";
 
-interface SavedPostsProps {
-  readonly userId: string;
-}
-
-export function SavedPosts({ userId }: SavedPostsProps) {
+export function SavedPosts() {
   const { ref, inView } = useInView();
 
   const {

@@ -147,7 +147,7 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
 
           <TabsContent value="saved" className="mt-6">
             {isCurrentUser ? (
-              <SavedPosts userId={user.id} />
+              <SavedPosts />
             ) : (
               <div className="flex w-full flex-col items-center justify-center py-16">
                 <Book2Small className="size-16 text-muted-foreground" />
