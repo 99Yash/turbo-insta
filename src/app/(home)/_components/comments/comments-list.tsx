@@ -13,14 +13,18 @@ import { useAuth } from "~/hooks/use-auth";
 import { cn, formatTimeToNow, getInitials } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { UserHoverCard } from "../profile/profile-mini";
+import { RepliesList } from "./replies-list";
 
 interface CommentsListProps {
-  postId: string;
+  readonly postId: string;
 }
 
 export function CommentsList({ postId }: CommentsListProps) {
   const { userId } = useAuth();
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
+  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(
+    new Set(),
+  );
   const {
     data,
     fetchNextPage,
@@ -45,6 +49,18 @@ export function CommentsList({ postId }: CommentsListProps) {
       void trpcUtils.comments.getByPostId.invalidate({ postId });
     },
   });
+
+  const toggleReplies = (commentId: string): void => {
+    setExpandedReplies((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(commentId)) {
+        newSet.delete(commentId);
+      } else {
+        newSet.add(commentId);
+      }
+      return newSet;
+    });
+  };
 
   if (status === "pending") {
     return (
@@ -97,63 +113,74 @@ export function CommentsList({ postId }: CommentsListProps) {
           const isCurrentUser = comment.userId === userId;
 
           return (
-            <div
-              key={comment.id}
-              className="group flex items-start px-3.5 py-4 text-sm"
-            >
-              <div className="flex items-start">
-                <UserHoverCard user={comment.user}>
-                  <Avatar className="mr-2 size-7 cursor-pointer">
-                    <AvatarImage
-                      src={comment.user.imageUrl ?? ""}
-                      alt={comment.user.name ?? ""}
-                    />
-                    <AvatarFallback>
-                      {getInitials(comment.user.name ?? "")}
-                    </AvatarFallback>
-                  </Avatar>
-                </UserHoverCard>
-              </div>
-              <div className="flex min-w-0 flex-1 flex-col">
-                <div className="flex items-start justify-between">
-                  <p className="inline">
-                    <UserHoverCard user={comment.user}>
-                      <Link
-                        role="button"
-                        href={`/${comment.user.username}`}
-                        className="mr-1 font-semibold transition-colors duration-200 hover:text-muted-foreground"
-                      >
-                        {comment.user.username}
-                      </Link>
-                    </UserHoverCard>
-                    <span className="whitespace-pre-wrap break-words">
-                      {comment.text}
-                    </span>
-                  </p>
-                  <button className="flex items-center gap-1 self-end">
-                    <Heart
-                      className={cn(
-                        "size-3",
-                        "transition-colors duration-300 hover:fill-rose-500",
-                      )}
-                    />
-                  </button>
+            <div key={comment.id} className="flex flex-col">
+              <div className="group flex items-start px-3.5 py-4 text-sm">
+                <div className="flex items-start">
+                  <UserHoverCard user={comment.user}>
+                    <Avatar className="mr-2 size-7 cursor-pointer">
+                      <AvatarImage
+                        src={comment.user.imageUrl ?? ""}
+                        alt={comment.user.name ?? ""}
+                      />
+                      <AvatarFallback>
+                        {getInitials(comment.user.name ?? "")}
+                      </AvatarFallback>
+                    </Avatar>
+                  </UserHoverCard>
                 </div>
-                <div className="mt-1 flex items-center justify-between space-x-3 text-xs text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <span>{formatTimeToNow(comment.createdAt)}</span>
-                    <button className="font-semibold">Reply</button>
-                    {isCurrentUser && (
-                      <button
-                        className="font-semibold opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                        onClick={() => setCommentToDelete(comment.id)}
-                      >
-                        <MoreHorizontal className="h-3.5 w-3.5" />
-                      </button>
-                    )}
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="flex items-start justify-between">
+                    <p className="inline">
+                      <UserHoverCard user={comment.user}>
+                        <Link
+                          role="button"
+                          href={`/${comment.user.username}`}
+                          className="mr-1 font-semibold transition-colors duration-200 hover:text-muted-foreground"
+                        >
+                          {comment.user.username}
+                        </Link>
+                      </UserHoverCard>
+                      <span className="whitespace-pre-wrap break-words">
+                        {comment.text}
+                      </span>
+                    </p>
+                    <button className="flex items-center gap-1 self-end">
+                      <Heart
+                        className={cn(
+                          "size-3 transition-all duration-200 hover:fill-rose-500 hover:text-rose-500",
+                        )}
+                      />
+                    </button>
+                  </div>
+                  <div className="mt-1 flex items-center justify-between space-x-3 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <span>{formatTimeToNow(comment.createdAt)}</span>
+                      <button className="font-semibold">Reply</button>
+                      {comment.replyCount > 0 && (
+                        <button
+                          className="font-semibold text-blue-600 hover:text-blue-700"
+                          onClick={() => toggleReplies(comment.id)}
+                        >
+                          {expandedReplies.has(comment.id)
+                            ? "Hide replies"
+                            : `View replies (${comment.replyCount})`}
+                        </button>
+                      )}
+                      {isCurrentUser && (
+                        <button
+                          className="font-semibold opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                          onClick={() => setCommentToDelete(comment.id)}
+                        >
+                          <MoreHorizontal className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
+              {expandedReplies.has(comment.id) && (
+                <RepliesList commentId={comment.id} />
+              )}
             </div>
           );
         }),

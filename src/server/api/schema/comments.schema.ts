@@ -24,3 +24,29 @@ export const deleteCommentSchema = z.object({
 });
 
 export type DeleteCommentInput = z.infer<typeof deleteCommentSchema>;
+
+// Reply schemas
+export const createReplySchema = z.object({
+  text: z.string().min(1).max(1000),
+  commentId: z.string(),
+});
+
+export type CreateReplyInput = z.infer<typeof createReplySchema>;
+
+export const getRepliesSchema = z.object({
+  commentId: z.string(),
+  cursor: z
+    .object({
+      id: z.string(),
+      createdAt: z.date(),
+    })
+    .nullish(),
+});
+
+export type GetRepliesInput = z.infer<typeof getRepliesSchema>;
+
+export const deleteReplySchema = z.object({
+  replyId: z.string(),
+});
+
+export type DeleteReplyInput = z.infer<typeof deleteReplySchema>;
