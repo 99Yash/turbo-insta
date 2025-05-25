@@ -176,8 +176,19 @@ export function CommentsList({ postId }: CommentsListProps) {
                     </button>
                   </div>
                   <div className="mt-1 flex items-center justify-between space-x-3 text-xs text-muted-foreground">
-                    <div className="flex items-center gap-2">
-                      <span>{formatTimeToNow(comment.createdAt)}</span>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span>{formatTimeToNow(comment.createdAt)}</span>
+                        <button className="font-semibold">Reply</button>
+                        {isCurrentUser && (
+                          <button
+                            className="font-semibold opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                            onClick={() => setCommentToDelete(comment.id)}
+                          >
+                            <MoreHorizontal className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
                       {comment.replyCount > 0 && (
                         <button
                           className="font-semibold text-muted-foreground"
@@ -186,15 +197,6 @@ export function CommentsList({ postId }: CommentsListProps) {
                           {expandedReplies.has(comment.id)
                             ? "Hide replies"
                             : `View replies (${comment.replyCount})`}
-                        </button>
-                      )}
-                      <button className="font-semibold">Reply</button>
-                      {isCurrentUser && (
-                        <button
-                          className="font-semibold opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                          onClick={() => setCommentToDelete(comment.id)}
-                        >
-                          <MoreHorizontal className="h-3.5 w-3.5" />
                         </button>
                       )}
                     </div>
