@@ -10,7 +10,7 @@ export const toggleLikeSchema = z.discriminatedUnion("type", [
     commentId: z.string(),
   }),
   z.object({
-    type: z.literal("commentReply"),
+    type: z.literal("reply"),
     commentReplyId: z.string(),
   }),
 ]);

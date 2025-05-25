@@ -25,18 +25,12 @@ export async function toggleLike(input: ToggleLikeWithUser): Promise<void> {
       case "comment":
         await toggleCommentLike({ commentId: input.commentId, userId });
         break;
-      case "commentReply":
+      case "reply":
         await toggleCommentReplyLike({
           commentReplyId: input.commentReplyId,
           userId,
         });
         break;
-      default:
-        // This should never happen due to discriminated union, but TypeScript requires it
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Invalid like type",
-        });
     }
   } catch (e) {
     throw new TRPCError({
