@@ -33,7 +33,8 @@ export async function createComment(
 
 export async function getComments(input: GetCommentsInput) {
   try {
-    const { postId, limit, cursor } = input;
+    const { postId, cursor } = input;
+    const limit = 10;
 
     const postComments = await db
       .select()

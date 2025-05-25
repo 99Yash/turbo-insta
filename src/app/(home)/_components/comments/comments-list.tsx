@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, Plus, Trash2 } from "lucide-react";
+import { Heart, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Icons } from "~/components/icons";
@@ -10,7 +10,7 @@ import { Loading } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useAuth } from "~/hooks/use-auth";
-import { formatTimeToNow, getInitials } from "~/lib/utils";
+import { cn, formatTimeToNow, getInitials } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { UserHoverCard } from "../profile/profile-mini";
 
@@ -21,35 +21,30 @@ interface CommentsListProps {
 export function CommentsList({ postId }: CommentsListProps) {
   const { userId } = useAuth();
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
-    api.comments.getByPostId.useInfiniteQuery(
-      {
-        postId,
-        limit: 10,
-      },
-      {
-        getNextPageParam: (lastPage) => lastPage.nextCursor,
-      },
-    );
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+    refetch,
+  } = api.comments.getByPostId.useInfiniteQuery(
+    {
+      postId,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    },
+  );
+
+  const trpcUtils = api.useUtils();
 
   const deleteCommentMutation = api.comments.delete.useMutation({
     onSuccess: () => {
       setCommentToDelete(null);
-      // Refetch comments after deletion
-      void refetch();
+      void trpcUtils.comments.getByPostId.invalidate({ postId });
     },
   });
-
-  const { refetch, isRefetching } = api.comments.getByPostId.useInfiniteQuery(
-    {
-      postId,
-      limit: 10,
-    },
-    {
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
-      enabled: false, // Don't run this query automatically
-    },
-  );
 
   const handleDeleteComment = () => {
     if (!commentToDelete) return;
@@ -90,7 +85,7 @@ export function CommentsList({ postId }: CommentsListProps) {
             <span>Error loading comments</span>
           </div>
           <Button
-            disabled={isRefetching}
+            disabled={deleteCommentMutation.isPending}
             variant="outline"
             size="sm"
             onClick={() => void refetch()}
@@ -142,17 +137,28 @@ export function CommentsList({ postId }: CommentsListProps) {
                     {comment.text}
                   </span>
                 </p>
-                <div className="mt-1 flex space-x-3 text-xs text-muted-foreground">
-                  <span>{formatTimeToNow(comment.createdAt)}</span>
-                  <button className="font-semibold">Reply</button>
-                  {isCurrentUser && (
-                    <button
-                      className="font-semibold opacity-0 transition-opacity duration-200 group-hover:opacity-100"
-                      onClick={() => setCommentToDelete(comment.id)}
-                    >
-                      <MoreHorizontal className="h-3.5 w-3.5" />
-                    </button>
-                  )}
+                <div className="mt-1 flex items-center justify-between space-x-3 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <span>{formatTimeToNow(comment.createdAt)}</span>
+                    <button className="font-semibold">Reply</button>
+                    {isCurrentUser && (
+                      <button
+                        className="font-semibold opacity-0 transition-opacity duration-200 group-hover:opacity-100"
+                        onClick={() => setCommentToDelete(comment.id)}
+                      >
+                        <MoreHorizontal className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  <button className="flex items-center gap-1">
+                    <Heart
+                      className={cn(
+                        "size-3",
+                        "transition-colors duration-300 hover:fill-rose-500",
+                      )}
+                    />
+                  </button>
                 </div>
               </div>
             </div>
