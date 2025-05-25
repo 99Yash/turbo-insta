@@ -115,20 +115,30 @@ export function CommentsList({ postId }: CommentsListProps) {
                 </UserHoverCard>
               </div>
               <div className="flex min-w-0 flex-1 flex-col">
-                <p className="inline">
-                  <UserHoverCard user={comment.user}>
-                    <Link
-                      role="button"
-                      href={`/${comment.user.username}`}
-                      className="mr-1 font-semibold transition-colors duration-200 hover:text-muted-foreground"
-                    >
-                      {comment.user.username}
-                    </Link>
-                  </UserHoverCard>
-                  <span className="whitespace-pre-wrap break-words">
-                    {comment.text}
-                  </span>
-                </p>
+                <div className="flex items-start justify-between">
+                  <p className="inline">
+                    <UserHoverCard user={comment.user}>
+                      <Link
+                        role="button"
+                        href={`/${comment.user.username}`}
+                        className="mr-1 font-semibold transition-colors duration-200 hover:text-muted-foreground"
+                      >
+                        {comment.user.username}
+                      </Link>
+                    </UserHoverCard>
+                    <span className="whitespace-pre-wrap break-words">
+                      {comment.text}
+                    </span>
+                  </p>
+                  <button className="flex items-center gap-1 self-end">
+                    <Heart
+                      className={cn(
+                        "size-3",
+                        "transition-colors duration-300 hover:fill-rose-500",
+                      )}
+                    />
+                  </button>
+                </div>
                 <div className="mt-1 flex items-center justify-between space-x-3 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <span>{formatTimeToNow(comment.createdAt)}</span>
@@ -142,15 +152,6 @@ export function CommentsList({ postId }: CommentsListProps) {
                       </button>
                     )}
                   </div>
-
-                  <button className="flex items-center gap-1">
-                    <Heart
-                      className={cn(
-                        "size-3",
-                        "transition-colors duration-300 hover:fill-rose-500",
-                      )}
-                    />
-                  </button>
                 </div>
               </div>
             </div>

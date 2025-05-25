@@ -1,8 +1,7 @@
 "use client";
 
-import { BookmarkIcon } from "@radix-ui/react-icons";
 import { motion } from "framer-motion";
-import { Heart, MessageCircleIcon } from "lucide-react";
+import { BookmarkIcon, Heart, MessageCircleIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import React, { type Dispatch, type SetStateAction, useState } from "react";
 import { toast } from "sonner";
@@ -16,7 +15,13 @@ import { api } from "~/trpc/react";
 export function ActionButtons({ postId }: { postId: string }) {
   const utils = api.useUtils();
   const [isLiked, setIsLiked] = React.useState(false);
+  const [isBookmarked, setIsBookmarked] = React.useState(false);
   const [isShareOpen, setIsShareOpen] = React.useState(false);
+
+  // Debug log for bookmark state changes
+  React.useEffect(() => {
+    console.log("isBookmarked state changed:", isBookmarked);
+  }, [isBookmarked]);
 
   const router = useRouter();
   const pathname = usePathname();
@@ -35,6 +40,20 @@ export function ActionButtons({ postId }: { postId: string }) {
     },
   );
 
+  const {
+    data: bookmarkData,
+    isLoading: isBookmarkLoading,
+    isError: isBookmarkError,
+    error: bookmarkError,
+  } = api.posts.getBookmarkStatus.useQuery(
+    {
+      postId,
+    },
+    {
+      refetchOnWindowFocus: false,
+    },
+  );
+
   React.useEffect(() => {
     if (isLoading) return;
     if (isError) {
@@ -44,9 +63,32 @@ export function ActionButtons({ postId }: { postId: string }) {
     }
   }, [isError, error, isLoading, likesData]);
 
+  React.useEffect(() => {
+    if (isBookmarkLoading) return;
+    if (isBookmarkError) {
+      showErrorToast(bookmarkError);
+    } else if (bookmarkData) {
+      console.log("Bookmark data received:", bookmarkData);
+      setIsBookmarked(bookmarkData.isBookmarked);
+    }
+  }, [isBookmarkError, bookmarkError, isBookmarkLoading, bookmarkData]);
+
   const toggleLike = api.likes.toggle.useMutation({
     async onSuccess() {
       await utils.posts.getLikes.invalidate({
+        postId,
+      });
+    },
+    onError(error) {
+      showErrorToast(error);
+    },
+  });
+
+  const toggleBookmark = api.posts.toggleBookmark.useMutation({
+    async onSuccess(data) {
+      console.log("Toggle bookmark success:", data);
+      setIsBookmarked((prev) => !prev);
+      await utils.posts.getBookmarkStatus.invalidate({
         postId,
       });
     },
@@ -92,15 +134,28 @@ export function ActionButtons({ postId }: { postId: string }) {
 
           <Icons.share
             role="button"
+            onClick={() => setIsShareOpen(true)}
             className="size-6 transition-colors duration-200 hover:text-muted-foreground"
             aria-hidden="true"
             aria-label="Share"
           />
           <span className="sr-only">Share</span>
         </div>
+
         <BookmarkIcon
           role="button"
-          className="size-6 transition-colors duration-200 hover:text-muted-foreground"
+          onClick={async () => {
+            console.log("Bookmark clicked, current state:", isBookmarked);
+            await toggleBookmark.mutateAsync({
+              postId,
+            });
+          }}
+          className={cn(
+            "size-6 transition-colors duration-200",
+            isBookmarked
+              ? "fill-foreground text-foreground"
+              : "hover:text-muted-foreground",
+          )}
           aria-hidden="true"
           aria-label="Bookmark"
         />

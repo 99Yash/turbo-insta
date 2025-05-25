@@ -6,19 +6,26 @@ import {
 } from "~/server/api/trpc";
 import {
   createPostSchema,
+  getBookmarkStatusSchema,
   getPostByIdSchema,
   getPostsByUserIdSchema,
   getPostsSchema,
+  getUserBookmarksSchema,
+  toggleBookmarkSchema,
 } from "../schema/posts.schema";
+import { userSchema } from "../schema/user.schema";
 import {
   createPost,
   deletePost,
+  getBookmarkStatus,
   getPostById,
   getPostComments,
   getPostLikes,
   getPosts,
   getPostsByUserId,
+  getUserBookmarks,
   getUserTopPosts,
+  toggleBookmark,
 } from "../services/posts.service";
 
 export const postsRouter = createTRPCRouter({
@@ -70,10 +77,27 @@ export const postsRouter = createTRPCRouter({
   ),
 
   getUserTopPosts: publicProcedure
-    .input(
-      z.object({
-        userId: z.string(),
-      }),
-    )
+    .input(userSchema)
     .query(async ({ input }) => await getUserTopPosts(input.userId)),
+
+  toggleBookmark: protectedProcedure
+    .input(toggleBookmarkSchema)
+    .mutation(async ({ input, ctx }) => {
+      return toggleBookmark(input, ctx.userId);
+    }),
+
+  getBookmarkStatus: protectedProcedure
+    .input(getBookmarkStatusSchema)
+    .query(async ({ input, ctx }) => {
+      return getBookmarkStatus({
+        ...input,
+        userId: ctx.userId,
+      });
+    }),
+
+  getUserBookmarks: protectedProcedure
+    .input(getUserBookmarksSchema)
+    .query(async ({ input, ctx }) => {
+      return getUserBookmarks(input, ctx.userId);
+    }),
 });

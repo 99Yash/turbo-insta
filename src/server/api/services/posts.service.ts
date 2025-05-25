@@ -3,13 +3,16 @@ import { and, count, desc, eq, gt, lt, or } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { generateAltText } from "~/lib/queries/ai";
 import { db } from "~/server/db";
-import { comments, likes, posts, users } from "~/server/db/schema";
+import { bookmarks, comments, likes, posts, users } from "~/server/db/schema";
 import {
   type CreatePostInput,
+  type getBookmarkStatusSchema,
   type GetPostByIdInput,
   type getPostByIdSchema,
   type GetPostsByUserIdInput,
   type GetPostsInput,
+  type GetUserBookmarksInput,
+  type ToggleBookmarkInput,
 } from "../schema/posts.schema";
 import { type WithOptionalUser, type WithUser } from "../schema/user.schema";
 
@@ -271,6 +274,113 @@ export async function getPostComments(input: GetPostByIdInput) {
       .where(eq(comments.postId, postId));
 
     return postComments;
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+}
+
+export async function toggleBookmark(
+  input: ToggleBookmarkInput,
+  userId: string,
+) {
+  const { postId } = input;
+
+  try {
+    const [existingBookmark] = await db
+      .select()
+      .from(bookmarks)
+      .where(and(eq(bookmarks.postId, postId), eq(bookmarks.userId, userId)));
+
+    if (existingBookmark) {
+      await db
+        .delete(bookmarks)
+        .where(and(eq(bookmarks.postId, postId), eq(bookmarks.userId, userId)));
+      return { bookmarked: false };
+    } else {
+      await db.insert(bookmarks).values({
+        postId,
+        userId,
+      });
+      return { bookmarked: true };
+    }
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+}
+
+export async function getBookmarkStatus(
+  input: WithUser<typeof getBookmarkStatusSchema>,
+) {
+  const { postId, userId } = input;
+
+  try {
+    const [bookmark] = await db
+      .select()
+      .from(bookmarks)
+      .where(and(eq(bookmarks.postId, postId), eq(bookmarks.userId, userId)));
+
+    return { isBookmarked: !!bookmark };
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+}
+
+export async function getUserBookmarks(
+  input: GetUserBookmarksInput,
+  userId: string,
+) {
+  const { limit, cursor } = input;
+
+  try {
+    const items = await db
+      .select({
+        bookmark: bookmarks,
+        post: posts,
+        user: users,
+      })
+      .from(bookmarks)
+      .leftJoin(posts, eq(bookmarks.postId, posts.id))
+      .leftJoin(users, eq(posts.userId, users.id))
+      .where(
+        cursor
+          ? and(
+              eq(bookmarks.userId, userId),
+              or(
+                gt(bookmarks.createdAt, cursor.createdAt),
+                and(
+                  eq(bookmarks.createdAt, cursor.createdAt),
+                  gt(bookmarks.id, cursor.id),
+                ),
+              ),
+            )
+          : eq(bookmarks.userId, userId),
+      )
+      .orderBy(desc(bookmarks.createdAt), desc(bookmarks.id))
+      .limit(limit + 1);
+
+    let nextCursor: typeof cursor | undefined = undefined;
+
+    if (items.length > limit) {
+      const nextItem = items.pop()!;
+      nextCursor = {
+        id: nextItem.bookmark.id,
+        createdAt: nextItem.bookmark.createdAt,
+      };
+    }
+
+    return {
+      items,
+      nextCursor,
+    };
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,

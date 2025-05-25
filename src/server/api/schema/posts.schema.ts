@@ -45,3 +45,27 @@ export const getPostsSchema = z.object({
 });
 
 export type GetPostsInput = z.infer<typeof getPostsSchema>;
+
+export const toggleBookmarkSchema = z.object({
+  postId: z.string(),
+});
+
+export type ToggleBookmarkInput = z.infer<typeof toggleBookmarkSchema>;
+
+export const getBookmarkStatusSchema = z.object({
+  postId: z.string(),
+});
+
+export type GetBookmarkStatusInput = z.infer<typeof getBookmarkStatusSchema>;
+
+export const getUserBookmarksSchema = z.object({
+  limit: z.number().min(1).max(100).default(12),
+  cursor: z
+    .object({
+      id: z.string(),
+      createdAt: z.date(),
+    })
+    .nullish(),
+});
+
+export type GetUserBookmarksInput = z.infer<typeof getUserBookmarksSchema>;

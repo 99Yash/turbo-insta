@@ -10,6 +10,7 @@ import { getInitials } from "~/lib/utils";
 import { type Post, type User } from "~/server/db/schema";
 import { ProfileEditForm } from "../forms/edit-profile";
 import { ProfilePosts } from "./profile-posts";
+import { SavedPosts } from "./saved-posts";
 
 interface ProfileViewProps {
   user: User;
@@ -145,13 +146,17 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
           </TabsContent>
 
           <TabsContent value="saved" className="mt-6">
-            <div className="flex w-full flex-col items-center justify-center py-16">
-              <Book2Small className="size-16 text-muted-foreground" />
-              <h3 className="mt-4 text-xl font-semibold">No saved posts</h3>
-              <p className="mt-2 max-w-md text-center text-sm text-muted-foreground">
-                When you save posts, they will appear here.
-              </p>
-            </div>
+            {isCurrentUser ? (
+              <SavedPosts userId={user.id} />
+            ) : (
+              <div className="flex w-full flex-col items-center justify-center py-16">
+                <Book2Small className="size-16 text-muted-foreground" />
+                <h3 className="mt-4 text-xl font-semibold">Private</h3>
+                <p className="mt-2 max-w-md text-center text-sm text-muted-foreground">
+                  Only {user.username} can see their saved posts.
+                </p>
+              </div>
+            )}
           </TabsContent>
 
           <TabsContent value="tagged" className="mt-6">
