@@ -66,3 +66,7 @@ export type WithUser<T extends z.AnyZodObject> = z.infer<
 export type WithOptionalUser<T extends z.AnyZodObject> = z.infer<
   ReturnType<typeof withOptionalUser<T>>
 >;
+
+// Helper type for adding userId to any TypeScript type (not just Zod schemas)
+export type WithUserId<T> = T & { userId: string };
+export type WithOptionalUserId<T> = T & { userId?: string };

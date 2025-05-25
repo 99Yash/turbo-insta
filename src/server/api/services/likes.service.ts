@@ -10,11 +10,17 @@ import {
   posts,
   users,
 } from "~/server/db/schema";
-import { type ToggleLikeInput } from "../schema/likes.schema";
+import {
+  type CommentLikeParams,
+  type PostLikeParams,
+  type ReplyLikeParams,
+  type ToggleLikeInput,
+} from "../schema/likes.schema";
+import { type WithUserId } from "../schema/user.schema";
 
-type ToggleLikeWithUser = ToggleLikeInput & { userId: string };
-
-export async function toggleLike(input: ToggleLikeWithUser): Promise<void> {
+export async function toggleLike(
+  input: WithUserId<ToggleLikeInput>,
+): Promise<void> {
   const { userId } = input;
 
   try {
@@ -43,10 +49,7 @@ export async function toggleLike(input: ToggleLikeWithUser): Promise<void> {
 async function togglePostLike({
   postId,
   userId,
-}: {
-  postId: string;
-  userId: string;
-}): Promise<void> {
+}: WithUserId<PostLikeParams>): Promise<void> {
   // Verify post exists
   const postResults = await db
     .select({
@@ -91,10 +94,7 @@ async function togglePostLike({
 async function toggleCommentLike({
   commentId,
   userId,
-}: {
-  commentId: string;
-  userId: string;
-}): Promise<void> {
+}: WithUserId<CommentLikeParams>): Promise<void> {
   // Verify comment exists
   const commentResults = await db
     .select({
@@ -149,10 +149,7 @@ async function toggleCommentLike({
 async function toggleCommentReplyLike({
   commentReplyId,
   userId,
-}: {
-  commentReplyId: string;
-  userId: string;
-}): Promise<void> {
+}: WithUserId<ReplyLikeParams>): Promise<void> {
   // Verify comment reply exists
   const commentReplyResults = await db
     .select({

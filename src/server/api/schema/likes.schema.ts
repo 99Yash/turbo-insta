@@ -16,3 +16,17 @@ export const toggleLikeSchema = z.discriminatedUnion("type", [
 ]);
 
 export type ToggleLikeInput = z.infer<typeof toggleLikeSchema>;
+
+// Helper types to extract just the parameters without the discriminator
+export type PostLikeParams = Omit<
+  Extract<ToggleLikeInput, { type: "post" }>,
+  "type"
+>;
+export type CommentLikeParams = Omit<
+  Extract<ToggleLikeInput, { type: "comment" }>,
+  "type"
+>;
+export type ReplyLikeParams = Omit<
+  Extract<ToggleLikeInput, { type: "reply" }>,
+  "type"
+>;
