@@ -138,9 +138,10 @@ export function RepliesList({ commentId }: RepliesListProps) {
                       {reply.text}
                     </span>
                   </p>
+
                   <div className="flex flex-col items-center gap-1">
                     <button
-                      className="flex items-center gap-1"
+                      className="flex flex-col items-center gap-1"
                       onClick={async () => {
                         await toggleLikeMutation.mutateAsync({
                           type: "reply",
@@ -157,14 +158,15 @@ export function RepliesList({ commentId }: RepliesListProps) {
                             : "hover:fill-rose-500 hover:text-rose-500",
                         )}
                       />
+                      {reply.likeCount > 0 && (
+                        <span className="self-center text-xs text-muted-foreground">
+                          {reply.likeCount}
+                        </span>
+                      )}
                     </button>
-                    {reply.likeCount > 0 && (
-                      <span className="text-xs text-muted-foreground">
-                        {reply.likeCount}
-                      </span>
-                    )}
                   </div>
                 </div>
+
                 <div className="mt-1 flex items-center justify-between space-x-3 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <span>{formatTimeToNow(reply.createdAt)}</span>

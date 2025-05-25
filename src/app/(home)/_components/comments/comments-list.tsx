@@ -3,7 +3,7 @@
 import { Heart, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { Icons } from "~/components/icons";
+import { Icons, LucideIcons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Loading } from "~/components/ui/icons";
@@ -194,9 +194,17 @@ export function CommentsList({ postId }: CommentsListProps) {
                           className="font-semibold text-muted-foreground"
                           onClick={() => toggleReplies(comment.id)}
                         >
-                          {expandedReplies.has(comment.id)
-                            ? "Hide replies"
-                            : `View replies (${comment.replyCount})`}
+                          {expandedReplies.has(comment.id) ? (
+                            <div className="flex items-center gap-2">
+                              <LucideIcons.FoldVertical className="size-3.5" />
+                              Hide replies
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <LucideIcons.Minus className="size-3.5" />
+                              View replies ({comment.replyCount})
+                            </div>
+                          )}
                         </button>
                       )}
                     </div>
