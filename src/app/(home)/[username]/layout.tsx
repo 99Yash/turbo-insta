@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
 import { getCachedUser } from "~/lib/queries/user";
-import { ResponsiveSidebarLayout } from "../_components/sidebar/responsive-sidebar-layout";
+import { ProfileSidebarLayout } from "../_components/sidebar/profile-sidebar-layout";
 
-export default async function LobbyLayout({
+export default async function ProfileLayout({
   children,
 }: React.PropsWithChildren) {
   const user = await getCachedUser();
@@ -11,9 +11,5 @@ export default async function LobbyLayout({
     redirect("/signin");
   }
 
-  return (
-    <ResponsiveSidebarLayout user={user} maxWidth="max-w-[670px]">
-      {children}
-    </ResponsiveSidebarLayout>
-  );
+  return <ProfileSidebarLayout user={user}>{children}</ProfileSidebarLayout>;
 }

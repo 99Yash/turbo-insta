@@ -35,7 +35,7 @@ export function ProfileView({
   const { user: currentUser } = useUser();
 
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-8 md:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-6 lg:px-8">
       {/* Profile Header */}
       <div className="flex animate-fade-in flex-col animation-delay-200 md:flex-row md:items-center md:gap-8">
         <div className="flex justify-center md:justify-start">
