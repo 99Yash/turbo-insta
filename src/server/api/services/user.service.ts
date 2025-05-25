@@ -8,10 +8,10 @@ import { users } from "~/server/db/schema/users";
  * @param id The user's primary ID
  * @returns The user object or throws an error if not found
  */
-export const getUserById = async (id: string) => {
+export const getUserById = async (userId: string) => {
   try {
     const user = await db.query.users.findFirst({
-      where: eq(users.id, id),
+      where: eq(users.id, userId),
     });
 
     if (!user) {
