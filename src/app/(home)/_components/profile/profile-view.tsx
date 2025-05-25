@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -11,6 +12,7 @@ import { type Post, type User } from "~/server/db/schema";
 import { ProfileEditForm } from "../forms/edit-profile";
 import { ProfilePosts } from "./profile-posts";
 import { SavedPosts } from "./saved-posts";
+import { TaggedPosts } from "./tagged-posts";
 
 interface ProfileViewProps {
   user: User;
@@ -19,9 +21,15 @@ interface ProfileViewProps {
     commentCount?: number;
   })[];
   isCurrentUser: boolean;
+  defaultTab?: "posts" | "saved" | "tagged";
 }
 
-export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
+export function ProfileView({
+  user,
+  posts,
+  isCurrentUser,
+  defaultTab = "posts",
+}: ProfileViewProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   return (
@@ -113,29 +121,35 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
 
       {/* Profile Tabs */}
       <div className="mt-8 w-full animate-fade-in border-t animation-delay-300">
-        <Tabs defaultValue="posts" className="w-full">
+        <Tabs value={defaultTab} className="w-full">
           <TabsList className="flex h-auto w-full justify-center rounded-none border-b bg-transparent p-0">
-            <TabsTrigger
-              value="posts"
-              className="relative flex-1 rounded-none px-4 py-3 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
-            >
-              <GridLayoutRows className="mr-2 size-4" />
-              <span className="text-sm font-medium">Posts</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="saved"
-              className="relative flex-1 rounded-none px-4 py-3 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
-            >
-              <Book2Small className="mr-2 size-4" />
-              <span className="text-sm font-medium">Saved</span>
-            </TabsTrigger>
-            <TabsTrigger
-              value="tagged"
-              className="relative flex-1 rounded-none px-4 py-3 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
-            >
-              <Tag className="mr-2 size-4" />
-              <span className="text-sm font-medium">Tagged</span>
-            </TabsTrigger>
+            <Link href={`/${user.username}`} className="flex-1">
+              <TabsTrigger
+                value="posts"
+                className="relative w-full rounded-none px-4 py-3 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+              >
+                <GridLayoutRows className="mr-2 size-4" />
+                <span className="text-sm font-medium">Posts</span>
+              </TabsTrigger>
+            </Link>
+            <Link href={`/${user.username}/saved`} className="flex-1">
+              <TabsTrigger
+                value="saved"
+                className="relative w-full rounded-none px-4 py-3 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+              >
+                <Book2Small className="mr-2 size-4" />
+                <span className="text-sm font-medium">Saved</span>
+              </TabsTrigger>
+            </Link>
+            <Link href={`/${user.username}/tagged`} className="flex-1">
+              <TabsTrigger
+                value="tagged"
+                className="relative w-full rounded-none px-4 py-3 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+              >
+                <Tag className="mr-2 size-4" />
+                <span className="text-sm font-medium">Tagged</span>
+              </TabsTrigger>
+            </Link>
           </TabsList>
 
           <TabsContent
@@ -160,13 +174,7 @@ export function ProfileView({ user, posts, isCurrentUser }: ProfileViewProps) {
           </TabsContent>
 
           <TabsContent value="tagged" className="mt-6">
-            <div className="flex w-full flex-col items-center justify-center py-16">
-              <Tag className="size-16 text-muted-foreground" />
-              <h3 className="mt-4 text-xl font-semibold">No tagged posts</h3>
-              <p className="mt-2 max-w-md text-center text-sm text-muted-foreground">
-                When people tag you in posts, they will appear here.
-              </p>
-            </div>
+            <TaggedPosts username={user.username ?? user.name} />
           </TabsContent>
         </Tabs>
       </div>
