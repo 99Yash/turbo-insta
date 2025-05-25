@@ -1,11 +1,12 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
+import { Heart, Loader2, MessageCircle } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
-import { Book2Small } from "~/components/ui/icons/nucleo";
+import { Book2Small, GridLayoutRows } from "~/components/ui/icons/nucleo";
 import { api } from "~/trpc/react";
-import { Post } from "../post";
 
 export function SavedPosts() {
   const { ref, inView } = useInView();
@@ -72,16 +73,61 @@ export function SavedPosts() {
 
   return (
     <div className="w-full">
-      <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
         {allBookmarks.map((bookmark) => {
           if (!bookmark.post || !bookmark.user) return null;
 
+          const post = bookmark.post;
+
           return (
-            <Post
+            <Link
               key={bookmark.bookmark.id}
-              post={bookmark.post}
-              author={bookmark.user}
-            />
+              href={`/posts/${post.id}`}
+              className="group relative aspect-square overflow-hidden rounded-md bg-muted shadow-sm transition-all duration-300 hover:shadow-md"
+            >
+              <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+
+              <Image
+                src={post.images[0]?.url ?? ""}
+                alt={post.images[0]?.alt ?? post.title ?? "Post image"}
+                fill
+                className="object-cover transition-all duration-500 group-hover:scale-105 group-hover:brightness-90"
+                sizes="(max-width: 640px) 95vw, (max-width: 768px) 45vw, 30vw"
+                priority
+              />
+
+              {/* Hover overlay with engagement stats */}
+              <div className="absolute inset-0 z-20 flex items-center justify-center opacity-0 transition-all duration-300 group-hover:opacity-100">
+                <div className="flex items-center gap-8 text-white">
+                  <div className="flex items-center gap-2">
+                    <Heart className="size-5 fill-white drop-shadow-md" />
+                    <span className="text-base font-semibold drop-shadow-md">
+                      {"likeCount" in post ? post.likeCount : 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="size-5 fill-white drop-shadow-md" />
+                    <span className="text-base font-semibold drop-shadow-md">
+                      {"commentCount" in post ? post.commentCount : 0}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Post title on hover */}
+              <div className="absolute bottom-0 left-0 right-0 z-20 p-3 opacity-0 transition-all duration-300 group-hover:opacity-100">
+                <p className="truncate text-center text-sm font-medium text-white drop-shadow-md">
+                  {post.title ?? "Post"}
+                </p>
+              </div>
+
+              {/* Post type indicators */}
+              {post.images.length > 1 && (
+                <div className="absolute right-2 top-2 z-20">
+                  <GridLayoutRows className="size-4 text-white drop-shadow-lg" />
+                </div>
+              )}
+            </Link>
           );
         })}
       </div>

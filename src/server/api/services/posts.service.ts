@@ -1,5 +1,5 @@
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
-import { and, count, desc, eq, gt, lt, or } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, lt, or } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { generateAltText } from "~/lib/queries/ai";
 import { db } from "~/server/db";
@@ -367,10 +367,60 @@ export async function getUserBookmarks(
       .orderBy(desc(bookmarks.createdAt), desc(bookmarks.id))
       .limit(limit + 1);
 
+    // Get post IDs for engagement data
+    const postIds = items
+      .map((item) => item.post?.id)
+      .filter((id): id is string => !!id);
+
+    // Get like counts for each post
+    const likeCounts =
+      postIds.length > 0
+        ? await db
+            .select({
+              postId: likes.postId,
+              count: count(),
+            })
+            .from(likes)
+            .where(inArray(likes.postId, postIds))
+            .groupBy(likes.postId)
+        : [];
+
+    // Get comment counts for each post
+    const commentCounts =
+      postIds.length > 0
+        ? await db
+            .select({
+              postId: comments.postId,
+              count: count(),
+            })
+            .from(comments)
+            .where(inArray(comments.postId, postIds))
+            .groupBy(comments.postId)
+        : [];
+
+    // Add engagement data to items
+    const itemsWithEngagement = items.map((item) => {
+      if (!item.post) return item;
+
+      const likeCount =
+        likeCounts.find((lc) => lc.postId === item.post!.id)?.count ?? 0;
+      const commentCount =
+        commentCounts.find((cc) => cc.postId === item.post!.id)?.count ?? 0;
+
+      return {
+        ...item,
+        post: {
+          ...item.post,
+          likeCount,
+          commentCount,
+        },
+      };
+    });
+
     let nextCursor: typeof cursor | undefined = undefined;
 
-    if (items.length > limit) {
-      const nextItem = items.pop()!;
+    if (itemsWithEngagement.length > limit) {
+      const nextItem = itemsWithEngagement.pop()!;
       nextCursor = {
         id: nextItem.bookmark.id,
         createdAt: nextItem.bookmark.createdAt,
@@ -378,7 +428,7 @@ export async function getUserBookmarks(
     }
 
     return {
-      items,
+      items: itemsWithEngagement,
       nextCursor,
     };
   } catch (e) {
