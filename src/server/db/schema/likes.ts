@@ -1,6 +1,7 @@
 import { relations } from "drizzle-orm";
 import { index, pgTable, varchar } from "drizzle-orm/pg-core";
 import { generateId } from "~/lib/utils";
+import { comments } from "./comments";
 import { posts } from "./posts";
 import { users } from "./users";
 import { lifecycleDates } from "./utils";
@@ -36,5 +37,31 @@ export const likeRelations = relations(likes, ({ one }) => ({
   }),
 }));
 
+export const commentLikes = pgTable("comment_likes", {
+  id: varchar("id")
+    .$defaultFn(() => generateId())
+    .primaryKey(),
+  userId: varchar("user_id", { length: 32 })
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  commentId: varchar("comment_id", { length: 32 })
+    .references(() => comments.id, { onDelete: "cascade" })
+    .notNull(),
+  ...lifecycleDates,
+});
+
+export const commentLikeRelations = relations(commentLikes, ({ one }) => ({
+  user: one(users, {
+    fields: [commentLikes.userId],
+    references: [users.id],
+  }),
+  comment: one(comments, {
+    fields: [commentLikes.commentId],
+    references: [comments.id],
+  }),
+}));
+
 export type Like = typeof likes.$inferSelect;
 export type NewLike = typeof likes.$inferInsert;
+export type CommentLike = typeof commentLikes.$inferSelect;
+export type NewCommentLike = typeof commentLikes.$inferInsert;

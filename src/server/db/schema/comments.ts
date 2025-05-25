@@ -36,5 +36,30 @@ export const commentRelations = relations(comments, ({ one }) => ({
   }),
 }));
 
+export const commentReplies = pgTable("comment_replies", {
+  id: varchar("id")
+    .$defaultFn(() => generateId())
+    .primaryKey(),
+  text: varchar("text", { length: 1024 }),
+  userId: varchar("user_id", { length: 32 })
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  commentId: varchar("comment_id", { length: 32 })
+    .references(() => comments.id, { onDelete: "cascade" })
+    .notNull(),
+  ...lifecycleDates,
+});
+
+export const commentReplyRelations = relations(commentReplies, ({ one }) => ({
+  user: one(users, {
+    fields: [commentReplies.userId],
+    references: [users.id],
+  }),
+  comment: one(comments, {
+    fields: [commentReplies.commentId],
+    references: [comments.id],
+  }),
+}));
+
 export type Comment = typeof comments.$inferSelect;
 export type NewComment = typeof comments.$inferInsert;
