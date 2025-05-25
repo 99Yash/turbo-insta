@@ -14,11 +14,11 @@ export const userRouter = createTRPCRouter({
   updateProfile: protectedProcedure
     .input(
       z.object({
-        name: z.string().min(2).max(50),
+        name: z.string().min(2).max(60),
         username: z
           .string()
           .min(3)
-          .max(30)
+          .max(15)
           .regex(/^[a-z0-9_\.]+$/),
         bio: z.string().max(160).nullable(),
         imageUrl: z.string().url().nullable(),

@@ -32,7 +32,7 @@ export async function toggleLike(
         await toggleCommentLike({ commentId: input.commentId, userId });
         break;
       case "reply":
-        await toggleCommentReplyLike({
+        await toggleReplyLike({
           commentReplyId: input.commentReplyId,
           userId,
         });
@@ -146,7 +146,7 @@ async function toggleCommentLike({
   }
 }
 
-async function toggleCommentReplyLike({
+async function toggleReplyLike({
   commentReplyId,
   userId,
 }: WithUserId<ReplyLikeParams>): Promise<void> {
