@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCachedUser } from "~/lib/queries/user";
-import { AppSidebar } from "../_components/app-sidebar";
+import { ResponsiveSidebarLayout } from "../_components/responsive-sidebar-layout";
 
 export default async function LobbyLayout({
   children,
@@ -12,13 +12,8 @@ export default async function LobbyLayout({
   }
 
   return (
-    <div className="flex h-full">
-      <div className="fixed left-0 top-0 z-20 h-full border-r border-border">
-        <AppSidebar user={user} />
-      </div>
-      <div className="flex-1">
-        <div className="mx-auto max-w-[670px]">{children}</div>
-      </div>
-    </div>
+    <ResponsiveSidebarLayout user={user} maxWidth="max-w-[670px]">
+      {children}
+    </ResponsiveSidebarLayout>
   );
 }

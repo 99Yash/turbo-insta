@@ -1,5 +1,6 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -31,6 +32,7 @@ export function ProfileView({
   defaultTab = "posts",
 }: ProfileViewProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const { user: currentUser } = useUser();
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-8 md:px-6 lg:px-8">
@@ -132,15 +134,17 @@ export function ProfileView({
                 <span className="text-sm font-medium">Posts</span>
               </TabsTrigger>
             </Link>
-            <Link href={`/${user.username}/saved`} className="flex-1">
-              <TabsTrigger
-                value="saved"
-                className="relative w-full rounded-none px-4 py-3 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
-              >
-                <Book2Small className="mr-2 size-4" />
-                <span className="text-sm font-medium">Saved</span>
-              </TabsTrigger>
-            </Link>
+            {currentUser?.id === user.id && (
+              <Link href={`/${user.username}/saved`} className="flex-1">
+                <TabsTrigger
+                  value="saved"
+                  className="relative w-full rounded-none px-4 py-3 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:after:bg-primary"
+                >
+                  <Book2Small className="mr-2 size-4" />
+                  <span className="text-sm font-medium">Saved</span>
+                </TabsTrigger>
+              </Link>
+            )}
             <Link href={`/${user.username}/tagged`} className="flex-1">
               <TabsTrigger
                 value="tagged"
