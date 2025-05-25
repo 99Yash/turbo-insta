@@ -37,6 +37,17 @@ export const optionalUserSchema = z.object({
   userId: z.string().optional().nullable(),
 });
 
+export const updateUserProfileSchema = z.object({
+  name: z.string().min(2).max(60),
+  username: z
+    .string()
+    .min(3)
+    .max(15)
+    .regex(/^[a-z0-9_\.]+$/),
+  bio: z.string().max(160).nullable(),
+  imageUrl: z.string().url().nullable(),
+});
+
 export function withUser<T extends z.AnyZodObject>(schema: T) {
   return z.object({
     ...schema.shape,
