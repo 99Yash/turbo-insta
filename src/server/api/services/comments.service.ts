@@ -9,9 +9,9 @@ import {
 } from "../schema/comments.schema";
 import { type WithUser } from "../schema/user.schema";
 
-export const createComment = async (
+export async function createComment(
   input: WithUser<typeof createCommentSchema>,
-) => {
+) {
   try {
     const [comment] = await db
       .insert(comments)
@@ -29,9 +29,9 @@ export const createComment = async (
       message: getTRPCErrorFromUnknown(e).message,
     });
   }
-};
+}
 
-export const getComments = async (input: GetCommentsInput) => {
+export async function getComments(input: GetCommentsInput) {
   try {
     const { postId, limit, cursor } = input;
 
@@ -106,12 +106,12 @@ export const getComments = async (input: GetCommentsInput) => {
       message: getTRPCErrorFromUnknown(e).message,
     });
   }
-};
+}
 
-export const deleteComment = async ({
+export async function deleteComment({
   commentId,
   userId,
-}: WithUser<typeof deleteCommentSchema>) => {
+}: WithUser<typeof deleteCommentSchema>) {
   try {
     // First check if the comment exists and belongs to the user
     const [comment] = await db
@@ -137,4 +137,4 @@ export const deleteComment = async ({
       message: getTRPCErrorFromUnknown(e).message,
     });
   }
-};
+}

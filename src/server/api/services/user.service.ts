@@ -8,7 +8,7 @@ import { users } from "~/server/db/schema/users";
  * @param id The user's primary ID
  * @returns The user object or throws an error if not found
  */
-export const getUserById = async (userId: string) => {
+export async function getUserById(userId: string) {
   try {
     const user = await db.query.users.findFirst({
       where: eq(users.id, userId),
@@ -28,14 +28,14 @@ export const getUserById = async (userId: string) => {
       message: getTRPCErrorFromUnknown(e).message,
     });
   }
-};
+}
 
 /**
  * Find a user by their username
  * @param username The user's username
  * @returns The user object or throws an error if not found
  */
-export const getUserByUsername = async (username: string) => {
+export async function getUserByUsername(username: string) {
   try {
     const user = await db.query.users.findFirst({
       where: eq(users.username, username),
@@ -55,14 +55,14 @@ export const getUserByUsername = async (username: string) => {
       message: getTRPCErrorFromUnknown(e).message,
     });
   }
-};
+}
 
 /**
  * Find a user by their email
  * @param email The user's email
  * @returns The user object or throws an error if not found
  */
-export const getUserByEmail = async (email: string) => {
+export async function getUserByEmail(email: string) {
   try {
     const user = await db.query.users.findFirst({
       where: eq(users.email, email),
@@ -82,14 +82,14 @@ export const getUserByEmail = async (email: string) => {
       message: getTRPCErrorFromUnknown(e).message,
     });
   }
-};
+}
 
 /**
  * Get multiple users by their IDs
  * @param ids Array of user IDs
  * @returns Array of user objects (only returns found users)
  */
-export const getUsersByIds = async (ids: string[]) => {
+export async function getUsersByIds(ids: string[]) {
   try {
     // Use 'in' operator for querying multiple IDs
     const foundUsers = await db
@@ -104,7 +104,7 @@ export const getUsersByIds = async (ids: string[]) => {
       message: getTRPCErrorFromUnknown(e).message,
     });
   }
-};
+}
 
 /**
  * Update a user's profile
@@ -112,7 +112,7 @@ export const getUsersByIds = async (ids: string[]) => {
  * @param data The updated profile data
  * @returns The updated user object
  */
-export const updateUserProfile = async (
+export async function updateUserProfile(
   userId: string,
   data: {
     name: string;
@@ -120,7 +120,7 @@ export const updateUserProfile = async (
     bio: string | null;
     imageUrl: string | null;
   },
-) => {
+) {
   try {
     // Check if the username is already taken by another user
     if (data.username) {
@@ -163,4 +163,4 @@ export const updateUserProfile = async (
       message: getTRPCErrorFromUnknown(e).message,
     });
   }
-};
+}

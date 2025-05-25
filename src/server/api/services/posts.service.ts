@@ -17,7 +17,7 @@ export const utapi = new UTApi({
   apiKey: process.env.UPLOADTHING_SECRET,
 });
 
-export const createPost = async (input: CreatePostInput, userId: string) => {
+export async function createPost(input: CreatePostInput, userId: string) {
   try {
     await Promise.all(
       input.files.map(async (file) => {
@@ -58,9 +58,9 @@ export const createPost = async (input: CreatePostInput, userId: string) => {
       message: getTRPCErrorFromUnknown(e).message,
     });
   }
-};
+}
 
-export const deletePost = async (input: WithUser<typeof getPostByIdSchema>) => {
+export async function deletePost(input: WithUser<typeof getPostByIdSchema>) {
   try {
     const { postId, userId } = input;
 
@@ -91,7 +91,7 @@ export const deletePost = async (input: WithUser<typeof getPostByIdSchema>) => {
       message: getTRPCErrorFromUnknown(e).message,
     });
   }
-};
+}
 
 export async function getPostsByUserId(input: GetPostsByUserIdInput) {
   const { userId, limit, cursor } = input;
@@ -139,7 +139,7 @@ export async function getPostsByUserId(input: GetPostsByUserIdInput) {
   }
 }
 
-export const getUserTopPosts = async (userId: string) => {
+export async function getUserTopPosts(userId: string) {
   try {
     const postsWithLikes = await db
       .select({
@@ -160,9 +160,9 @@ export const getUserTopPosts = async (userId: string) => {
       message: getTRPCErrorFromUnknown(e).message,
     });
   }
-};
+}
 
-export const getPosts = async (input: GetPostsInput) => {
+export async function getPosts(input: GetPostsInput) {
   const limit = 8;
   const { cursor } = input;
 
@@ -207,7 +207,7 @@ export const getPosts = async (input: GetPostsInput) => {
       message: getTRPCErrorFromUnknown(e).message,
     });
   }
-};
+}
 
 export async function getPostLikes(
   input: WithOptionalUser<typeof getPostByIdSchema>,
