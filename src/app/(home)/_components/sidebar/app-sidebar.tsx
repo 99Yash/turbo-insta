@@ -51,7 +51,10 @@ export function AppSidebar({ user }: { user: User }) {
           href="/"
           className="flex items-center gap-2 px-2 text-xl font-bold transition-colors hover:text-primary"
         >
-          <Icons.logo className="size-7" aria-hidden="true" />
+          <Icons.logo
+            aria-hidden="true"
+            className="group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)_+_theme(spacing.4))]"
+          />
           <span className="transition-opacity duration-200 group-data-[collapsible=icon]:hidden">
             {siteConfig.name}
           </span>
