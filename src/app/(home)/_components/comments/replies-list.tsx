@@ -98,7 +98,7 @@ export function RepliesList({ commentId }: RepliesListProps) {
   }
 
   return (
-    <div className="ml-9 flex w-full flex-col">
+    <div className="ml-9 flex w-5/6 flex-col">
       {data.pages.map((page) =>
         page.replies.map((reply) => {
           if (!reply.user) return null;
@@ -123,7 +123,7 @@ export function RepliesList({ commentId }: RepliesListProps) {
                 </UserHoverCard>
               </div>
               <div className="flex min-w-0 flex-1 flex-col">
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-2">
                   <p className="inline">
                     <UserHoverCard user={reply.user}>
                       <Link
@@ -138,35 +138,37 @@ export function RepliesList({ commentId }: RepliesListProps) {
                       {reply.text}
                     </span>
                   </p>
-                  <button
-                    className="flex items-center gap-1"
-                    onClick={async () => {
-                      await toggleLikeMutation.mutateAsync({
-                        type: "reply",
-                        commentReplyId: reply.id,
-                      });
-                    }}
-                    disabled={toggleLikeMutation.isPending}
-                  >
-                    <Heart
-                      className={cn(
-                        "size-3 transition-all duration-200",
-                        reply.hasLiked
-                          ? "fill-rose-500 text-rose-500"
-                          : "hover:fill-rose-500 hover:text-rose-500",
-                      )}
-                    />
+                  <div className="flex flex-col items-center gap-1">
+                    <button
+                      className="flex items-center gap-1"
+                      onClick={async () => {
+                        await toggleLikeMutation.mutateAsync({
+                          type: "reply",
+                          commentReplyId: reply.id,
+                        });
+                      }}
+                      disabled={toggleLikeMutation.isPending}
+                    >
+                      <Heart
+                        className={cn(
+                          "size-3 transition-all duration-200",
+                          reply.hasLiked
+                            ? "fill-rose-500 text-rose-500"
+                            : "hover:fill-rose-500 hover:text-rose-500",
+                        )}
+                      />
+                    </button>
                     {reply.likeCount > 0 && (
                       <span className="text-xs text-muted-foreground">
                         {reply.likeCount}
                       </span>
                     )}
-                  </button>
+                  </div>
                 </div>
                 <div className="mt-1 flex items-center justify-between space-x-3 text-xs text-muted-foreground">
                   <div className="flex items-center gap-2">
                     <span>{formatTimeToNow(reply.createdAt)}</span>
-                    <button className="font-semibold">Reply</button>
+
                     {isCurrentUser && (
                       <button
                         className="font-semibold opacity-0 transition-opacity duration-200 group-hover:opacity-100"
