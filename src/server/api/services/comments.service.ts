@@ -1,14 +1,13 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
 import { and, desc, eq, inArray, lt, or } from "drizzle-orm";
 import { db } from "~/server/db";
-import { comments, posts, users } from "~/server/db/schema";
+import { comments, users } from "~/server/db/schema";
 import {
   type GetCommentsInput,
   type createCommentSchema,
   type deleteCommentSchema,
 } from "../schema/comments.schema";
 import { type WithUser } from "../schema/user.schema";
-import { publishNotification } from "./notifications.service";
 
 export const createComment = async (
   input: WithUser<typeof createCommentSchema>,
@@ -22,43 +21,6 @@ export const createComment = async (
         postId: input.postId,
       })
       .returning();
-
-    // Get post and user information for notifications
-    const postResults = await db
-      .select({
-        postId: posts.id,
-        postTitle: posts.title,
-        postOwnerId: posts.userId,
-      })
-      .from(posts)
-      .where(eq(posts.id, input.postId));
-
-    const post = postResults[0];
-
-    const userResults = await db
-      .select({
-        id: users.id,
-        username: users.username,
-        imageUrl: users.imageUrl,
-      })
-      .from(users)
-      .where(eq(users.id, input.userId));
-
-    const commentingUser = userResults[0];
-
-    // Send notification to post owner (if it's not the same user)
-    if (post && commentingUser && post.postOwnerId !== input.userId) {
-      await publishNotification({
-        type: "comment",
-        postId: post.postId,
-        postOwnerId: post.postOwnerId,
-        commentedByUserId: commentingUser.id,
-        commentedByUsername: commentingUser.username,
-        commentedByImageUrl: commentingUser.imageUrl ?? undefined,
-        postTitle: post.postTitle ?? undefined,
-        commentText: input.text,
-      });
-    }
 
     return comment;
   } catch (e) {
