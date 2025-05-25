@@ -8,7 +8,6 @@ import TailwindIndicator from "~/components/tailwind-indicator";
 import { Toaster } from "~/components/ui/sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { siteConfig } from "~/config/site";
-import { AblyContextProvider } from "~/lib/providers/ably-provider";
 import { ThemeProvider } from "~/lib/providers/theme-provider";
 import { TRPCReactProvider } from "~/trpc/react";
 import { cn } from "../lib/utils";
@@ -67,9 +66,7 @@ export default function RootLayout({
                 enableSystem={false}
                 disableTransitionOnChange={false}
               >
-                <AblyContextProvider>
-                  <div className="h-full">{children}</div>
-                </AblyContextProvider>
+                <div className="h-full">{children}</div>
               </ThemeProvider>
             </TooltipProvider>
             <Toaster />
