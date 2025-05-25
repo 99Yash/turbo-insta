@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCachedUser } from "~/lib/queries/user";
-import { ResponsiveSidebarLayout } from "../_components/responsive-sidebar-layout";
+import { ResponsiveSidebarLayout } from "../_components/sidebar/responsive-sidebar-layout";
 
 export default async function LobbyLayout({
   children,

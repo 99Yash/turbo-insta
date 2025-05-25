@@ -3,7 +3,7 @@ import { getCachedUser } from "~/lib/queries/user";
 import { HydrateClient } from "~/trpc/server";
 import { Create } from "./_components/forms/create";
 import { InfinitePosts } from "./_components/infinite-posts";
-import { ResponsiveSidebarLayout } from "./_components/responsive-sidebar-layout";
+import { ResponsiveSidebarLayout } from "./_components/sidebar/responsive-sidebar-layout";
 
 export default async function Home() {
   const user = await getCachedUser();
