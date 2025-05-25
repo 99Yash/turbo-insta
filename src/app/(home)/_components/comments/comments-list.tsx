@@ -46,14 +46,6 @@ export function CommentsList({ postId }: CommentsListProps) {
     },
   });
 
-  const handleDeleteComment = () => {
-    if (!commentToDelete) return;
-
-    deleteCommentMutation.mutate({
-      commentId: commentToDelete,
-    });
-  };
-
   if (status === "pending") {
     return (
       <div className="flex flex-col gap-4 px-3.5 py-4">
@@ -212,7 +204,12 @@ export function CommentsList({ postId }: CommentsListProps) {
             <Button
               variant="destructive"
               className="flex-1"
-              onClick={handleDeleteComment}
+              onClick={async () => {
+                if (!commentToDelete) return;
+                await deleteCommentMutation.mutateAsync({
+                  commentId: commentToDelete,
+                });
+              }}
               disabled={deleteCommentMutation.isPending}
             >
               {deleteCommentMutation.isPending ? (
