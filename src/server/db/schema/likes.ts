@@ -1,7 +1,7 @@
 import { relations } from "drizzle-orm";
 import { index, pgTable, varchar } from "drizzle-orm/pg-core";
 import { generateId } from "~/lib/utils";
-import { comments } from "./comments";
+import { commentReplies, comments } from "./comments";
 import { posts } from "./posts";
 import { users } from "./users";
 import { lifecycleDates } from "./utils";
@@ -37,18 +37,24 @@ export const likeRelations = relations(likes, ({ one }) => ({
   }),
 }));
 
-export const commentLikes = pgTable("comment_likes", {
-  id: varchar("id")
-    .$defaultFn(() => generateId())
-    .primaryKey(),
-  userId: varchar("user_id", { length: 32 })
-    .references(() => users.id, { onDelete: "cascade" })
-    .notNull(),
-  commentId: varchar("comment_id", { length: 32 })
-    .references(() => comments.id, { onDelete: "cascade" })
-    .notNull(),
-  ...lifecycleDates,
-});
+export const commentLikes = pgTable(
+  "comment_likes",
+  {
+    id: varchar("id")
+      .$defaultFn(() => generateId())
+      .primaryKey(),
+    userId: varchar("user_id", { length: 32 })
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    commentId: varchar("comment_id", { length: 32 })
+      .references(() => comments.id, { onDelete: "cascade" })
+      .notNull(),
+    ...lifecycleDates,
+  },
+  (example) => ({
+    commentId: index("comment_id_like_idx").on(example.commentId),
+  }),
+);
 
 export const commentLikeRelations = relations(commentLikes, ({ one }) => ({
   user: one(users, {
@@ -61,7 +67,44 @@ export const commentLikeRelations = relations(commentLikes, ({ one }) => ({
   }),
 }));
 
+export const commentReplyLikes = pgTable(
+  "comment_reply_likes",
+  {
+    id: varchar("id")
+      .$defaultFn(() => generateId())
+      .primaryKey(),
+    userId: varchar("user_id", { length: 32 })
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    commentReplyId: varchar("comment_reply_id", { length: 32 })
+      .references(() => commentReplies.id, { onDelete: "cascade" })
+      .notNull(),
+    ...lifecycleDates,
+  },
+  (example) => ({
+    commentReplyId: index("comment_reply_id_like_idx").on(
+      example.commentReplyId,
+    ),
+  }),
+);
+
+export const commentReplyLikeRelations = relations(
+  commentReplyLikes,
+  ({ one }) => ({
+    user: one(users, {
+      fields: [commentReplyLikes.userId],
+      references: [users.id],
+    }),
+    commentReply: one(commentReplies, {
+      fields: [commentReplyLikes.commentReplyId],
+      references: [commentReplies.id],
+    }),
+  }),
+);
+
 export type Like = typeof likes.$inferSelect;
 export type NewLike = typeof likes.$inferInsert;
 export type CommentLike = typeof commentLikes.$inferSelect;
 export type NewCommentLike = typeof commentLikes.$inferInsert;
+export type CommentReplyLike = typeof commentReplyLikes.$inferSelect;
+export type NewCommentReplyLike = typeof commentReplyLikes.$inferInsert;

@@ -64,6 +64,7 @@ export function ActionButtons({ postId }: { postId: string }) {
             onClick={async () =>
               await toggleLike.mutateAsync({
                 postId,
+                type: "post",
               })
             }
             className={cn(
