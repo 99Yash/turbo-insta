@@ -14,7 +14,7 @@ import {
   getComments,
   getReplies,
 } from "../services/comments.service";
-import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const commentsRouter = createTRPCRouter({
   create: protectedProcedure
@@ -27,10 +27,13 @@ export const commentsRouter = createTRPCRouter({
       return comment;
     }),
 
-  getByPostId: publicProcedure
+  getByPostId: protectedProcedure
     .input(getCommentsSchema)
-    .query(async ({ input }) => {
-      const comments = await getComments(input);
+    .query(async ({ input, ctx }) => {
+      const comments = await getComments({
+        ...input,
+        userId: ctx.userId,
+      });
       return comments;
     }),
 
@@ -54,10 +57,13 @@ export const commentsRouter = createTRPCRouter({
       return reply;
     }),
 
-  getReplies: publicProcedure
+  getReplies: protectedProcedure
     .input(getRepliesSchema)
-    .query(async ({ input }) => {
-      const replies = await getReplies(input);
+    .query(async ({ input, ctx }) => {
+      const replies = await getReplies({
+        ...input,
+        userId: ctx.userId,
+      });
       return replies;
     }),
 

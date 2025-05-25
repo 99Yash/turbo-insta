@@ -48,6 +48,12 @@ export function RepliesList({ commentId }: RepliesListProps) {
     },
   });
 
+  const toggleLikeMutation = api.likes.toggle.useMutation({
+    onSuccess: () => {
+      void trpcUtils.comments.getReplies.invalidate({ commentId });
+    },
+  });
+
   if (status === "pending") {
     return (
       <div className="ml-9 flex flex-col gap-3 px-3.5 py-2">
@@ -132,12 +138,29 @@ export function RepliesList({ commentId }: RepliesListProps) {
                       {reply.text}
                     </span>
                   </p>
-                  <button className="flex items-center gap-1 self-end">
+                  <button
+                    className="flex items-center gap-1"
+                    onClick={async () => {
+                      await toggleLikeMutation.mutateAsync({
+                        type: "reply",
+                        commentReplyId: reply.id,
+                      });
+                    }}
+                    disabled={toggleLikeMutation.isPending}
+                  >
                     <Heart
                       className={cn(
-                        "size-3 transition-all duration-200 hover:fill-rose-500 hover:text-rose-500",
+                        "size-3 transition-all duration-200",
+                        reply.hasLiked
+                          ? "fill-rose-500 text-rose-500"
+                          : "hover:fill-rose-500 hover:text-rose-500",
                       )}
                     />
+                    {reply.likeCount > 0 && (
+                      <span className="text-xs text-muted-foreground">
+                        {reply.likeCount}
+                      </span>
+                    )}
                   </button>
                 </div>
                 <div className="mt-1 flex items-center justify-between space-x-3 text-xs text-muted-foreground">

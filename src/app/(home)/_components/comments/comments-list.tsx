@@ -50,6 +50,12 @@ export function CommentsList({ postId }: CommentsListProps) {
     },
   });
 
+  const toggleLikeMutation = api.likes.toggle.useMutation({
+    onSuccess: () => {
+      void trpcUtils.comments.getByPostId.invalidate({ postId });
+    },
+  });
+
   const toggleReplies = (commentId: string): void => {
     setExpandedReplies((prev) => {
       const newSet = new Set(prev);
@@ -144,21 +150,37 @@ export function CommentsList({ postId }: CommentsListProps) {
                         {comment.text}
                       </span>
                     </p>
-                    <button className="flex items-center gap-1 self-end">
+                    <button
+                      className="flex items-center gap-1 self-end"
+                      onClick={async () => {
+                        await toggleLikeMutation.mutateAsync({
+                          type: "comment",
+                          commentId: comment.id,
+                        });
+                      }}
+                      disabled={toggleLikeMutation.isPending}
+                    >
                       <Heart
                         className={cn(
-                          "size-3 transition-all duration-200 hover:fill-rose-500 hover:text-rose-500",
+                          "size-3 transition-all duration-200",
+                          comment.hasLiked
+                            ? "fill-rose-500 text-rose-500"
+                            : "hover:fill-rose-500 hover:text-rose-500",
                         )}
                       />
+                      {comment.likeCount > 0 && (
+                        <span className="text-xs text-muted-foreground">
+                          {comment.likeCount}
+                        </span>
+                      )}
                     </button>
                   </div>
                   <div className="mt-1 flex items-center justify-between space-x-3 text-xs text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <span>{formatTimeToNow(comment.createdAt)}</span>
-                      <button className="font-semibold">Reply</button>
                       {comment.replyCount > 0 && (
                         <button
-                          className="font-semibold text-blue-600 hover:text-blue-700"
+                          className="font-semibold text-muted-foreground"
                           onClick={() => toggleReplies(comment.id)}
                         >
                           {expandedReplies.has(comment.id)
@@ -166,6 +188,7 @@ export function CommentsList({ postId }: CommentsListProps) {
                             : `View replies (${comment.replyCount})`}
                         </button>
                       )}
+                      <button className="font-semibold">Reply</button>
                       {isCurrentUser && (
                         <button
                           className="font-semibold opacity-0 transition-opacity duration-200 group-hover:opacity-100"

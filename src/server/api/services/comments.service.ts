@@ -1,16 +1,22 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
 import { and, count, desc, eq, inArray, lt, or } from "drizzle-orm";
 import { db } from "~/server/db";
-import { commentReplies, comments, users } from "~/server/db/schema";
 import {
-  type GetCommentsInput,
+  commentLikes,
+  commentReplies,
+  commentReplyLikes,
+  comments,
+  users,
+} from "~/server/db/schema";
+import {
+  GetCommentsInput,
   type GetRepliesInput,
   type createCommentSchema,
   type createReplySchema,
   type deleteCommentSchema,
   type deleteReplySchema,
 } from "../schema/comments.schema";
-import { type WithUser } from "../schema/user.schema";
+import { WithUserId, type WithUser } from "../schema/user.schema";
 
 export async function createComment(
   input: WithUser<typeof createCommentSchema>,
@@ -34,9 +40,9 @@ export async function createComment(
   }
 }
 
-export async function getComments(input: GetCommentsInput) {
+export async function getComments(input: WithUserId<GetCommentsInput>) {
   try {
-    const { postId, cursor } = input;
+    const { postId, cursor, userId } = input;
     const limit = 10;
 
     const postComments = await db
@@ -90,13 +96,42 @@ export async function getComments(input: GetCommentsInput) {
             .groupBy(commentReplies.commentId)
         : [];
 
+    // Get like counts for each comment
+    const likeCounts =
+      commentIds.length > 0
+        ? await db
+            .select({
+              commentId: commentLikes.commentId,
+              count: count(),
+            })
+            .from(commentLikes)
+            .where(inArray(commentLikes.commentId, commentIds))
+            .groupBy(commentLikes.commentId)
+        : [];
+
+    // Get user's likes if userId is provided
+    const userLikes =
+      userId && commentIds.length > 0
+        ? await db
+            .select({
+              commentId: commentLikes.commentId,
+            })
+            .from(commentLikes)
+            .where(
+              and(
+                eq(commentLikes.userId, userId),
+                inArray(commentLikes.commentId, commentIds),
+              ),
+            )
+        : [];
+
     const commentsWithUser = postComments.map((comment) => {
       const user = authors.find((u) => u.id === comment.userId);
       const replyCount =
         replyCounts.find((rc) => rc.commentId === comment.id)?.count ?? 0;
-
-      // Log for debugging
-      console.log(`Comment ${comment.id} has ${replyCount} replies`);
+      const likeCount =
+        likeCounts.find((lc) => lc.commentId === comment.id)?.count ?? 0;
+      const hasLiked = userLikes.some((ul) => ul.commentId === comment.id);
 
       return {
         ...comment,
@@ -109,6 +144,8 @@ export async function getComments(input: GetCommentsInput) {
             }
           : null,
         replyCount,
+        likeCount,
+        hasLiked,
       };
     });
 
@@ -185,9 +222,9 @@ export async function createReply(input: WithUser<typeof createReplySchema>) {
   }
 }
 
-export async function getReplies(input: GetRepliesInput) {
+export async function getReplies(input: WithUserId<GetRepliesInput>) {
   try {
-    const { commentId, cursor } = input;
+    const { commentId, cursor, userId } = input;
     const limit = 4; // Default limit of 4 as requested
 
     const replies = await db
@@ -227,8 +264,42 @@ export async function getReplies(input: GetRepliesInput) {
             .where(inArray(users.id, userIds))
         : [];
 
+    // Get like counts for each reply
+    const replyIds = replies.map((reply) => reply.id);
+    const likeCounts =
+      replyIds.length > 0
+        ? await db
+            .select({
+              commentReplyId: commentReplyLikes.commentReplyId,
+              count: count(),
+            })
+            .from(commentReplyLikes)
+            .where(inArray(commentReplyLikes.commentReplyId, replyIds))
+            .groupBy(commentReplyLikes.commentReplyId)
+        : [];
+
+    // Get user's likes if userId is provided
+    const userLikes =
+      userId && replyIds.length > 0
+        ? await db
+            .select({
+              commentReplyId: commentReplyLikes.commentReplyId,
+            })
+            .from(commentReplyLikes)
+            .where(
+              and(
+                eq(commentReplyLikes.userId, userId),
+                inArray(commentReplyLikes.commentReplyId, replyIds),
+              ),
+            )
+        : [];
+
     const repliesWithUser = replies.map((reply) => {
       const user = authors.find((u) => u.id === reply.userId);
+      const likeCount =
+        likeCounts.find((lc) => lc.commentReplyId === reply.id)?.count ?? 0;
+      const hasLiked = userLikes.some((ul) => ul.commentReplyId === reply.id);
+
       return {
         ...reply,
         user: user
@@ -239,6 +310,8 @@ export async function getReplies(input: GetRepliesInput) {
               imageUrl: user.imageUrl,
             }
           : null,
+        likeCount,
+        hasLiked,
       };
     });
 
