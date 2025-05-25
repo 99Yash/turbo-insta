@@ -9,7 +9,7 @@ import { Button } from "~/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "~/components/ui/form";
 import { Loading } from "~/components/ui/icons";
 import { cn, showErrorToast } from "~/lib/utils";
-import { MAX_COMMENT_CHAR_LENGTH } from "~/server/api/schema/posts.schema";
+import { MAX_COMMENT_CHAR_LENGTH } from "~/server/api/schema/comments.schema";
 import { api } from "~/trpc/react";
 
 const formSchema = z.object({

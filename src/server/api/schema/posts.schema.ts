@@ -8,8 +8,6 @@ export const createPostSchema = z.object({
 
 export type CreatePostInput = z.infer<typeof createPostSchema>;
 
-export const MAX_COMMENT_CHAR_LENGTH = 1000;
-
 export const getPostsByUserIdSchema = z.object({
   userId: z.string(),
   limit: z.number().min(1).max(100).default(12),

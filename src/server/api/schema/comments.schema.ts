@@ -7,6 +7,8 @@ export const createCommentSchema = z.object({
 
 export type CreateCommentInput = z.infer<typeof createCommentSchema>;
 
+export const MAX_COMMENT_CHAR_LENGTH = 1000;
+
 export const getCommentsSchema = z.object({
   postId: z.string(),
   cursor: z
