@@ -53,8 +53,7 @@ export function ProfileView({
     );
 
   const toggleFollowMutation = api.user.toggleFollow.useMutation({
-    onSuccess: async (data) => {
-      // Invalidate and refetch relevant queries
+    onSuccess: async (_data) => {
       await Promise.all([
         utils.user.getFollowers.invalidate({ userId: user.id }),
         utils.user.getFollowing.invalidate({ userId: user.id }),
