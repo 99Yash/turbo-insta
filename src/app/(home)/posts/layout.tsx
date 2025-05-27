@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCachedUser } from "~/lib/queries/user";
-import { ResponsiveSidebarLayout } from "../_components/sidebar/responsive-sidebar-layout";
+import { SidebarLayout } from "../_components/sidebar/sidebar-layout";
 
 export default async function LobbyLayout({
   children,
@@ -12,8 +12,8 @@ export default async function LobbyLayout({
   }
 
   return (
-    <ResponsiveSidebarLayout user={user} maxWidth="max-w-[470px]">
+    <SidebarLayout user={user} variant="centered" maxWidth="max-w-[470px]">
       {children}
-    </ResponsiveSidebarLayout>
+    </SidebarLayout>
   );
 }

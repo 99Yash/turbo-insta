@@ -8,21 +8,34 @@ import { useMediaQuery } from "~/hooks/use-media-query";
 import { type User } from "~/server/db/schema";
 import { AppSidebar } from "./app-sidebar";
 
-interface ProfileSidebarLayoutProps {
+interface SidebarLayoutProps {
   user: User;
   children: React.ReactNode;
+  /**
+   * Layout variant:
+   * - "centered": Centers content with max-width constraint (for feeds, posts)
+   * - "full-width": Uses full width layout (for profiles)
+   */
+  variant?: "centered" | "full-width";
+  /**
+   * Max width class for centered variant (e.g., "max-w-[470px]")
+   * Only applies when variant is "centered"
+   */
+  maxWidth?: string;
 }
 
-function ProfileSidebarLayoutContent({
+function SidebarLayoutContent({
   user,
   children,
-}: ProfileSidebarLayoutProps) {
+  variant = "centered",
+  maxWidth = "max-w-[670px]",
+}: SidebarLayoutProps) {
   const { isMobile, toggleSidebar } = useSidebar();
 
   if (isMobile) {
     // On mobile, sidebar is an overlay with trigger button at top
     return (
-      <div className="mx-auto flex h-full min-h-screen w-full">
+      <div className="flex h-full min-h-screen w-full">
         <AppSidebar user={user} />
         <div className="min-w-0 flex-1 bg-background">
           {/* Mobile trigger button positioned at top */}
@@ -37,29 +50,49 @@ function ProfileSidebarLayoutContent({
               <Icons.menu className="h-5 w-5" />
             </Button>
           </div>
-          {/* No width constraint on mobile for profiles */}
+          {variant === "centered" ? (
+            <div className={`mx-auto ${maxWidth} p-4`}>{children}</div>
+          ) : (
+            <div className="w-full">{children}</div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  if (variant === "full-width") {
+    // Desktop full-width layout (for profiles)
+    return (
+      <div className="mx-auto flex h-full w-full max-w-screen-lg">
+        <AppSidebar user={user} />
+        <div className="min-w-0 flex-1 bg-background">
           <div className="w-full">{children}</div>
         </div>
       </div>
     );
   }
 
-  // On desktop, use flex layout to account for sidebar width
+  // Desktop centered layout (for feeds, posts)
   return (
-    <div className="mx-auto flex h-full w-full max-w-screen-lg">
+    <div className="relative h-full min-h-screen w-full">
       <AppSidebar user={user} />
-      {/* Content takes remaining width */}
-      <div className="min-w-0 flex-1 bg-background">
-        <div className="w-full">{children}</div>
+      {/* Content positioned to center on entire viewport */}
+      <div
+        className="absolute inset-0 flex items-start justify-center bg-background"
+        style={{ left: 0 }}
+      >
+        <div className={`${maxWidth} p-4`}>{children}</div>
       </div>
     </div>
   );
 }
 
-export function ProfileSidebarLayout({
+export function SidebarLayout({
   user,
   children,
-}: ProfileSidebarLayoutProps) {
+  variant = "centered",
+  maxWidth = "max-w-[670px]",
+}: SidebarLayoutProps) {
   const isXlAndAbove = useMediaQuery("(min-width: 1280px)");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -70,9 +103,9 @@ export function ProfileSidebarLayout({
 
   return (
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
-      <ProfileSidebarLayoutContent user={user}>
+      <SidebarLayoutContent user={user} variant={variant} maxWidth={maxWidth}>
         {children}
-      </ProfileSidebarLayoutContent>
+      </SidebarLayoutContent>
     </SidebarProvider>
   );
 }

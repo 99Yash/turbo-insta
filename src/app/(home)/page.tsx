@@ -3,7 +3,7 @@ import { getCachedUser } from "~/lib/queries/user";
 import { HydrateClient } from "~/trpc/server";
 import { Create } from "./_components/forms/create";
 import { InfinitePosts } from "./_components/infinite-posts";
-import { ResponsiveSidebarLayout } from "./_components/sidebar/responsive-sidebar-layout";
+import { SidebarLayout } from "./_components/sidebar/sidebar-layout";
 
 export default async function Home() {
   const user = await getCachedUser();
@@ -13,13 +13,13 @@ export default async function Home() {
   }
 
   return (
-    <ResponsiveSidebarLayout user={user} maxWidth="max-w-[470px]">
+    <SidebarLayout user={user} variant="centered" maxWidth="max-w-[470px]">
       <HydrateClient>
         <div className="flex flex-col py-8 pb-24 lg:pb-8">
           {user && <Create />}
           <InfinitePosts />
         </div>
       </HydrateClient>
-    </ResponsiveSidebarLayout>
+    </SidebarLayout>
   );
 }

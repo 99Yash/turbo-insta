@@ -115,7 +115,7 @@ export function AppSidebar({ user }: { user: User }) {
                   asChild
                   isActive={pathname.startsWith(`/${user?.username}`)}
                   tooltip="Profile"
-                  className="transition-all duration-200"
+                  className="mr-2 flex items-center gap-3 transition-all duration-200"
                 >
                   <Link
                     href={`/${user?.username}`}
