@@ -272,7 +272,7 @@ export function PostCarousel({
               size="sm"
               className="absolute bottom-4 right-4 z-20 h-6 rounded-md bg-background/80 px-2 text-xs font-semibold backdrop-blur-md hover:bg-background/90"
             >
-              ALT
+              ✨ ALT
             </Button>
           </PopoverTrigger>
           <PopoverContent
