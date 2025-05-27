@@ -1,7 +1,7 @@
-import { auth } from "@clerk/nextjs/server";
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
 import { siteConfig } from "~/config/site";
+import { getCachedUser } from "~/lib/queries/user";
 import { getUserByUsername } from "~/server/api/services/user.service";
 import { api, HydrateClient } from "~/trpc/server";
 import { ProfileView } from "../_components/profile/profile-view";
@@ -47,8 +47,7 @@ interface UserProfilePageProps {
 export default async function UserProfilePage({
   params,
 }: UserProfilePageProps) {
-  const { userId } = await auth();
-  const user = await getUserByUsername(params.username);
+  const user = await getCachedUser();
 
   if (!user) return notFound();
 
@@ -76,7 +75,7 @@ export default async function UserProfilePage({
         <ProfileView
           user={user}
           posts={postsWithEngagement}
-          isCurrentUser={userId === user.id}
+          isCurrentUser={params.username === user.username}
         />
       </HydrateClient>
     </div>
