@@ -9,14 +9,14 @@ import {
   users,
 } from "~/server/db/schema";
 import {
-  GetCommentsInput,
+  type GetCommentsInput,
   type GetRepliesInput,
   type createCommentSchema,
   type createReplySchema,
   type deleteCommentSchema,
   type deleteReplySchema,
 } from "../schema/comments.schema";
-import { WithUserId, type WithUser } from "../schema/user.schema";
+import { type WithUser, type WithUserId } from "../schema/user.schema";
 
 export async function createComment(
   input: WithUser<typeof createCommentSchema>,
