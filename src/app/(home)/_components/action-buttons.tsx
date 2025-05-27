@@ -18,11 +18,6 @@ export function ActionButtons({ postId }: { postId: string }) {
   const [isBookmarked, setIsBookmarked] = React.useState(false);
   const [isShareOpen, setIsShareOpen] = React.useState(false);
 
-  // Debug log for bookmark state changes
-  React.useEffect(() => {
-    console.log("isBookmarked state changed:", isBookmarked);
-  }, [isBookmarked]);
-
   const router = useRouter();
   const pathname = usePathname();
 
@@ -65,10 +60,10 @@ export function ActionButtons({ postId }: { postId: string }) {
 
   React.useEffect(() => {
     if (isBookmarkLoading) return;
+
     if (isBookmarkError) {
       showErrorToast(bookmarkError);
     } else if (bookmarkData) {
-      console.log("Bookmark data received:", bookmarkData);
       setIsBookmarked(bookmarkData.isBookmarked);
     }
   }, [isBookmarkError, bookmarkError, isBookmarkLoading, bookmarkData]);
@@ -85,12 +80,12 @@ export function ActionButtons({ postId }: { postId: string }) {
   });
 
   const toggleBookmark = api.posts.toggleBookmark.useMutation({
-    async onSuccess(data) {
-      console.log("Toggle bookmark success:", data);
+    async onSuccess() {
       setIsBookmarked((prev) => !prev);
       await utils.posts.getBookmarkStatus.invalidate({
         postId,
       });
+      await utils.posts.getUserBookmarks.invalidate();
     },
     onError(error) {
       showErrorToast(error);
@@ -145,7 +140,6 @@ export function ActionButtons({ postId }: { postId: string }) {
         <BookmarkIcon
           role="button"
           onClick={async () => {
-            console.log("Bookmark clicked, current state:", isBookmarked);
             await toggleBookmark.mutateAsync({
               postId,
             });
