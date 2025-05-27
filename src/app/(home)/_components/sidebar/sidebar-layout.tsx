@@ -21,14 +21,14 @@ interface SidebarLayoutProps {
    * Max width class for centered variant (e.g., "max-w-[470px]")
    * Only applies when variant is "centered"
    */
-  maxWidth?: string;
+  width?: `w-[${string}px]`;
 }
 
 function SidebarLayoutContent({
   user,
   children,
   variant = "centered",
-  maxWidth = "max-w-[670px]",
+  width = "w-[670px]",
 }: SidebarLayoutProps) {
   const { isMobile, toggleSidebar } = useSidebar();
 
@@ -51,7 +51,7 @@ function SidebarLayoutContent({
             </Button>
           </div>
           {variant === "centered" ? (
-            <div className={`mx-auto ${maxWidth} p-4`}>{children}</div>
+            <div className={`mx-auto ${width} p-4`}>{children}</div>
           ) : (
             <div className="w-full">{children}</div>
           )}
@@ -81,7 +81,7 @@ function SidebarLayoutContent({
         className="absolute inset-0 flex items-start justify-center bg-background"
         style={{ left: 0 }}
       >
-        <div className={`${maxWidth} p-4`}>{children}</div>
+        <div className={`${width} p-4`}>{children}</div>
       </div>
     </div>
   );
@@ -91,7 +91,7 @@ export function SidebarLayout({
   user,
   children,
   variant = "centered",
-  maxWidth = "max-w-[670px]",
+  width = "w-[670px]",
 }: SidebarLayoutProps) {
   const isXlAndAbove = useMediaQuery("(min-width: 1280px)");
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -103,7 +103,7 @@ export function SidebarLayout({
 
   return (
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
-      <SidebarLayoutContent user={user} variant={variant} maxWidth={maxWidth}>
+      <SidebarLayoutContent user={user} variant={variant} width={width}>
         {children}
       </SidebarLayoutContent>
     </SidebarProvider>
