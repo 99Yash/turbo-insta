@@ -127,7 +127,7 @@ export function AppSidebar({ user }: { user: User }) {
                         {getInitials(user?.name ?? "VH")}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="font-medium">Profile</span>
+                    <span className="font-medium">{user.username}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
