@@ -63,8 +63,8 @@ export default async function UserProfilePage({
 
       return {
         ...post,
-        likeCount: likeData?.count ?? 0,
-        commentCount: commentData?.length ?? 0,
+        likeCount: likeData.count ?? 0,
+        commentCount: commentData.length ?? 0,
       };
     }),
   );
