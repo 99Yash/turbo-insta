@@ -212,3 +212,15 @@ export function formatNumber(num: number) {
   if (num < 1000000000) return `${(num / 1000000).toFixed(1)}M`;
   return `${(num / 1000000000).toFixed(1)}B`;
 }
+
+export const DISALLOWED_USERNAMES = [
+  "home",
+  "explore",
+  "messages",
+  "notifications",
+  "profile",
+  "settings",
+  "sign-in",
+  "auth",
+  "sign-up",
+];

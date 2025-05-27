@@ -1,5 +1,6 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
 import { eq, inArray } from "drizzle-orm";
+import { DISALLOWED_USERNAMES } from "~/lib/utils";
 import { db } from "~/server/db";
 import { users } from "~/server/db/schema/users";
 
@@ -132,6 +133,13 @@ export async function updateUserProfile(
         throw new TRPCError({
           code: "CONFLICT",
           message: "Username is already taken",
+        });
+      }
+
+      if (DISALLOWED_USERNAMES.includes(data.username)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Username is not allowed",
         });
       }
     }

@@ -6,6 +6,7 @@ import { z } from "zod";
 import { openai_4o_mini } from "~/config/ai";
 import { db } from "~/server/db";
 import { users } from "~/server/db/schema/users";
+import { DISALLOWED_USERNAMES } from "../utils";
 
 export const generateAltText = async (imagePath: string) => {
   const systemPrompt =
@@ -74,18 +75,7 @@ export async function generateUniqueUsername(name: string): Promise<string> {
             username: z.string(),
           }),
           execute: async ({ username }: { username: string }) => {
-            return ![
-              "messages",
-              "settings",
-              "signout",
-              "signin",
-              "auth",
-              "notifications",
-              "profile",
-              "home",
-              "search",
-              "explore",
-            ].includes(username.toLowerCase());
+            return !DISALLOWED_USERNAMES.includes(username.toLowerCase());
           },
         },
       },
