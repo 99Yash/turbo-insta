@@ -115,16 +115,16 @@ export function AppSidebar({ user }: { user: User }) {
                   className="mr-2 flex items-center gap-3 transition-all duration-200"
                 >
                   <Link
-                    href={`/${user?.username}`}
+                    href={`/${user.username}`}
                     className="flex items-center gap-3"
                   >
                     <Avatar className="size-5 border border-border/30">
                       <AvatarImage
-                        src={user?.imageUrl ?? ""}
-                        alt={user?.name ?? ""}
+                        src={user.imageUrl ?? ""}
+                        alt={user.name ?? ""}
                       />
                       <AvatarFallback className="text-xs">
-                        {getInitials(user?.name ?? "VH")}
+                        {getInitials(user.name ?? "VH")}
                       </AvatarFallback>
                     </Avatar>
                     <span className="font-medium">{user.username}</span>
