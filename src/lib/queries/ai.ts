@@ -2,6 +2,7 @@ import "server-only";
 
 import { generateText } from "ai";
 import { eq } from "drizzle-orm";
+import { z } from "zod";
 import { openai_4o_mini } from "~/config/ai";
 import { db } from "~/server/db";
 import { users } from "~/server/db/schema/users";
@@ -66,6 +67,28 @@ export async function generateUniqueUsername(name: string): Promise<string> {
           content: `Generate a username for: ${name}`,
         },
       ],
+      tools: {
+        validateUsername: {
+          description: "Validate a username",
+          parameters: z.object({
+            username: z.string(),
+          }),
+          execute: async ({ username }: { username: string }) => {
+            return ![
+              "messages",
+              "settings",
+              "signout",
+              "signin",
+              "auth",
+              "notifications",
+              "profile",
+              "home",
+              "search",
+              "explore",
+            ].includes(username.toLowerCase());
+          },
+        },
+      },
     });
 
     const username = text.trim().toLowerCase();
