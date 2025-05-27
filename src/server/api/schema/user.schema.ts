@@ -81,3 +81,9 @@ export type WithOptionalUser<T extends z.AnyZodObject> = z.infer<
 // Helper type for adding userId to any TypeScript type (not just Zod schemas)
 export type WithUserId<T> = T & { userId: string };
 export type WithOptionalUserId<T> = T & { userId?: string };
+
+export const toggleFollowSchema = z.object({
+  targetUserId: z.string(),
+});
+
+export type ToggleFollowInput = z.infer<typeof toggleFollowSchema>;

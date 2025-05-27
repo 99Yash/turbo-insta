@@ -9,7 +9,9 @@ import { Dialog, DialogContent } from "~/components/ui/dialog";
 import { Book2Small, GridLayoutRows, Tag } from "~/components/ui/icons/nucleo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { getInitials } from "~/lib/utils";
+
 import { type Post, type User } from "~/server/db/schema";
+import { api } from "~/trpc/react";
 import { ProfileEditForm } from "../forms/edit-profile";
 import { ProfilePosts } from "./profile-posts";
 import { SavedPosts } from "./saved-posts";
@@ -33,6 +35,53 @@ export function ProfileView({
 }: ProfileViewProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { user: currentUser } = useUser();
+  const utils = api.useUtils();
+
+  const [followers, following] = api.useQueries((t) => [
+    t.user.getFollowers({ userId: user.id }),
+    t.user.getFollowing({ userId: user.id }),
+  ]);
+
+  // Check if current user is following this profile user
+  const { data: isFollowingUser, isLoading: isFollowingLoading } =
+    api.user.isFollowing.useQuery(
+      { targetUserId: user.id },
+      {
+        enabled: !isCurrentUser && !!currentUser?.id,
+        refetchOnWindowFocus: false,
+      },
+    );
+
+  const toggleFollowMutation = api.user.toggleFollow.useMutation({
+    onSuccess: async (data) => {
+      // Invalidate and refetch relevant queries
+      await Promise.all([
+        utils.user.getFollowers.invalidate({ userId: user.id }),
+        utils.user.getFollowing.invalidate({ userId: user.id }),
+        utils.user.isFollowing.invalidate({ targetUserId: user.id }),
+      ]);
+    },
+    onError: (error) => {
+      console.error("Failed to toggle follow:", error.message);
+    },
+  });
+
+  const handleFollowToggle = () => {
+    if (!currentUser?.id || isCurrentUser) return;
+
+    toggleFollowMutation.mutate({ targetUserId: user.id });
+  };
+
+  const getFollowButtonText = () => {
+    if (toggleFollowMutation.isPending) {
+      return isFollowingUser ? "Unfollowing..." : "Following...";
+    }
+    return isFollowingUser ? "Unfollow" : "Follow";
+  };
+
+  const getFollowButtonVariant = () => {
+    return isFollowingUser ? "outline" : "default";
+  };
 
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-8 md:px-6 lg:px-8">
@@ -72,11 +121,15 @@ export function ProfileView({
             ) : (
               <div className="flex gap-3">
                 <Button
-                  variant="default"
+                  variant={getFollowButtonVariant()}
                   size="sm"
-                  className="bg-primary px-4 font-medium hover:bg-primary/90"
+                  className="px-4 font-medium"
+                  onClick={handleFollowToggle}
+                  disabled={
+                    toggleFollowMutation.isPending || isFollowingLoading
+                  }
                 >
-                  Follow
+                  {getFollowButtonText()}
                 </Button>
                 <Button
                   variant="outline"
@@ -97,13 +150,17 @@ export function ProfileView({
               </span>
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-bold">0</span>
+              <span className="text-lg font-bold">
+                {followers.data?.length ?? 0}
+              </span>
               <span className="text-xs font-medium text-muted-foreground">
                 followers
               </span>
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-bold">0</span>
+              <span className="text-lg font-bold">
+                {following.data?.length ?? 0}
+              </span>
               <span className="text-xs font-medium text-muted-foreground">
                 following
               </span>

@@ -1,6 +1,13 @@
 import { generateId } from "ai";
 import { relations } from "drizzle-orm";
-import { boolean, index, pgTable, text, varchar } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  index,
+  pgTable,
+  text,
+  unique,
+  varchar,
+} from "drizzle-orm/pg-core";
 import { commentReplies, comments } from "./comments";
 import { commentLikes, likes } from "./likes";
 import { bookmarks, posts } from "./posts";
@@ -41,6 +48,10 @@ export const follows = pgTable(
   (follow) => ({
     followerIndex: index("follower_idx").on(follow.followerId),
     followingIndex: index("following_idx").on(follow.followingId),
+    uniqueFollowRelation: unique("unique_follow_relation").on(
+      follow.followerId,
+      follow.followingId,
+    ),
   }),
 );
 

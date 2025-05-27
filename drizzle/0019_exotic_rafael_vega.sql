@@ -1,0 +1,1 @@
+ALTER TABLE "follows" ADD CONSTRAINT "unique_follow_relation" UNIQUE("follower_id","following_id");
