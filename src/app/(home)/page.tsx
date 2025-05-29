@@ -13,7 +13,7 @@ export default async function Home() {
   }
 
   return (
-    <SidebarLayout user={user} variant="centered" width="w-[470px]">
+    <SidebarLayout variant="centered" width="w-[470px]">
       <HydrateClient>
         <div className="flex flex-col py-8 pb-24 lg:pb-8">
           {user && <Create />}

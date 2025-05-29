@@ -12,7 +12,7 @@ export default async function LobbyLayout({
   }
 
   return (
-    <SidebarLayout user={user} variant="centered" width="w-[470px]">
+    <SidebarLayout variant="centered" width="w-[470px]">
       {children}
     </SidebarLayout>
   );

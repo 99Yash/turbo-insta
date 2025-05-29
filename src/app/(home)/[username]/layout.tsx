@@ -11,9 +11,5 @@ export default async function ProfileLayout({
     redirect("/signin");
   }
 
-  return (
-    <SidebarLayout user={user} variant="full-width">
-      {children}
-    </SidebarLayout>
-  );
+  return <SidebarLayout variant="full-width">{children}</SidebarLayout>;
 }
