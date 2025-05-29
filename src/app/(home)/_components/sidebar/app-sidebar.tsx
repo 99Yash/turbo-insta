@@ -19,10 +19,11 @@ import {
   SidebarSeparator,
 } from "~/components/ui/sidebar";
 import { siteConfig } from "~/config/site";
+import { useUser } from "~/contexts/user-context";
 import { cn, getInitials } from "~/lib/utils";
-import { type User } from "~/server/db/schema";
 
-export function AppSidebar({ user }: { user: User }) {
+export function AppSidebar() {
+  const { user } = useUser();
   const pathname = usePathname();
 
   const navItems = [
@@ -39,6 +40,10 @@ export function AppSidebar({ user }: { user: User }) {
       href: "/messages",
     },
   ];
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <Sidebar

@@ -9,6 +9,7 @@ import { Toaster } from "~/components/ui/sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { siteConfig } from "~/config/site";
 import { ThemeProvider } from "~/lib/providers/theme-provider";
+import { UserProvider } from "~/lib/providers/user-provider";
 import { TRPCReactProvider } from "~/trpc/react";
 import { cn } from "../lib/utils";
 
@@ -66,7 +67,9 @@ export default function RootLayout({
                 enableSystem={false}
                 disableTransitionOnChange={false}
               >
-                <div className="h-full">{children}</div>
+                <UserProvider>
+                  <div className="h-full">{children}</div>
+                </UserProvider>
               </ThemeProvider>
             </TooltipProvider>
             <Toaster />

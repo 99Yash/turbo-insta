@@ -5,5 +5,10 @@
     "framer-motion/*",
     "react-hook-form/*"
   ],
-  "cSpell.words": ["nucleo", "Repligram", "svix", "UPLOADTHING"]
+  "cSpell.words": [
+    "nucleo",
+    "Repligram",
+    "svix",
+    "UPLOADTHING"
+  ]
 }
