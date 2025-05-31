@@ -17,6 +17,7 @@ import {
   type ToggleLikeInput,
 } from "../schema/likes.schema";
 import { type WithUserId } from "../schema/user.schema";
+import { createNotification } from "./notifications.service";
 
 export async function toggleLike(
   input: WithUserId<ToggleLikeInput>,
@@ -84,10 +85,29 @@ async function togglePostLike({
       .where(and(eq(likes.userId, userId), eq(likes.postId, postId)));
   } else {
     // Add like
-    await db.insert(likes).values({
-      userId,
-      postId,
-    });
+    const [newLike] = await db
+      .insert(likes)
+      .values({
+        userId,
+        postId,
+      })
+      .returning();
+
+    // Create notification for post owner (if not liking own post)
+    if (newLike && postWithOwner.postOwnerId !== userId) {
+      try {
+        await createNotification({
+          recipientId: postWithOwner.postOwnerId,
+          actorId: userId,
+          type: "like",
+          postId: postId,
+          likeId: newLike.id,
+        });
+      } catch (notificationError) {
+        // Log error but don't fail the like creation
+        console.error("Failed to create like notification:", notificationError);
+      }
+    }
   }
 }
 
@@ -139,10 +159,32 @@ async function toggleCommentLike({
       );
   } else {
     // Add like
-    await db.insert(commentLikes).values({
-      userId,
-      commentId,
-    });
+    const [newLike] = await db
+      .insert(commentLikes)
+      .values({
+        userId,
+        commentId,
+      })
+      .returning();
+
+    // Create notification for comment owner (if not liking own comment)
+    if (newLike && commentWithOwner.commentOwnerId !== userId) {
+      try {
+        await createNotification({
+          recipientId: commentWithOwner.commentOwnerId,
+          actorId: userId,
+          type: "comment_like",
+          commentId: commentId,
+          commentLikeId: newLike.id,
+        });
+      } catch (notificationError) {
+        // Log error but don't fail the like creation
+        console.error(
+          "Failed to create comment like notification:",
+          notificationError,
+        );
+      }
+    }
   }
 }
 

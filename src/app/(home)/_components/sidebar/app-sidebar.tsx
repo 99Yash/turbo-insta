@@ -3,8 +3,14 @@
 import { CogIcon, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Icons } from "~/components/icons";
+import { Icons, LucideIcons, NucleoIcons } from "~/components/icons";
+import { NotificationsPanel } from "~/components/notifications/notifications-panel";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "~/components/ui/collapsible";
 import {
   Sidebar,
   SidebarContent,
@@ -21,10 +27,21 @@ import {
 import { siteConfig } from "~/config/site";
 import { useUser } from "~/contexts/user-context";
 import { cn, getInitials } from "~/lib/utils";
+import { api } from "~/trpc/react";
 
 export function AppSidebar() {
   const { user } = useUser();
   const pathname = usePathname();
+
+  // Get unread count for notifications
+  const { data: unreadCount } = api.notifications.getUnreadCount.useQuery(
+    undefined,
+    {
+      refetchInterval: 30000, // Refetch every 30 seconds
+    },
+  );
+
+  const count = unreadCount?.count ?? 0;
 
   const navItems = [
     {
@@ -102,6 +119,30 @@ export function AppSidebar() {
                   </SidebarMenuItem>
                 );
               })}
+
+              {/* Notifications */}
+              <SidebarMenuItem>
+                <Collapsible
+                  defaultOpen={false}
+                  className="group/notifications"
+                >
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      tooltip="Notifications"
+                      className="flex items-center gap-3 transition-all duration-200"
+                    >
+                      <NucleoIcons.HeartFill className="size-5" />
+                      <span className="font-medium">Notifications</span>
+                      <LucideIcons.ChevronDown className="ml-auto transition-transform group-data-[state=open]/notifications:rotate-180" />
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="mt-2">
+                      <NotificationsPanel unreadCount={count} />
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

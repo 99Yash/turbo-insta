@@ -1,6 +1,7 @@
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { commentsRouter } from "./routers/comments.router";
 import { likesRouter } from "./routers/likes.router";
+import { notificationsRouter } from "./routers/notifications.router";
 import { postsRouter } from "./routers/posts.router";
 import { userRouter } from "./routers/user.router";
 
@@ -13,6 +14,7 @@ export const appRouter = createTRPCRouter({
   posts: postsRouter,
   comments: commentsRouter,
   likes: likesRouter,
+  notifications: notificationsRouter,
   user: userRouter,
 });
 

@@ -141,6 +141,13 @@
       "when": 1748334280019,
       "tag": "0019_exotic_rafael_vega",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "6",
+      "when": 1748690497910,
+      "tag": "0020_nice_black_tarantula",
+      "breakpoints": true
     }
   ]
 }

@@ -6,6 +6,7 @@ import {
   commentReplies,
   commentReplyLikes,
   comments,
+  posts,
   users,
 } from "~/server/db/schema";
 import {
@@ -17,6 +18,7 @@ import {
   type deleteReplySchema,
 } from "../schema/comments.schema";
 import { type WithUser, type WithUserId } from "../schema/user.schema";
+import { createNotification } from "./notifications.service";
 
 export async function createComment(
   input: WithUser<typeof createCommentSchema>,
@@ -30,6 +32,39 @@ export async function createComment(
         postId: input.postId,
       })
       .returning();
+
+    if (!comment) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to create comment",
+      });
+    }
+
+    // Get the post owner to create notification
+    const [post] = await db
+      .select({ userId: posts.userId })
+      .from(posts)
+      .where(eq(posts.id, input.postId))
+      .limit(1);
+
+    // Create notification for post owner (if not commenting on own post)
+    if (post && post.userId !== input.userId) {
+      try {
+        await createNotification({
+          recipientId: post.userId,
+          actorId: input.userId,
+          type: "comment",
+          postId: input.postId,
+          commentId: comment.id,
+        });
+      } catch (notificationError) {
+        // Log error but don't fail the comment creation
+        console.error(
+          "Failed to create comment notification:",
+          notificationError,
+        );
+      }
+    }
 
     return comment;
   } catch (e) {
@@ -212,6 +247,39 @@ export async function createReply(input: WithUser<typeof createReplySchema>) {
         commentId: input.commentId,
       })
       .returning();
+
+    if (!reply) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to create reply",
+      });
+    }
+
+    // Get the comment owner to create notification
+    const [comment] = await db
+      .select({ userId: comments.userId })
+      .from(comments)
+      .where(eq(comments.id, input.commentId))
+      .limit(1);
+
+    // Create notification for comment owner (if not replying to own comment)
+    if (comment && comment.userId !== input.userId) {
+      try {
+        await createNotification({
+          recipientId: comment.userId,
+          actorId: input.userId,
+          type: "reply",
+          commentId: input.commentId,
+          replyId: reply.id,
+        });
+      } catch (notificationError) {
+        // Log error but don't fail the reply creation
+        console.error(
+          "Failed to create reply notification:",
+          notificationError,
+        );
+      }
+    }
 
     return reply;
   } catch (e) {
