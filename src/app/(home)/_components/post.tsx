@@ -51,7 +51,9 @@ export function Post({ post, author }: PostProps) {
               </p>
             </div>
 
-            {isAuthor && <PostActions postId={post.id} authorId={author.id} />}
+            {isAuthor && (
+              <PostActions postId={post.id} authorId={author.id} post={post} />
+            )}
           </div>
 
           <PostCarousel

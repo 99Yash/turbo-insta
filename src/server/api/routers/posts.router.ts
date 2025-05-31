@@ -6,6 +6,7 @@ import {
 } from "~/server/api/trpc";
 import {
   createPostSchema,
+  editPostSchema,
   getBookmarkStatusSchema,
   getPostByIdSchema,
   getPostsByUserIdSchema,
@@ -17,6 +18,7 @@ import { userSchema } from "../schema/user.schema";
 import {
   createPost,
   deletePost,
+  editPost,
   getBookmarkStatus,
   getPostById,
   getPostComments,
@@ -33,6 +35,12 @@ export const postsRouter = createTRPCRouter({
     .input(createPostSchema)
     .mutation(async ({ input, ctx }) => {
       return createPost(input, ctx.userId);
+    }),
+
+  edit: protectedProcedure
+    .input(editPostSchema)
+    .mutation(async ({ input, ctx }) => {
+      return editPost({ ...input, userId: ctx.userId });
     }),
 
   getAll: publicProcedure.input(getPostsSchema).query(async ({ input }) => {

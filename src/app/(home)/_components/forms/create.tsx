@@ -33,7 +33,22 @@ import { Textarea } from "~/components/ui/textarea";
 import { StarBorder } from "~/components/utils/star-border";
 import { useUpload } from "~/hooks/use-upload";
 import { showErrorToast } from "~/lib/utils";
+import type { Post } from "~/server/db/schema";
 import { api } from "~/trpc/react";
+import type { StoredFile } from "~/types";
+
+// Extended File type for stored files
+interface StoredFileProxy extends File {
+  _isStoredFile: true;
+  _storedFile: StoredFile;
+}
+
+// Type guard to check if file is a stored file proxy
+function isStoredFileProxy(file: File): file is StoredFileProxy {
+  return (
+    "_isStoredFile" in file && (file as StoredFileProxy)._isStoredFile === true
+  );
+}
 
 export const createPostSchema = z.object({
   title: z.string().min(1).max(256),
@@ -41,13 +56,37 @@ export const createPostSchema = z.object({
   altTexts: z.array(z.string().optional()).optional(),
 });
 
+// Schema for editing - files are already StoredFile objects
+export const editPostSchema = z.object({
+  title: z.string().min(1).max(256),
+  files: z.array(z.custom<StoredFile>()).min(1).max(3),
+  altTexts: z.array(z.string().optional()).optional(),
+});
+
+// Union type for both schemas
+export const postFormSchema = z.union([createPostSchema, editPostSchema]);
+
 type Inputs = z.infer<typeof createPostSchema>;
 
-export function Create() {
+interface CreateProps {
+  post?: Post;
+  open?: boolean;
+  setOpen?: (open: boolean) => void;
+}
+
+export function Create({
+  post,
+  open: externalOpen,
+  setOpen: externalSetOpen,
+}: CreateProps) {
   const { user } = useUser();
-  const [open, setOpen] = React.useState(false);
+  const [internalOpen, setInternalOpen] = React.useState(false);
   const [step, setStep] = React.useState<"upload" | "details">("upload");
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+
+  // Use external open state if provided, otherwise use internal state
+  const open = externalOpen ?? internalOpen;
+  const setOpen = externalSetOpen ?? setInternalOpen;
 
   const { uploadFiles, progresses } = useUpload("postImage");
   const utils = api.useUtils();
@@ -61,13 +100,81 @@ export function Create() {
     },
   });
 
+  const editPostMutation = api.posts.edit.useMutation({
+    onSuccess: async () => {
+      await utils.posts.getAll.invalidate();
+      await utils.posts.getByUserId.invalidate();
+    },
+    onError: (error) => {
+      showErrorToast(error);
+    },
+  });
+
+  const isEditMode = !!post;
+
   const form = useForm<Inputs>({
     resolver: zodResolver(createPostSchema),
+    defaultValues: isEditMode
+      ? {
+          title: post.title ?? "",
+          files: [], // We'll handle this differently for edit mode
+          altTexts: post.images?.map((img) => img.alt) ?? [],
+        }
+      : undefined,
   });
+
+  React.useEffect(() => {
+    if (isEditMode && post && open) {
+      // In edit mode, skip the upload step and go directly to details
+      setStep("details");
+      // For edit mode, we need to create fake File objects from StoredFiles for form compatibility
+      const createFakeFileFromStoredFile = (
+        storedFile: StoredFile,
+      ): StoredFileProxy => {
+        const fakeFile = new File([], storedFile.name, {
+          type: "image/jpeg",
+        }) as StoredFileProxy;
+        // Add properties to identify this as a stored file
+        fakeFile._isStoredFile = true;
+        fakeFile._storedFile = storedFile;
+        return fakeFile;
+      };
+
+      const fakeFiles = post.images?.map(createFakeFileFromStoredFile) ?? [];
+      form.setValue("files", fakeFiles);
+      form.setValue("title", post.title ?? "");
+      form.setValue("altTexts", post.images?.map((img) => img.alt) ?? []);
+    }
+  }, [isEditMode, post, open, form]);
 
   const isSubmitting = form.formState.isSubmitting;
 
   async function onSubmit(data: Inputs) {
+    if (isEditMode && post) {
+      const t = toast.loading("Updating post...");
+
+      try {
+        await editPostMutation.mutateAsync({
+          postId: post.id,
+          title: data.title,
+          altTexts: data.altTexts,
+        });
+
+        toast.success("Post updated successfully", {
+          id: t,
+        });
+
+        form.reset();
+        setOpen(false);
+      } catch {
+        toast.error("Failed to update post", {
+          id: t,
+        });
+      }
+      return;
+    }
+
+    // Original create logic
     const t = toast.loading("Uploading files...");
 
     const uploads = await uploadFiles(data.files);
@@ -104,12 +211,17 @@ export function Create() {
   };
 
   const handleBack = () => {
-    setStep("upload");
+    if (isEditMode) {
+      // In edit mode, going back should close the modal
+      handleCloseModal();
+    } else {
+      setStep("upload");
+    }
   };
 
   const handleCloseModal = () => {
     setOpen(false);
-    setStep("upload");
+    setStep(isEditMode ? "details" : "upload");
     form.reset();
   };
 
@@ -140,18 +252,28 @@ export function Create() {
     }
   };
 
+  const getImageSrc = (file: File, _index: number): string => {
+    // Check if this is a fake file created from StoredFile
+    if (isStoredFileProxy(file)) {
+      return file._storedFile.url;
+    }
+    return URL.createObjectURL(file);
+  };
+
   return (
     <>
-      <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}>
-        <StarBorder
-          className="mb-9 w-full"
-          onClick={() => setOpen(true)}
-          color="#28c8ef"
-        >
-          <Sparkle3 className="size-4" aria-hidden="true" />
-          Create
-        </StarBorder>
-      </motion.div>
+      {!isEditMode && (
+        <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.95 }}>
+          <StarBorder
+            className="mb-9 w-full"
+            onClick={() => setOpen(true)}
+            color="#28c8ef"
+          >
+            <Sparkle3 className="size-4" aria-hidden="true" />
+            Create
+          </StarBorder>
+        </motion.div>
+      )}
 
       <Modal
         showModal={open}
@@ -168,7 +290,7 @@ export function Create() {
               exit="exit"
             >
               <div className="flex items-center justify-between border-b p-4">
-                {step === "details" && (
+                {step === "details" && !isEditMode && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -181,10 +303,14 @@ export function Create() {
                 )}
 
                 <h1 className="text-lg font-semibold">
-                  {step === "upload" ? "Create new post" : "Edit post"}
+                  {isEditMode
+                    ? "Edit post"
+                    : step === "upload"
+                      ? "Create new post"
+                      : "Edit post"}
                 </h1>
 
-                {step === "upload" ? (
+                {step === "upload" && !isEditMode ? (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -203,6 +329,8 @@ export function Create() {
                   >
                     {isSubmitting ? (
                       <Loading className="mr-2 size-4" />
+                    ) : isEditMode ? (
+                      "Update"
                     ) : (
                       "Share"
                     )}
@@ -211,7 +339,7 @@ export function Create() {
               </div>
 
               <AnimatePresence mode="wait">
-                {step === "upload" ? (
+                {step === "upload" && !isEditMode ? (
                   <motion.div
                     key="upload"
                     initial={{ opacity: 0, x: -20 }}
@@ -253,8 +381,9 @@ export function Create() {
                     <div className="relative aspect-square w-1/2 overflow-hidden rounded-lg bg-muted">
                       {form.getValues("files")?.[currentImageIndex] && (
                         <Image
-                          src={URL.createObjectURL(
+                          src={getImageSrc(
                             form.getValues("files")[currentImageIndex]!,
+                            currentImageIndex,
                           )}
                           alt="Preview"
                           className="h-full w-full object-cover"
@@ -354,8 +483,12 @@ export function Create() {
                                       <div key={index} className="flex gap-2">
                                         <div className="h-12 w-12 shrink-0 overflow-hidden rounded bg-muted">
                                           <Image
-                                            src={URL.createObjectURL(file)}
-                                            alt={file.name}
+                                            src={getImageSrc(file, index)}
+                                            alt={
+                                              isStoredFileProxy(file)
+                                                ? file._storedFile.name
+                                                : file.name
+                                            }
                                             width={48}
                                             height={48}
                                             className="h-full w-full object-cover"

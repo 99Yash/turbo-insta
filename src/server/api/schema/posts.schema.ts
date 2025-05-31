@@ -44,6 +44,14 @@ export const getPostsSchema = z.object({
 
 export type GetPostsInput = z.infer<typeof getPostsSchema>;
 
+export const editPostSchema = z.object({
+  postId: z.string(),
+  title: z.string().min(1).max(256),
+  altTexts: z.array(z.string().optional()).optional(),
+});
+
+export type EditPostInput = z.infer<typeof editPostSchema>;
+
 export const toggleBookmarkSchema = z.object({
   postId: z.string(),
 });

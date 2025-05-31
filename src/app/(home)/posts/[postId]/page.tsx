@@ -105,7 +105,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
               </div>
             </UserHoverCard>
 
-            <PostActions postId={post.id} authorId={author.id} />
+            <PostActions postId={post.id} authorId={author.id} post={post} />
           </div>
 
           <div className="h-[calc(100%-8rem)] overflow-y-auto scrollbar-hide">

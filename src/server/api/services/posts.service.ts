@@ -6,6 +6,7 @@ import { db } from "~/server/db";
 import { bookmarks, comments, likes, posts, users } from "~/server/db/schema";
 import {
   type CreatePostInput,
+  type EditPostInput,
   type getBookmarkStatusSchema,
   type GetPostByIdInput,
   type getPostByIdSchema,
@@ -14,7 +15,11 @@ import {
   type GetUserBookmarksInput,
   type ToggleBookmarkInput,
 } from "../schema/posts.schema";
-import { type WithOptionalUser, type WithUser } from "../schema/user.schema";
+import {
+  type WithOptionalUser,
+  type WithUser,
+  type WithUserId,
+} from "../schema/user.schema";
 
 export const utapi = new UTApi({
   apiKey: process.env.UPLOADTHING_SECRET,
@@ -55,6 +60,59 @@ export async function createPost(input: CreatePostInput, userId: string) {
         code: "INTERNAL_SERVER_ERROR",
         message: "Failed to create post",
       });
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+}
+
+export async function editPost(input: WithUserId<EditPostInput>) {
+  try {
+    // First, get the existing post to verify ownership and get current images
+    const [existingPost] = await db
+      .select()
+      .from(posts)
+      .where(eq(posts.id, input.postId));
+
+    if (!existingPost) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Post not found",
+      });
+    }
+
+    if (existingPost.userId !== input.userId) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You can only edit your own posts",
+      });
+    }
+
+    // Update images with new alt texts if provided
+    const updatedImages = existingPost.images.map((image, index) => ({
+      ...image,
+      alt: input.altTexts?.[index] ?? image.alt,
+    }));
+
+    const [updatedPost] = await db
+      .update(posts)
+      .set({
+        title: input.title,
+        images: updatedImages,
+      })
+      .where(eq(posts.id, input.postId))
+      .returning();
+
+    if (!updatedPost) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to update post",
+      });
+    }
+
+    return updatedPost;
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,

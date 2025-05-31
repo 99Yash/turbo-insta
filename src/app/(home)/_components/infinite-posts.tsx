@@ -65,7 +65,7 @@ export function InfinitePosts() {
   if (isLoading) {
     return (
       <div className="flex h-full w-full items-center justify-center gap-3 py-8">
-        <Icons.spinner />
+        <Icons.spinner className="size-4" />
       </div>
     );
   }
