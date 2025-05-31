@@ -47,7 +47,7 @@ export type GetPostsInput = z.infer<typeof getPostsSchema>;
 export const editPostSchema = z.object({
   postId: z.string(),
   title: z.string().min(1).max(256),
-  altTexts: z.array(z.string().optional()).optional(),
+  files: z.array(storedFileSchema).min(1).max(3),
 });
 
 export type EditPostInput = z.infer<typeof editPostSchema>;

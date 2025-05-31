@@ -29,6 +29,7 @@ export async function createPost(input: CreatePostInput, userId: string) {
   try {
     await Promise.all(
       input.files.map(async (file) => {
+        // Generate alt text only if not provided
         if (!file.alt) {
           try {
             const description = await generateAltText(file.url);
@@ -70,7 +71,7 @@ export async function createPost(input: CreatePostInput, userId: string) {
 
 export async function editPost(input: WithUserId<EditPostInput>) {
   try {
-    // First, get the existing post to verify ownership and get current images
+    // First, get the existing post to verify ownership and get current images for cleanup
     const [existingPost] = await db
       .select()
       .from(posts)
@@ -90,17 +91,43 @@ export async function editPost(input: WithUserId<EditPostInput>) {
       });
     }
 
-    // Update images with new alt texts if provided
-    const updatedImages = existingPost.images.map((image, index) => ({
-      ...image,
-      alt: input.altTexts?.[index] ?? image.alt,
-    }));
+    // Delete all existing images from storage since we're replacing them entirely
+    if (existingPost.images && existingPost.images.length > 0) {
+      await Promise.all(
+        existingPost.images.map((image) =>
+          utapi.deleteFiles(image.id).catch((err) => {
+            console.error(`Failed to delete file ${image.id}:`, err);
+          }),
+        ),
+      );
+    }
+
+    // Generate alt text for files that don't have it
+    await Promise.all(
+      input.files.map(async (file) => {
+        // Generate alt text only if not provided
+        if (!file.alt) {
+          try {
+            const description = await generateAltText(file.url);
+            file.alt = description;
+          } catch (error) {
+            console.error("Failed to generate alt text:", error);
+            file.alt = file.name; // Fallback to using the filename as alt text
+          }
+        }
+      }),
+    );
 
     const [updatedPost] = await db
       .update(posts)
       .set({
         title: input.title,
-        images: updatedImages,
+        images: input.files.map((file) => ({
+          id: file.id,
+          url: file.url,
+          name: file.name,
+          alt: file.alt,
+        })),
       })
       .where(eq(posts.id, input.postId))
       .returning();
