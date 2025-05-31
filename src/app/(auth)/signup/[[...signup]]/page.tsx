@@ -12,7 +12,6 @@ import {
 import { Shell } from "~/components/utils/shell";
 import { env } from "~/env";
 import { OAuthSignIn } from "../../_components/oauth-signin";
-import { SignUpForm } from "../../_components/signup-form";
 
 export const metadata: Metadata = {
   metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
@@ -27,22 +26,11 @@ export default function SignUpPage() {
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl">Sign up</CardTitle>
           <CardDescription>
-            Choose your preferred sign up method
+            Create an account with your Google account
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <OAuthSignIn />
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-          </div>
-          <SignUpForm />
         </CardContent>
         <CardFooter>
           <div className="text-sm text-muted-foreground">

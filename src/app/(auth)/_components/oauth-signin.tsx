@@ -11,7 +11,6 @@ import { getErrorMessage } from "~/lib/utils";
 
 const oauthProviders = [
   { name: "Google", strategy: "oauth_google", icon: "google" },
-  { name: "Github", strategy: "oauth_github", icon: "gitHub" },
 ] satisfies {
   name: string;
   icon: keyof typeof Icons;
