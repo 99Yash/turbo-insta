@@ -1,13 +1,7 @@
 "use client";
 
-import { Bell, Check, Loader2, MoreHorizontal } from "lucide-react";
+import { Archive, Bell, Loader2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { api } from "~/trpc/react";
 import { SidebarNotificationItem } from "./sidebar-notification-item";
@@ -19,6 +13,8 @@ interface SidebarNotificationsProps {
 export function SidebarNotifications({
   unreadCount,
 }: SidebarNotificationsProps) {
+  const utils = api.useUtils();
+
   // Fetch notifications immediately since this is in a collapsible
   const {
     data: notificationsData,
@@ -26,7 +22,6 @@ export function SidebarNotifications({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    refetch,
   } = api.notifications.getAll.useInfiniteQuery(
     { limit: 10 }, // Smaller limit for sidebar
     {
@@ -37,13 +32,9 @@ export function SidebarNotifications({
   // Mutations
   const markAsReadMutation = api.notifications.markAsRead.useMutation({
     onSuccess: () => {
-      void refetch();
-    },
-  });
-
-  const deleteMutation = api.notifications.delete.useMutation({
-    onSuccess: () => {
-      void refetch();
+      // Invalidate both notifications list and unread count
+      void utils.notifications.getAll.invalidate();
+      void utils.notifications.getUnreadCount.invalidate();
     },
   });
 
@@ -52,10 +43,6 @@ export function SidebarNotifications({
 
   const handleMarkAsRead = (notificationId: string) => {
     markAsReadMutation.mutate({ notificationIds: [notificationId] });
-  };
-
-  const handleDelete = (notificationId: string) => {
-    deleteMutation.mutate({ notificationIds: [notificationId] });
   };
 
   const handleMarkAllAsRead = () => {
@@ -76,31 +63,20 @@ export function SidebarNotifications({
           {unreadCount > 0 ? `${unreadCount} unread` : "All caught up"}
         </span>
         {unreadCount > 0 && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 w-6 p-0"
-                disabled={markAsReadMutation.isPending}
-              >
-                {markAsReadMutation.isPending ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <MoreHorizontal className="h-3 w-3" />
-                )}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem
-                onClick={handleMarkAllAsRead}
-                disabled={markAsReadMutation.isPending}
-              >
-                <Check className="mr-2 h-4 w-4" />
-                Mark all as read
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleMarkAllAsRead}
+            disabled={markAsReadMutation.isPending}
+            className="h-6 px-2 text-xs"
+            title="Mark all as read"
+          >
+            {markAsReadMutation.isPending ? (
+              <Loader2 className="h-3 w-3 animate-spin" />
+            ) : (
+              <Archive className="h-3 w-3" />
+            )}
+          </Button>
         )}
       </div>
 
@@ -129,7 +105,6 @@ export function SidebarNotifications({
                 key={notification.id}
                 notification={notification}
                 onMarkAsRead={handleMarkAsRead}
-                onDelete={handleDelete}
               />
             ))}
 

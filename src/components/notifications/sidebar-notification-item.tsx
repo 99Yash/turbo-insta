@@ -1,35 +1,21 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import {
-  Heart,
-  MessageCircle,
-  MoreHorizontal,
-  Reply,
-  UserPlus,
-} from "lucide-react";
+import { Archive, Heart, MessageCircle, Reply, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "~/components/ui/dropdown-menu";
 import { cn } from "~/lib/utils";
 import type { NotificationWithDetails } from "~/server/api/services/notifications.service";
 
 interface SidebarNotificationItemProps {
   readonly notification: NotificationWithDetails;
   readonly onMarkAsRead?: (notificationId: string) => void;
-  readonly onDelete?: (notificationId: string) => void;
 }
 
 export function SidebarNotificationItem({
   notification,
   onMarkAsRead,
-  onDelete,
 }: SidebarNotificationItemProps) {
   const getNotificationIcon = () => {
     const iconClass = "h-3 w-3";
@@ -93,9 +79,11 @@ export function SidebarNotificationItem({
     }
   };
 
-  const handleDelete = () => {
-    if (onDelete) {
-      onDelete(notification.id);
+  const handleArchive = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!notification.isRead && onMarkAsRead) {
+      onMarkAsRead(notification.id);
     }
   };
 
@@ -159,31 +147,18 @@ export function SidebarNotificationItem({
           </p>
         </div>
 
-        {/* Actions */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-6 w-6 p-0 opacity-0 transition-opacity group-hover:opacity-100"
-            >
-              <MoreHorizontal className="h-3 w-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-40">
-            {!notification.isRead && (
-              <DropdownMenuItem onClick={handleMarkAsRead}>
-                Mark as read
-              </DropdownMenuItem>
-            )}
-            <DropdownMenuItem
-              onClick={handleDelete}
-              className="text-destructive focus:text-destructive"
-            >
-              Delete
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {/* Archive Action */}
+        {!notification.isRead && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleArchive}
+            className="h-6 w-6 p-0 opacity-0 transition-opacity group-hover:opacity-100"
+            title="Mark as read"
+          >
+            <Archive className="h-3 w-3" />
+          </Button>
+        )}
       </div>
     </div>
   );
