@@ -1,5 +1,5 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
-import { and, count, desc, eq, inArray, lt, or } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, lt, or } from "drizzle-orm";
 import { db } from "~/server/db";
 import {
   commentReplies,
@@ -87,7 +87,7 @@ export async function createNotification(
             ? eq(notifications.commentId, input.commentId)
             : undefined,
           input.replyId ? eq(notifications.replyId, input.replyId) : undefined,
-          lt(notifications.createdAt, oneHourAgo),
+          gt(notifications.createdAt, oneHourAgo),
         ),
       )
       .limit(1);
@@ -294,7 +294,7 @@ export async function markNotificationsAsRead(
       .set({ isRead: true })
       .where(whereCondition);
 
-    return { count: 0 }; // Drizzle doesn't return rowCount reliably
+    return { count: Number(result.count) };
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,
@@ -346,7 +346,7 @@ export async function deleteNotifications(
         ),
       );
 
-    return { count: 0 }; // Drizzle doesn't return rowCount reliably
+    return { count: Number(result.count) };
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,
