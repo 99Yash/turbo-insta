@@ -4,7 +4,7 @@ import { CogIcon, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icons, LucideIcons, NucleoIcons } from "~/components/icons";
-import { NotificationsPanel } from "~/components/notifications/notifications-panel";
+import { SidebarNotifications } from "~/components/notifications/sidebar-notifications";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   Collapsible,
@@ -131,14 +131,21 @@ export function AppSidebar() {
                       tooltip="Notifications"
                       className="flex items-center gap-3 transition-all duration-200"
                     >
-                      <NucleoIcons.HeartFill className="size-5" />
+                      <div className="relative">
+                        <NucleoIcons.HeartFill className="size-5" />
+                        {count > 0 && (
+                          <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
+                            {count > 9 ? "9+" : count}
+                          </span>
+                        )}
+                      </div>
                       <span className="font-medium">Notifications</span>
                       <LucideIcons.ChevronDown className="ml-auto transition-transform group-data-[state=open]/notifications:rotate-180" />
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
-                    <div className="mt-2">
-                      <NotificationsPanel unreadCount={count} />
+                    <div className="mt-2 px-2">
+                      <SidebarNotifications unreadCount={count} />
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
