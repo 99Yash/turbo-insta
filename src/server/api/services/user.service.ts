@@ -1,5 +1,5 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, ilike, inArray } from "drizzle-orm";
 import { DISALLOWED_USERNAMES } from "~/lib/utils";
 import { db } from "~/server/db";
 import { follows, users } from "~/server/db/schema/users";
@@ -337,6 +337,36 @@ export async function toggleFollow(
       throw e;
     }
 
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+}
+
+/**
+ * Search users by username
+ * @param query The search query
+ * @param limitCount The maximum number of results to return
+ * @returns Array of matching users
+ */
+export async function searchUsersByUsername(query: string, limitCount = 5) {
+  try {
+    const searchResults = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        username: users.username,
+        imageUrl: users.imageUrl,
+        isVerified: users.isVerified,
+      })
+      .from(users)
+      .where(ilike(users.username, `${query}%`))
+      .limit(limitCount)
+      .orderBy(users.username);
+
+    return searchResults;
+  } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,
       message: getTRPCErrorFromUnknown(e).message,

@@ -1,4 +1,5 @@
 import {
+  searchUsersSchema,
   toggleFollowSchema,
   updateUserProfileSchema,
   userSchema,
@@ -8,6 +9,7 @@ import {
   getFollowing,
   getUserById,
   isFollowing,
+  searchUsersByUsername,
   toggleFollow,
   updateUserProfile,
 } from "../services/user.service";
@@ -49,5 +51,12 @@ export const userRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       const result = await toggleFollow(ctx.userId, input.targetUserId);
       return result;
+    }),
+
+  searchUsers: publicProcedure
+    .input(searchUsersSchema)
+    .query(async ({ input }) => {
+      const users = await searchUsersByUsername(input.query, input.limit);
+      return users;
     }),
 });
