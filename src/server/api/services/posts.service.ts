@@ -71,7 +71,7 @@ export async function createPost(input: CreatePostInput, userId: string) {
 
 export async function editPost(input: WithUserId<EditPostInput>) {
   try {
-    // First, get the existing post to verify ownership and get current images for cleanup
+    // First, get the existing post to verify ownership and get current images for comparison
     const [existingPost] = await db
       .select()
       .from(posts)
@@ -91,10 +91,23 @@ export async function editPost(input: WithUserId<EditPostInput>) {
       });
     }
 
-    // Delete all existing images from storage since we're replacing them entirely
-    if (existingPost.images && existingPost.images.length > 0) {
+    // Compare existing images with new images to find which ones to delete
+    const existingImageIds = new Set(existingPost.images.map((img) => img.id));
+    const newImageIds = new Set(input.files.map((file) => file.id));
+
+    // Find images that need to be deleted (exist in current but not in new)
+    const imagesToDelete = existingPost.images.filter(
+      (img) => !newImageIds.has(img.id),
+    );
+
+    // Only delete images that are no longer needed
+    if (imagesToDelete.length > 0) {
+      console.log(
+        `Deleting ${imagesToDelete.length} unused images:`,
+        imagesToDelete.map((img) => img.id),
+      );
       await Promise.all(
-        existingPost.images.map((image) =>
+        imagesToDelete.map((image) =>
           utapi.deleteFiles(image.id).catch((err) => {
             console.error(`Failed to delete file ${image.id}:`, err);
           }),
@@ -102,22 +115,31 @@ export async function editPost(input: WithUserId<EditPostInput>) {
       );
     }
 
-    // Generate alt text for files that don't have it
-    await Promise.all(
-      input.files.map(async (file) => {
-        // Generate alt text only if not provided
-        if (!file.alt) {
-          try {
-            const description = await generateAltText(file.url);
-            file.alt = description;
-          } catch (error) {
-            console.error("Failed to generate alt text:", error);
-            file.alt = file.name; // Fallback to using the filename as alt text
-          }
-        }
-      }),
+    // Generate alt text for new files that don't have it
+    // (Only process files that don't already exist in the post)
+    const newFiles = input.files.filter(
+      (file) => !existingImageIds.has(file.id),
     );
 
+    if (newFiles.length > 0) {
+      console.log(`Generating alt text for ${newFiles.length} new images`);
+      await Promise.all(
+        newFiles.map(async (file) => {
+          // Generate alt text only if not provided
+          if (!file.alt) {
+            try {
+              const description = await generateAltText(file.url);
+              file.alt = description;
+            } catch (error) {
+              console.error("Failed to generate alt text:", error);
+              file.alt = file.name; // Fallback to using the filename as alt text
+            }
+          }
+        }),
+      );
+    }
+
+    // Update the post with new images array (includes both kept and new images)
     const [updatedPost] = await db
       .update(posts)
       .set({
@@ -139,6 +161,7 @@ export async function editPost(input: WithUserId<EditPostInput>) {
       });
     }
 
+    console.log(`Post ${input.postId} updated successfully`);
     return updatedPost;
   } catch (e) {
     throw new TRPCError({
