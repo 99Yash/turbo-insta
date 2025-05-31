@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import * as React from "react";
 import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { SidebarProvider, useSidebar } from "~/components/ui/sidebar";
@@ -90,10 +90,10 @@ export function SidebarLayout({
   width = "w-[670px]",
 }: SidebarLayoutProps) {
   const isXlAndAbove = useMediaQuery("(min-width: 1280px)");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = React.useState(true);
 
   // Automatically collapse sidebar when screen is smaller than xl
-  useEffect(() => {
+  React.useEffect(() => {
     setSidebarOpen(isXlAndAbove);
   }, [isXlAndAbove]);
 

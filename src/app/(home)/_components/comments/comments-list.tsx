@@ -2,7 +2,7 @@
 
 import { Heart, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import React from "react";
 import { Icons, LucideIcons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -21,8 +21,10 @@ interface CommentsListProps {
 
 export function CommentsList({ postId }: CommentsListProps) {
   const { userId } = useAuth();
-  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
-  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(
+  const [commentToDelete, setCommentToDelete] = React.useState<string | null>(
+    null,
+  );
+  const [expandedReplies, setExpandedReplies] = React.useState<Set<string>>(
     new Set(),
   );
   const {

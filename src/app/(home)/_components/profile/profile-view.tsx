@@ -2,7 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useState } from "react";
+import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Dialog, DialogContent } from "~/components/ui/dialog";
@@ -35,7 +35,7 @@ export function ProfileView({
   defaultTab = "posts",
   postCount,
 }: ProfileViewProps) {
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const { user: currentUser } = useUser();
   const utils = api.useUtils();
 

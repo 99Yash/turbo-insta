@@ -1,5 +1,4 @@
 import * as React from "react";
-import { useImperativeHandle } from "react";
 import { cn } from "~/lib/utils";
 
 interface UseAutosizeTextAreaProps {
@@ -78,7 +77,7 @@ export const AutosizeTextarea = React.forwardRef<
       minHeight,
     });
 
-    useImperativeHandle(ref, () => ({
+    React.useImperativeHandle(ref, () => ({
       textArea: textAreaRef.current!,
       focus: () => textAreaRef?.current?.focus(),
       maxHeight,

@@ -2,7 +2,6 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { useRouter } from "next/navigation";
-import { type Dispatch, type SetStateAction } from "react";
 import { Drawer } from "vaul";
 import { useMediaQuery } from "~/hooks/use-media-query";
 import { cn } from "~/lib/utils";
@@ -21,7 +20,7 @@ export function Modal({
   children: React.ReactNode;
   className?: string;
   showModal?: boolean;
-  setShowModal?: Dispatch<SetStateAction<boolean>>;
+  setShowModal?: React.Dispatch<React.SetStateAction<boolean>>;
   onClose?: () => void;
   desktopOnly?: boolean;
   preventDefaultClose?: boolean;

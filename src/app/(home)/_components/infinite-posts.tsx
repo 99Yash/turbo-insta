@@ -1,13 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import * as React from "react";
 import { Icons } from "~/components/icons";
 import { api } from "~/trpc/react";
 import { Post } from "./post";
 
 export function InfinitePosts() {
-  const scrollElementRef = useRef<HTMLDivElement>(null);
-  const loadingRef = useRef<HTMLDivElement>(null);
+  const scrollElementRef = React.useRef<HTMLDivElement>(null);
+  const loadingRef = React.useRef<HTMLDivElement>(null);
 
   const {
     data,
@@ -28,7 +28,7 @@ export function InfinitePosts() {
   );
 
   // Intersection Observer for infinite scroll
-  const handleObserver = useCallback(
+  const handleObserver = React.useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [target] = entries;
       console.log("Intersection observer triggered:", {
@@ -44,7 +44,7 @@ export function InfinitePosts() {
     [fetchNextPage, hasNextPage, isFetchingNextPage],
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     const element = loadingRef.current;
     if (!element) return;
 

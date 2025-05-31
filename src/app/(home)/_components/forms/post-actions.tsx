@@ -1,7 +1,7 @@
 "use client";
 
 import { DotsHorizontalIcon } from "@radix-ui/react-icons";
-import { useState } from "react";
+import * as React from "react";
 import { DeletePostModal } from "~/app/(home)/_components/forms/delete-post";
 import { Button } from "~/components/ui/button";
 import { useAuth } from "~/hooks/use-auth";
@@ -14,7 +14,7 @@ interface PostActionsProps {
 export function PostActions({ postId, authorId }: PostActionsProps) {
   const { userId } = useAuth();
   const isAuthor = userId === authorId;
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = React.useState(false);
 
   if (!isAuthor) return null;
 

@@ -3,7 +3,7 @@
 import { Heart, Loader2, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect } from "react";
+import * as React from "react";
 import { useInView } from "react-intersection-observer";
 import { Book2Small, GridLayoutRows } from "~/components/ui/icons/nucleo";
 import { api } from "~/trpc/react";
@@ -29,7 +29,7 @@ export function SavedPosts() {
     },
   );
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (inView && hasNextPage) {
       void fetchNextPage();
     }

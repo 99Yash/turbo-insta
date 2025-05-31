@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { BookmarkIcon, Heart, MessageCircleIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import React, { type Dispatch, type SetStateAction, useState } from "react";
+import * as React from "react";
 import { toast } from "sonner";
 import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
@@ -171,12 +171,12 @@ export function ActionButtons({ postId }: { postId: string }) {
 
 interface ShareModalProps {
   isOpen: boolean;
-  onOpenChange: Dispatch<SetStateAction<boolean>>;
+  onOpenChange: React.Dispatch<React.SetStateAction<boolean>>;
   postId: string;
 }
 
 export function ShareModal({ isOpen, onOpenChange, postId }: ShareModalProps) {
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = React.useState(false);
 
   const handleCopy = async () => {
     const url = `${getBaseUrl()}/posts/${postId}`;

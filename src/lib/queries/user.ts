@@ -1,10 +1,10 @@
 import "server-only";
 
 import { currentUser } from "@clerk/nextjs/server";
-import { cache } from "react";
+import * as React from "react";
 import { getUserById } from "~/server/api/services/user.service";
 
-export const getCachedUser = cache(async () => {
+export const getCachedUser = React.cache(async () => {
   const clerkUser = await currentUser();
   if (!clerkUser) {
     return null;

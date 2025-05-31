@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import * as React from "react";
 import type { User } from "~/server/db/schema/users";
 
 interface UserContextValue {
@@ -8,10 +8,12 @@ interface UserContextValue {
   readonly isLoading: boolean;
 }
 
-const UserContext = createContext<UserContextValue | undefined>(undefined);
+const UserContext = React.createContext<UserContextValue | undefined>(
+  undefined,
+);
 
 interface UserProviderProps {
-  readonly children: ReactNode;
+  readonly children: React.ReactNode;
   readonly initialUser: User | null;
 }
 
@@ -29,7 +31,7 @@ export function UserProvider({ children, initialUser }: UserProviderProps) {
  * @returns The user context value containing user data and loading state
  */
 export function useUser(): UserContextValue {
-  const context = useContext(UserContext);
+  const context = React.useContext(UserContext);
   if (context === undefined) {
     throw new Error("useUser must be used within a UserProvider");
   }

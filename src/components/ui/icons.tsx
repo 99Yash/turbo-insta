@@ -1,10 +1,10 @@
-import { type SVGProps } from "react";
+import * as React from "react";
 
 export function Loading({
   width = 24,
   height = 24,
   dur = "0.75s",
-}: SVGProps<SVGElement>): JSX.Element {
+}: React.SVGProps<SVGSVGElement>): JSX.Element {
   return (
     <svg
       className="fill-current"

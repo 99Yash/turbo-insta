@@ -1,9 +1,9 @@
-import type { ReactNode } from "react";
+import * as React from "react";
 import { UserProvider as UserProviderComponent } from "~/contexts/user-context";
 import { getCachedUser } from "~/lib/queries/user";
 
 interface UserProviderProps {
-  readonly children: ReactNode;
+  readonly children: React.ReactNode;
 }
 
 /**

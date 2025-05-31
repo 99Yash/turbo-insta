@@ -2,7 +2,7 @@
 
 import { Heart, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import * as React from "react";
 import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -20,7 +20,7 @@ interface RepliesListProps {
 
 export function RepliesList({ commentId }: RepliesListProps) {
   const { userId } = useAuth();
-  const [replyToDelete, setReplyToDelete] = useState<string | null>(null);
+  const [replyToDelete, setReplyToDelete] = React.useState<string | null>(null);
 
   const {
     data,
