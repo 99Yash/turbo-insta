@@ -2,11 +2,9 @@ import "server-only";
 
 import { generateText } from "ai";
 import { eq } from "drizzle-orm";
-import { z } from "zod";
 import { openai_4o_mini } from "~/config/ai";
 import { db } from "~/server/db";
 import { users } from "~/server/db/schema/users";
-import { DISALLOWED_USERNAMES } from "../utils";
 
 export const generateAltText = async (imagePath: string) => {
   const systemPrompt =
@@ -50,7 +48,7 @@ export async function generateUniqueUsername(name: string): Promise<string> {
     - "John Smith" -> "johny8"
     - "Sarah Johnson" -> "sarahj"
     - "Michael Brown" -> "mikeb42"
-    Usernames should be unique and memorable. It cannot be "settings" or "signout" or "messages" or "notifications" or "profile" or "home" or "search" or "explore".
+    Usernames should be unique and memorable. It cannot be "settings" or "signout" or "messages" or "notifications" or "profile" or "home" or "search" or "explore". Obviously strip the quotes.
   `;
 
   let attempts = 0;
@@ -68,17 +66,6 @@ export async function generateUniqueUsername(name: string): Promise<string> {
           content: `Generate a username for: ${name}`,
         },
       ],
-      tools: {
-        validateUsername: {
-          description: "Validate a username",
-          parameters: z.object({
-            username: z.string(),
-          }),
-          execute: async ({ username }: { username: string }) => {
-            return !DISALLOWED_USERNAMES.includes(username.toLowerCase());
-          },
-        },
-      },
     });
 
     const username = text.trim().toLowerCase();

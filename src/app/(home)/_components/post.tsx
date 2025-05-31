@@ -63,7 +63,7 @@ export function Post({ post, author }: PostProps) {
 
           <div className="flex flex-col gap-3 pt-3">
             <ActionButtons postId={post.id} />
-            <div className="text-sm">
+            <div className="whitespace-pre-wrap text-sm">
               <span className="font-semibold">{author.username}</span>{" "}
               {post.title}
             </div>
