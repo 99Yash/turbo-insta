@@ -25,6 +25,7 @@ interface ProfileViewProps {
   })[];
   isCurrentUser: boolean;
   defaultTab?: "posts" | "saved" | "tagged";
+  postCount?: number;
 }
 
 export function ProfileView({
@@ -32,15 +33,18 @@ export function ProfileView({
   posts,
   isCurrentUser,
   defaultTab = "posts",
+  postCount,
 }: ProfileViewProps) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const { user: currentUser } = useUser();
   const utils = api.useUtils();
 
-  const [followers, following] = api.useQueries((t) => [
-    t.user.getFollowers({ userId: user.id }),
-    t.user.getFollowing({ userId: user.id }),
-  ]);
+  const { data: followers } = api.user.getFollowers.useQuery({
+    userId: user.id,
+  });
+  const { data: following } = api.user.getFollowing.useQuery({
+    userId: user.id,
+  });
 
   // Check if current user is following this profile user
   const { data: isFollowingUser, isLoading: isFollowingLoading } =
@@ -143,25 +147,27 @@ export function ProfileView({
 
           <div className="mt-4 flex space-x-10">
             <div className="flex flex-col">
-              <span className="text-lg font-bold">{posts.length}</span>
+              <span className="text-lg font-bold">
+                {postCount ?? posts.length}
+              </span>
               <span className="text-xs font-medium text-muted-foreground">
-                posts
+                {(postCount ?? posts.length) === 1 ? "post" : "posts"}
               </span>
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-bold">
-                {followers.data?.length ?? 0}
+                {followers?.length ?? 0}
               </span>
               <span className="text-xs font-medium text-muted-foreground">
-                followers
+                {followers?.length === 1 ? "follower" : "followers"}
               </span>
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-bold">
-                {following.data?.length ?? 0}
+                {following?.length ?? 0}
               </span>
               <span className="text-xs font-medium text-muted-foreground">
-                following
+                {following?.length === 1 ? "following" : "following"}
               </span>
             </div>
           </div>

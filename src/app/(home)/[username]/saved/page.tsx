@@ -3,7 +3,7 @@ import { type Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { siteConfig } from "~/config/site";
 import { getUserByUsername } from "~/server/api/services/user.service";
-import { HydrateClient } from "~/trpc/server";
+import { api, HydrateClient } from "~/trpc/server";
 import { ProfileView } from "../../_components/profile/profile-view";
 
 export async function generateMetadata({
@@ -48,6 +48,11 @@ export default async function SavedPostsPage({ params }: SavedPostsPageProps) {
     redirect(`/${params.username}`);
   }
 
+  // Fetch the actual post count for consistent display
+  const { items: userPosts } = await api.posts.getByUserId({
+    userId: user.id,
+  });
+
   return (
     <div className="min-h-screen bg-background">
       <HydrateClient>
@@ -56,6 +61,7 @@ export default async function SavedPostsPage({ params }: SavedPostsPageProps) {
           posts={[]}
           isCurrentUser={true}
           defaultTab="saved"
+          postCount={userPosts.length}
         />
       </HydrateClient>
     </div>

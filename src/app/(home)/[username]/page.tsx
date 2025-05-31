@@ -76,6 +76,7 @@ export default async function UserProfilePage({
           user={user}
           posts={postsWithEngagement}
           isCurrentUser={params.username === user.username}
+          postCount={postsWithEngagement.length}
         />
       </HydrateClient>
     </div>
