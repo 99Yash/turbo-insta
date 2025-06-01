@@ -9,15 +9,15 @@ import { cn } from "~/lib/utils";
 import type { NotificationWithDetails } from "~/server/api/services/notifications.service";
 import type { StoredFile } from "~/types";
 
-interface SidebarNotificationItemProps {
+interface NotificationItemProps {
   readonly notification: NotificationWithDetails;
   readonly onMarkAsRead?: (notificationId: string) => void;
 }
 
-export function SidebarNotificationItem({
+export function NotificationItem({
   notification,
   onMarkAsRead,
-}: SidebarNotificationItemProps) {
+}: NotificationItemProps) {
   const getNotificationIcon = () => {
     switch (notification.type) {
       case "like":

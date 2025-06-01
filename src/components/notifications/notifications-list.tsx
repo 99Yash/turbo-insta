@@ -4,7 +4,7 @@ import { Bell, Loader2 } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { api } from "~/trpc/react";
-import { SidebarNotificationItem } from "./sidebar-notification-item";
+import { NotificationItem } from "./notification-item";
 
 interface NotificationsListProps {
   readonly unreadCount: number;
@@ -107,7 +107,7 @@ export function NotificationsList({ unreadCount }: NotificationsListProps) {
         ) : (
           <div className="space-y-3">
             {notifications.map((notification) => (
-              <SidebarNotificationItem
+              <NotificationItem
                 key={notification.id}
                 notification={notification}
                 onMarkAsRead={handleMarkAsRead}
