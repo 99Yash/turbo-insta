@@ -5,6 +5,7 @@ import {
   deleteReplySchema,
   getCommentsSchema,
   getRepliesSchema,
+  getReplyCountsSchema,
 } from "../schema/comments.schema";
 import {
   createComment,
@@ -13,6 +14,7 @@ import {
   deleteReply,
   getComments,
   getReplies,
+  getReplyCountsForComments,
 } from "../services/comments.service";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
@@ -35,6 +37,13 @@ export const commentsRouter = createTRPCRouter({
         userId: ctx.userId,
       });
       return comments;
+    }),
+
+  getReplyCountsForComments: protectedProcedure
+    .input(getReplyCountsSchema)
+    .query(async ({ input }) => {
+      const replyCounts = await getReplyCountsForComments(input.commentIds);
+      return replyCounts;
     }),
 
   delete: protectedProcedure
