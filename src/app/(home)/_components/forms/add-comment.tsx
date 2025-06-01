@@ -15,6 +15,7 @@ import { Loading } from "~/components/ui/icons";
 import { cn, showErrorToast } from "~/lib/utils";
 import { MAX_COMMENT_CHAR_LENGTH } from "~/server/api/schema/comments.schema";
 import { api } from "~/trpc/react";
+import type { ReplyState } from "~/types";
 
 const formSchema = z.object({
   text: z.string().max(MAX_COMMENT_CHAR_LENGTH, {
@@ -23,11 +24,6 @@ const formSchema = z.object({
 });
 
 type Inputs = z.infer<typeof formSchema>;
-
-interface ReplyState {
-  readonly username: string;
-  readonly commentId: string;
-}
 
 interface AddCommentProps {
   readonly postId: string;

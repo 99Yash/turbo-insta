@@ -5,6 +5,7 @@ import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { formatTimeToNow, getInitials } from "~/lib/utils";
 import type { Post, User } from "~/server/db/schema";
+import type { ReplyState } from "~/types";
 import { ActionButtons } from "./action-buttons";
 import { CommentsList } from "./comments/comments-list";
 import { AddComment } from "./forms/add-comment";
@@ -14,11 +15,6 @@ import { UserHoverCard } from "./profile/profile-mini";
 interface PostContentProps {
   readonly post: Post;
   readonly author: User;
-}
-
-interface ReplyState {
-  readonly username: string;
-  readonly commentId: string;
 }
 
 export function PostContent({ post, author }: PostContentProps) {
