@@ -33,7 +33,6 @@ export function AppSidebar() {
   const { user } = useUser();
   const pathname = usePathname();
 
-  // Get unread count for notifications
   const { data: unreadCount } = api.notifications.getUnreadCount.useQuery(
     undefined,
     {
