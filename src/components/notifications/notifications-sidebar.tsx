@@ -4,7 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
-import { SidebarNotifications } from "./sidebar-notifications";
+import { NotificationsList } from "./notifications-list";
 
 interface NotificationsSidebarProps {
   readonly isOpen: boolean;
@@ -99,7 +99,7 @@ export function NotificationsSidebar({
           )}
           style={{ transitionDelay: isOpen ? "200ms" : "0ms" }}
         >
-          <SidebarNotifications unreadCount={unreadCount} />
+          <NotificationsList unreadCount={unreadCount} />
         </div>
       </div>
     </>

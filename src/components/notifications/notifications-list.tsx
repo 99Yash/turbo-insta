@@ -6,13 +6,11 @@ import { ScrollArea } from "~/components/ui/scroll-area";
 import { api } from "~/trpc/react";
 import { SidebarNotificationItem } from "./sidebar-notification-item";
 
-interface SidebarNotificationsProps {
+interface NotificationsListProps {
   readonly unreadCount: number;
 }
 
-export function SidebarNotifications({
-  unreadCount,
-}: SidebarNotificationsProps) {
+export function NotificationsList({ unreadCount }: NotificationsListProps) {
   const utils = api.useUtils();
 
   // Fetch notifications immediately since this is in a collapsible
