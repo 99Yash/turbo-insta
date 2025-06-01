@@ -18,19 +18,14 @@ export function NotificationBadge({
   badgeClassName,
   showZero = false,
 }: NotificationBadgeProps) {
-  const { data: unreadCount } = api.notifications.getUnreadCount.useQuery(
-    undefined,
-    {
-      refetchInterval: 30000, // Refetch every 30 seconds
-    },
-  );
-
-  const count = unreadCount?.count ?? 0;
+  const { data: count } = api.notifications.getUnreadCount.useQuery(undefined, {
+    refetchInterval: 30000, // Refetch every 30 seconds
+  });
 
   return (
     <Button variant="ghost" size="sm" className={cn("relative", className)}>
       <Bell className={cn("h-5 w-5", iconClassName)} />
-      {(count > 0 || showZero) && (
+      {((count ?? 0) > 0 || showZero) && (
         <span
           className={cn(
             "absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white",
@@ -38,7 +33,7 @@ export function NotificationBadge({
             badgeClassName,
           )}
         >
-          {count > 99 ? "99+" : count}
+          {count && count > 99 ? "99+" : (count ?? 0)}
         </span>
       )}
     </Button>

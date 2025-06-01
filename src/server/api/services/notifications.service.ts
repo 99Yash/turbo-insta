@@ -1,5 +1,6 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
 import { and, count, desc, eq, gt, inArray, lt, or } from "drizzle-orm";
+import { notificationEvents } from "~/lib/queries/events";
 import { db } from "~/server/db";
 import {
   commentReplies,
@@ -11,7 +12,6 @@ import {
   type Notification,
   type NotificationType,
 } from "~/server/db/schema";
-import { notificationEvents } from "../lib/events";
 
 export interface CreateNotificationInput {
   readonly recipientId: string;
@@ -308,7 +308,7 @@ export async function markNotificationsAsRead(
  */
 export async function getUnreadNotificationCount(
   userId: string,
-): Promise<{ count: number }> {
+): Promise<number> {
   try {
     const [result] = await db
       .select({ count: count() })
@@ -320,7 +320,7 @@ export async function getUnreadNotificationCount(
         ),
       );
 
-    return { count: result?.count ?? 0 };
+    return result?.count ?? 0;
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,
