@@ -41,7 +41,7 @@ export function AppSidebar() {
     },
   );
 
-  const count = unreadCount?.count ?? 0;
+  const count = unreadCount ?? 0;
 
   const navItems = [
     {
