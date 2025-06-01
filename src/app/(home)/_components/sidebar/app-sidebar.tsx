@@ -123,7 +123,7 @@ export function AppSidebar() {
                   <SidebarMenuButton
                     onClick={() => setIsNotificationsSidebarOpen(true)}
                     tooltip="Notifications"
-                    className="flex items-center gap-3 transition-all duration-200"
+                    className="transition-all duration-200"
                     aria-expanded={isNotificationsSidebarOpen}
                     aria-controls="notifications-sidebar"
                     aria-haspopup="dialog"
