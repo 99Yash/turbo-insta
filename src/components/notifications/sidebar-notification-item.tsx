@@ -1,7 +1,7 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { Dot, Heart, MessageCircle, Reply, UserPlus, X } from "lucide-react";
+import { Heart, MessageCircle, Reply, UserPlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type React from "react";
@@ -11,6 +11,7 @@ import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import type { NotificationWithDetails } from "~/server/api/services/notifications.service";
 import type { StoredFile } from "~/types";
+import { LucideIcons } from "../icons";
 
 interface SidebarNotificationItemProps {
   readonly notification: NotificationWithDetails;
@@ -28,7 +29,7 @@ export function SidebarNotificationItem({
         return (
           <div className="flex size-5 items-center justify-center rounded-full bg-gradient-to-br from-red-50 to-red-100 ring-1 ring-red-200/50 dark:from-red-950/50 dark:to-red-900/50 dark:ring-red-800/50">
             <Heart
-              className={cn(iconClass, "text-red-600 dark:text-red-400")}
+              className={cn(iconClass, "text-rose-600 dark:text-rose-400")}
               fill="currentColor"
             />
           </div>
@@ -61,7 +62,7 @@ export function SidebarNotificationItem({
         return (
           <div className="flex size-5 items-center justify-center rounded-full bg-gradient-to-br from-pink-50 to-pink-100 ring-1 ring-pink-200/50 dark:from-pink-950/50 dark:to-pink-900/50 dark:ring-pink-800/50">
             <Heart
-              className={cn(iconClass, "text-pink-600 dark:text-pink-400")}
+              className={cn(iconClass, "text-rose-600 dark:text-rose-400")}
               fill="currentColor"
             />
           </div>
@@ -184,16 +185,6 @@ export function SidebarNotificationItem({
           : "border-border/40 bg-card/50 hover:bg-card/80",
       )}
     >
-      {/* Unread indicator */}
-      {!notification.isRead && (
-        <div className="absolute right-4 top-4">
-          <Dot
-            className="h-6 w-6 animate-pulse text-primary"
-            fill="currentColor"
-          />
-        </div>
-      )}
-
       <div className="p-5">
         <div className="flex items-start gap-4">
           {/* Actor Avatar with notification icon overlay */}
@@ -293,7 +284,7 @@ export function SidebarNotificationItem({
               className="h-8 w-8 rounded-full p-0 opacity-0 transition-all duration-300 hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
               title="Mark as read"
             >
-              <X className="h-4 w-4" />
+              <LucideIcons.ArchiveIcon className="size-4" />
             </Button>
           )}
         </div>
