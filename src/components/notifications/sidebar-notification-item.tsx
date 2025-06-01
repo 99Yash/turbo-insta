@@ -1,10 +1,12 @@
 "use client";
 
 import { formatDistanceToNow } from "date-fns";
-import { Heart, MessageCircle, Reply, UserPlus, X } from "lucide-react";
+import { Dot, Heart, MessageCircle, Reply, UserPlus, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import type React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import type { NotificationWithDetails } from "~/server/api/services/notifications.service";
@@ -24,7 +26,7 @@ export function SidebarNotificationItem({
     switch (notification.type) {
       case "like":
         return (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-red-50 to-red-100 ring-1 ring-red-200/50 dark:from-red-950/50 dark:to-red-900/50 dark:ring-red-800/50">
             <Heart
               className={cn(iconClass, "text-red-600 dark:text-red-400")}
               fill="currentColor"
@@ -33,7 +35,7 @@ export function SidebarNotificationItem({
         );
       case "comment":
         return (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-50 to-blue-100 ring-1 ring-blue-200/50 dark:from-blue-950/50 dark:to-blue-900/50 dark:ring-blue-800/50">
             <MessageCircle
               className={cn(iconClass, "text-blue-600 dark:text-blue-400")}
             />
@@ -41,7 +43,7 @@ export function SidebarNotificationItem({
         );
       case "reply":
         return (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100 ring-1 ring-green-200/50 dark:from-green-950/50 dark:to-green-900/50 dark:ring-green-800/50">
             <Reply
               className={cn(iconClass, "text-green-600 dark:text-green-400")}
             />
@@ -49,7 +51,7 @@ export function SidebarNotificationItem({
         );
       case "follow":
         return (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-purple-50 to-purple-100 ring-1 ring-purple-200/50 dark:from-purple-950/50 dark:to-purple-900/50 dark:ring-purple-800/50">
             <UserPlus
               className={cn(iconClass, "text-purple-600 dark:text-purple-400")}
             />
@@ -57,7 +59,7 @@ export function SidebarNotificationItem({
         );
       case "comment_like":
         return (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-100 dark:bg-pink-900/30">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-pink-50 to-pink-100 ring-1 ring-pink-200/50 dark:from-pink-950/50 dark:to-pink-900/50 dark:ring-pink-800/50">
             <Heart
               className={cn(iconClass, "text-pink-600 dark:text-pink-400")}
               fill="currentColor"
@@ -66,7 +68,7 @@ export function SidebarNotificationItem({
         );
       default:
         return (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-gray-50 to-gray-100 ring-1 ring-gray-200/50 dark:from-gray-950/50 dark:to-gray-900/50 dark:ring-gray-800/50">
             <Heart className={cn(iconClass, "text-muted-foreground")} />
           </div>
         );
@@ -79,42 +81,49 @@ export function SidebarNotificationItem({
       case "like":
         return (
           <>
-            <span className="font-semibold">{actorName}</span> liked your post
+            <span className="font-semibold text-foreground">{actorName}</span>{" "}
+            <span className="text-muted-foreground">liked your post</span>
           </>
         );
       case "comment":
         return (
           <>
-            <span className="font-semibold">{actorName}</span> commented on your
-            post
+            <span className="font-semibold text-foreground">{actorName}</span>{" "}
+            <span className="text-muted-foreground">
+              commented on your post
+            </span>
           </>
         );
       case "reply":
         return (
           <>
-            <span className="font-semibold">{actorName}</span> replied to your
-            comment
+            <span className="font-semibold text-foreground">{actorName}</span>{" "}
+            <span className="text-muted-foreground">
+              replied to your comment
+            </span>
           </>
         );
       case "follow":
         return (
           <>
-            <span className="font-semibold">{actorName}</span> started following
-            you
+            <span className="font-semibold text-foreground">{actorName}</span>{" "}
+            <span className="text-muted-foreground">started following you</span>
           </>
         );
       case "comment_like":
         return (
           <>
-            <span className="font-semibold">{actorName}</span> liked your
-            comment
+            <span className="font-semibold text-foreground">{actorName}</span>{" "}
+            <span className="text-muted-foreground">liked your comment</span>
           </>
         );
       default:
         return (
           <>
-            <span className="font-semibold">{actorName}</span> sent you a
-            notification
+            <span className="font-semibold text-foreground">{actorName}</span>{" "}
+            <span className="text-muted-foreground">
+              sent you a notification
+            </span>
           </>
         );
     }
@@ -169,105 +178,125 @@ export function SidebarNotificationItem({
   return (
     <div
       className={cn(
-        "group relative rounded-xl border p-4 transition-all duration-200 hover:bg-accent/30",
-        !notification.isRead &&
-          "border-primary/20 bg-primary/5 shadow-sm dark:border-primary/30 dark:bg-primary/10",
-        notification.isRead && "border-border/50 bg-background/50",
+        "group relative rounded-2xl border transition-all duration-300 hover:shadow-md hover:shadow-black/5",
+        !notification.isRead
+          ? "via-primary/3 border-primary/20 bg-gradient-to-br from-primary/5 to-transparent shadow-sm dark:border-primary/30 dark:from-primary/10 dark:via-primary/5"
+          : "border-border/40 bg-card/50 hover:bg-card/80",
       )}
     >
       {/* Unread indicator */}
       {!notification.isRead && (
-        <div className="absolute right-3 top-3 h-2 w-2 rounded-full bg-primary" />
+        <div className="absolute right-4 top-4">
+          <Dot
+            className="h-6 w-6 animate-pulse text-primary"
+            fill="currentColor"
+          />
+        </div>
       )}
 
-      <div className="flex items-start gap-3">
-        {/* Actor Avatar */}
-        <Avatar className="h-10 w-10 flex-shrink-0 shadow-sm ring-2 ring-background">
-          <AvatarImage
-            src={notification.actor.imageUrl ?? undefined}
-            alt={notification.actor.name}
-          />
-          <AvatarFallback className="text-sm font-medium">
-            {notification.actor.name.charAt(0).toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
+      <div className="p-5">
+        <div className="flex items-start gap-4">
+          {/* Actor Avatar with notification icon overlay */}
+          <div className="relative flex-shrink-0">
+            <Avatar className="h-12 w-12 shadow-lg ring-2 ring-background dark:ring-gray-800">
+              <AvatarImage
+                src={notification.actor.imageUrl ?? undefined}
+                alt={notification.actor.name}
+                className="object-cover"
+              />
+              <AvatarFallback className="bg-gradient-to-br from-primary/20 to-primary/10 text-sm font-semibold">
+                {notification.actor.name.charAt(0).toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
 
-        {/* Content */}
-        <div className="min-w-0 flex-1 space-y-2">
-          <div className="flex items-start gap-2">
-            {getNotificationIcon()}
-            <div className="flex-1">
+            {/* Notification type icon overlay */}
+            <div className="absolute -bottom-1 -right-1 shadow-lg">
+              {getNotificationIcon()}
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="min-w-0 flex-1 space-y-3">
+            {/* Main notification text */}
+            <div>
               <Link
                 href={getNotificationLink()}
                 onClick={handleMarkAsRead}
-                className="block text-sm leading-relaxed text-foreground transition-colors hover:text-primary"
+                className="block text-sm leading-relaxed transition-colors hover:text-primary"
               >
                 {getNotificationText()}
               </Link>
 
-              {/* Timestamp */}
-              <p className="mt-1 text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(notification.createdAt), {
-                  addSuffix: true,
-                })}
-              </p>
+              {/* Timestamp with better styling */}
+              <div className="mt-2 flex items-center gap-2">
+                <Badge
+                  variant="secondary"
+                  className="px-2 py-0.5 text-xs font-normal"
+                >
+                  {formatDistanceToNow(new Date(notification.createdAt), {
+                    addSuffix: true,
+                  })}
+                </Badge>
+              </div>
             </div>
+
+            {/* Comment content with improved styling */}
+            {notification.comment && (
+              <div className="rounded-xl border-l-4 border-primary/30 bg-muted/30 p-3 backdrop-blur-sm">
+                <p className="text-sm italic leading-relaxed text-muted-foreground">
+                  &ldquo;{notification.comment.text}&rdquo;
+                </p>
+              </div>
+            )}
+
+            {/* Post content with enhanced design */}
+            {shouldShowPostContent() && (
+              <div className="rounded-xl border border-border/50 bg-card/50 p-3 backdrop-blur-sm">
+                {firstImage ? (
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-14 w-14 flex-shrink-0 overflow-hidden rounded-lg ring-1 ring-border/50">
+                      <Image
+                        src={firstImage.url || "/placeholder.svg"}
+                        alt={firstImage.alt ?? firstImage.name ?? "Post image"}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                        sizes="56px"
+                      />
+                    </div>
+                    {"post" in notification && notification.post?.title && (
+                      <div className="min-w-0 flex-1">
+                        <p className="line-clamp-2 text-sm font-medium leading-relaxed text-foreground">
+                          {notification.post.title}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ) : notification.post?.title ? (
+                  <p className="line-clamp-2 text-sm font-medium leading-relaxed text-foreground">
+                    {notification.post.title}
+                  </p>
+                ) : (
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Post content
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Additional Context */}
-          {notification.comment && (
-            <div className="rounded-lg border-l-2 border-muted-foreground/20 bg-muted/50 p-2">
-              <p className="line-clamp-2 text-xs text-muted-foreground">
-                &ldquo;{notification.comment.text}&rdquo;
-              </p>
-            </div>
-          )}
-
-          {/* Post Content - Show image if available, fallback to title */}
-          {shouldShowPostContent() && (
-            <div className="rounded-lg border-l-2 border-primary/30 bg-muted/50 p-2">
-              {firstImage ? (
-                <div className="flex items-center gap-2">
-                  <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
-                    <Image
-                      src={firstImage.url}
-                      alt={firstImage.alt ?? firstImage.name ?? "Post image"}
-                      fill
-                      className="object-cover"
-                      sizes="48px"
-                    />
-                  </div>
-                  {"post" in notification && notification.post?.title && (
-                    <p className="line-clamp-2 text-xs font-medium text-foreground">
-                      {notification.post.title}
-                    </p>
-                  )}
-                </div>
-              ) : notification.post?.title ? (
-                <p className="line-clamp-1 text-xs font-medium text-foreground">
-                  {notification.post.title}
-                </p>
-              ) : (
-                <p className="line-clamp-1 text-xs font-medium text-muted-foreground">
-                  Post
-                </p>
-              )}
-            </div>
+          {/* Archive Action with improved styling */}
+          {!notification.isRead && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleArchive}
+              className="h-8 w-8 rounded-full p-0 opacity-0 transition-all duration-300 hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
+              title="Mark as read"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           )}
         </div>
-
-        {/* Archive Action */}
-        {!notification.isRead && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleArchive}
-            className="h-8 w-8 p-0 opacity-0 transition-all duration-200 hover:bg-destructive/10 hover:text-destructive group-hover:opacity-100"
-            title="Mark as read"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
       </div>
     </div>
   );

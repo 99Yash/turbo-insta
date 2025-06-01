@@ -88,7 +88,7 @@ export function SidebarNotifications({
       </div>
 
       {/* Notifications List */}
-      <ScrollArea className="h-[500px] w-full">
+      <ScrollArea className="h-full w-full overflow-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
