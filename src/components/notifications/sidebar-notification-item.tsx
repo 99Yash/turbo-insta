@@ -22,11 +22,11 @@ export function SidebarNotificationItem({
   onMarkAsRead,
 }: SidebarNotificationItemProps) {
   const getNotificationIcon = () => {
-    const iconClass = "h-4 w-4";
+    const iconClass = "size-3";
     switch (notification.type) {
       case "like":
         return (
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-red-50 to-red-100 ring-1 ring-red-200/50 dark:from-red-950/50 dark:to-red-900/50 dark:ring-red-800/50">
+          <div className="flex size-5 items-center justify-center rounded-full bg-gradient-to-br from-red-50 to-red-100 ring-1 ring-red-200/50 dark:from-red-950/50 dark:to-red-900/50 dark:ring-red-800/50">
             <Heart
               className={cn(iconClass, "text-red-600 dark:text-red-400")}
               fill="currentColor"
@@ -35,7 +35,7 @@ export function SidebarNotificationItem({
         );
       case "comment":
         return (
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-blue-50 to-blue-100 ring-1 ring-blue-200/50 dark:from-blue-950/50 dark:to-blue-900/50 dark:ring-blue-800/50">
+          <div className="flex size-5 items-center justify-center rounded-full bg-gradient-to-br from-blue-50 to-blue-100 ring-1 ring-blue-200/50 dark:from-blue-950/50 dark:to-blue-900/50 dark:ring-blue-800/50">
             <MessageCircle
               className={cn(iconClass, "text-blue-600 dark:text-blue-400")}
             />
@@ -43,7 +43,7 @@ export function SidebarNotificationItem({
         );
       case "reply":
         return (
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100 ring-1 ring-green-200/50 dark:from-green-950/50 dark:to-green-900/50 dark:ring-green-800/50">
+          <div className="flex size-5 items-center justify-center rounded-full bg-gradient-to-br from-green-50 to-green-100 ring-1 ring-green-200/50 dark:from-green-950/50 dark:to-green-900/50 dark:ring-green-800/50">
             <Reply
               className={cn(iconClass, "text-green-600 dark:text-green-400")}
             />
@@ -51,7 +51,7 @@ export function SidebarNotificationItem({
         );
       case "follow":
         return (
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-purple-50 to-purple-100 ring-1 ring-purple-200/50 dark:from-purple-950/50 dark:to-purple-900/50 dark:ring-purple-800/50">
+          <div className="flex size-5 items-center justify-center rounded-full bg-gradient-to-br from-purple-50 to-purple-100 ring-1 ring-purple-200/50 dark:from-purple-950/50 dark:to-purple-900/50 dark:ring-purple-800/50">
             <UserPlus
               className={cn(iconClass, "text-purple-600 dark:text-purple-400")}
             />
@@ -59,7 +59,7 @@ export function SidebarNotificationItem({
         );
       case "comment_like":
         return (
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-pink-50 to-pink-100 ring-1 ring-pink-200/50 dark:from-pink-950/50 dark:to-pink-900/50 dark:ring-pink-800/50">
+          <div className="flex size-5 items-center justify-center rounded-full bg-gradient-to-br from-pink-50 to-pink-100 ring-1 ring-pink-200/50 dark:from-pink-950/50 dark:to-pink-900/50 dark:ring-pink-800/50">
             <Heart
               className={cn(iconClass, "text-pink-600 dark:text-pink-400")}
               fill="currentColor"
@@ -68,7 +68,7 @@ export function SidebarNotificationItem({
         );
       default:
         return (
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-gray-50 to-gray-100 ring-1 ring-gray-200/50 dark:from-gray-950/50 dark:to-gray-900/50 dark:ring-gray-800/50">
+          <div className="flex size-5 items-center justify-center rounded-full bg-gradient-to-br from-gray-50 to-gray-100 ring-1 ring-gray-200/50 dark:from-gray-950/50 dark:to-gray-900/50 dark:ring-gray-800/50">
             <Heart className={cn(iconClass, "text-muted-foreground")} />
           </div>
         );
@@ -198,7 +198,7 @@ export function SidebarNotificationItem({
         <div className="flex items-start gap-4">
           {/* Actor Avatar with notification icon overlay */}
           <div className="relative flex-shrink-0">
-            <Avatar className="h-12 w-12 shadow-lg ring-2 ring-background dark:ring-gray-800">
+            <Avatar className="size-8 shadow-lg ring-2 ring-background dark:ring-gray-800">
               <AvatarImage
                 src={notification.actor.imageUrl ?? undefined}
                 alt={notification.actor.name}
