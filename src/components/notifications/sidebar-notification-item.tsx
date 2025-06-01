@@ -108,8 +108,24 @@ export function SidebarNotificationItem({
     }
   };
 
+  // Helper function to get the appropriate text content based on notification type
+  const getContentText = () => {
+    switch (notification.type) {
+      case "reply":
+        return notification.reply?.text ?? "";
+      case "comment":
+      case "comment_like":
+        return notification.comment?.text ?? "";
+      case "like":
+        return notification.post?.title ?? "";
+      default:
+        return "";
+    }
+  };
+
   const firstImage = getPostImage();
   const showContent =
+    notification.reply ??
     notification.comment ??
     (["like", "comment", "reply"].includes(notification.type) &&
       notification.post);
@@ -169,7 +185,7 @@ export function SidebarNotificationItem({
               </div>
             )}
             <p className="line-clamp-1 text-[11px] text-muted-foreground">
-              {notification.comment?.text ?? notification.post?.title ?? ""}
+              {getContentText()}
             </p>
           </div>
         )}
