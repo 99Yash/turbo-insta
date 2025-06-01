@@ -17,9 +17,10 @@ import { RepliesList } from "./replies-list";
 
 interface CommentsListProps {
   readonly postId: string;
+  readonly onReply?: (username: string, commentId: string) => void;
 }
 
-export function CommentsList({ postId }: CommentsListProps) {
+export function CommentsList({ postId, onReply }: CommentsListProps) {
   const { userId } = useAuth();
   const [commentToDelete, setCommentToDelete] = React.useState<string | null>(
     null,
@@ -181,7 +182,16 @@ export function CommentsList({ postId }: CommentsListProps) {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <span>{formatTimeToNow(comment.createdAt)}</span>
-                        <button className="font-semibold">Reply</button>
+                        <button
+                          className="font-semibold"
+                          onClick={() => {
+                            if (onReply && comment.user?.username) {
+                              onReply(comment.user.username, comment.id);
+                            }
+                          }}
+                        >
+                          Reply
+                        </button>
                         {isCurrentUser && (
                           <button
                             className="font-semibold opacity-0 transition-opacity duration-200 group-hover:opacity-100"

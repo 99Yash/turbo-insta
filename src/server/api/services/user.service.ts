@@ -350,7 +350,7 @@ export async function toggleFollow(
  * @param limitCount The maximum number of results to return
  * @returns Array of matching users
  */
-export async function searchUsersByUsername(query: string, limitCount = 5) {
+export async function getUsersByUsername(query: string, limitCount = 5) {
   try {
     const searchResults = await db
       .select({
