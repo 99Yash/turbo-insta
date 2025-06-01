@@ -40,7 +40,7 @@ export function AddComment({
   replyState,
   onClearReply,
 }: AddCommentProps) {
-  const textareaRef = React.useRef<AutosizeTextAreaRef>(null);
+  const textareaRef = React.useRef<AutosizeTextAreaRef | null>(null);
 
   const form = useForm<Inputs>({
     resolver: zodResolver(formSchema),
@@ -80,12 +80,12 @@ export function AddComment({
       toast.success("Reply added successfully");
       form.reset();
       onClearReply?.();
-      void trpcUtils.comments.getByPostId.invalidate({ postId });
-      // Also invalidate replies for the specific comment
       if (replyState?.commentId) {
         void trpcUtils.comments.getReplies.invalidate({
           commentId: replyState.commentId,
         });
+      } else {
+        void trpcUtils.comments.getByPostId.invalidate({ postId });
       }
     },
     onError: (error) => {
@@ -98,6 +98,7 @@ export function AddComment({
 
     // Clear reply state on Escape key
     if (event.key === "Escape" && replyState) {
+      event.preventDefault();
       onClearReply?.();
       return;
     }
@@ -162,7 +163,11 @@ export function AddComment({
 
   const currentText = form.watch("text") || "";
   const characterCount = currentText.length;
-  const isDisabled = !currentText || addComment.isPending || addReply.isPending;
+  const isDisabled =
+    !currentText ||
+    addComment.isPending ||
+    addReply.isPending ||
+    !form.formState.isValid;
 
   return (
     <div className="relative flex flex-col gap-3">
@@ -241,7 +246,9 @@ export function AddComment({
               isDisabled && "hidden",
             )}
           >
-            {addComment.isPending || addReply.isPending ? (
+            {replyState?.commentId ? (
+              addReply.isPending
+            ) : addComment.isPending ? (
               <Loading className="mr-2 size-3.5" aria-hidden="true" />
             ) : (
               "Post"

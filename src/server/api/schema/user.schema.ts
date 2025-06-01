@@ -66,4 +66,4 @@ export const getUsersByUsernameSchema = z.object({
   limit: z.number().min(1).max(20).default(5),
 });
 
-export type SearchUsersInput = z.infer<typeof getUsersByUsernameSchema>;
+export type GetUsersByUsernameInput = z.infer<typeof getUsersByUsernameSchema>;

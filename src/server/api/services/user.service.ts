@@ -345,7 +345,7 @@ export async function toggleFollow(
 }
 
 /**
- * Search users by username
+ * Get users by username
  * @param query The search query
  * @param limitCount The maximum number of results to return
  * @returns Array of matching users
@@ -361,7 +361,7 @@ export async function getUsersByUsername(query: string, limitCount = 5) {
         isVerified: users.isVerified,
       })
       .from(users)
-      .where(ilike(users.username, `${query}%`))
+      .where(ilike(users.username, `%${query}%`))
       .limit(limitCount)
       .orderBy(users.username);
 
