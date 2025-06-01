@@ -1,7 +1,6 @@
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
 import { siteConfig } from "~/config/site";
-import { getCachedUser } from "~/lib/queries/user";
 import { getUserByUsername } from "~/server/api/services/user.service";
 import { api, HydrateClient } from "~/trpc/server";
 import { ProfileView } from "../_components/profile/profile-view";
@@ -47,9 +46,11 @@ interface UserProfilePageProps {
 export default async function UserProfilePage({
   params,
 }: UserProfilePageProps) {
-  const user = await getCachedUser();
+  const user = await getUserByUsername(params.username);
 
-  if (!user) return notFound();
+  if (!user) {
+    return notFound();
+  }
 
   const { items: posts } = await api.posts.getByUserId({
     userId: user.id,
