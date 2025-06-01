@@ -3,7 +3,7 @@
 import { CogIcon, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import * as React from "react";
 import { Icons, NucleoIcons } from "~/components/icons";
 import { NotificationsSidebar } from "~/components/notifications/notifications-sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -29,7 +29,7 @@ export function AppSidebar() {
   const { user } = useUser();
   const pathname = usePathname();
   const [isNotificationsSidebarOpen, setIsNotificationsSidebarOpen] =
-    useState(false);
+    React.useState(false);
 
   const { data: unreadCount } = api.notifications.getUnreadCount.useQuery(
     undefined,
@@ -124,6 +124,9 @@ export function AppSidebar() {
                     onClick={() => setIsNotificationsSidebarOpen(true)}
                     tooltip="Notifications"
                     className="flex items-center gap-3 transition-all duration-200"
+                    aria-expanded={isNotificationsSidebarOpen}
+                    aria-controls="notifications-sidebar"
+                    aria-haspopup="dialog"
                   >
                     <div className="relative">
                       <NucleoIcons.HeartFill className="size-5" />

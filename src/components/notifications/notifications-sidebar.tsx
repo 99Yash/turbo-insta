@@ -51,9 +51,10 @@ export function NotificationsSidebar({
 
       {/* Sidebar */}
       <div
+        id="notifications-sidebar"
         className={cn(
           "fixed right-0 top-0 z-50 h-full bg-sidebar shadow-xl transition-transform duration-300 ease-out",
-          "w-full max-w-sm border-l border-border/40 sm:w-80",
+          "w-full max-w-md border-l border-border/40 sm:w-96",
           isOpen ? "translate-x-0" : "translate-x-full",
         )}
         role="dialog"
