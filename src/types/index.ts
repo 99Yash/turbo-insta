@@ -17,3 +17,8 @@ export type DrizzleWhere<T> =
   | SQL<unknown>
   | ((aliases: T) => SQL<T> | undefined)
   | undefined;
+
+export interface ReplyState {
+  readonly username: string;
+  readonly commentId: string;
+}

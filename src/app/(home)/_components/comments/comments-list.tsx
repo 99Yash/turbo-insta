@@ -7,6 +7,7 @@ import { Icons, LucideIcons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Loading } from "~/components/ui/icons";
+import { MentionText } from "~/components/ui/mention-parser";
 import { Modal } from "~/components/ui/modal";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useAuth } from "~/hooks/use-auth";
@@ -17,9 +18,10 @@ import { RepliesList } from "./replies-list";
 
 interface CommentsListProps {
   readonly postId: string;
+  readonly onReply?: (username: string, commentId: string) => void;
 }
 
-export function CommentsList({ postId }: CommentsListProps) {
+export function CommentsList({ postId, onReply }: CommentsListProps) {
   const { userId } = useAuth();
   const [commentToDelete, setCommentToDelete] = React.useState<string | null>(
     null,
@@ -43,12 +45,36 @@ export function CommentsList({ postId }: CommentsListProps) {
     },
   );
 
+  // Get all comment IDs from the data to fetch reply counts
+  const commentIds = React.useMemo(() => {
+    if (!data?.pages) return [];
+    return data.pages.flatMap((page) =>
+      page.comments.map((comment) => comment.id),
+    );
+  }, [data]);
+
+  // Fetch reply counts separately
+  const { data: replyCountsData } =
+    api.comments.getReplyCountsForComments.useQuery(
+      { commentIds },
+      { enabled: commentIds.length > 0 },
+    );
+
+  // Create a map for quick reply count lookup
+  const replyCountsMap = React.useMemo(() => {
+    if (!replyCountsData) return new Map<string, number>();
+    return new Map(replyCountsData.map((item) => [item.commentId, item.count]));
+  }, [replyCountsData]);
+
   const trpcUtils = api.useUtils();
 
   const deleteCommentMutation = api.comments.delete.useMutation({
     onSuccess: () => {
       setCommentToDelete(null);
       void trpcUtils.comments.getByPostId.invalidate({ postId });
+      void trpcUtils.comments.getReplyCountsForComments.invalidate({
+        commentIds,
+      });
     },
   });
 
@@ -119,6 +145,7 @@ export function CommentsList({ postId }: CommentsListProps) {
         page.comments.map((comment) => {
           if (!comment.user) return null;
           const isCurrentUser = comment.userId === userId;
+          const replyCount = replyCountsMap.get(comment.id) ?? 0;
 
           return (
             <div key={comment.id} className="flex flex-col">
@@ -148,9 +175,10 @@ export function CommentsList({ postId }: CommentsListProps) {
                           {comment.user.username}
                         </Link>
                       </UserHoverCard>
-                      <span className="whitespace-pre-wrap break-words">
-                        {comment.text}
-                      </span>
+                      <MentionText
+                        text={comment.text ?? ""}
+                        className="whitespace-pre-wrap break-words"
+                      />
                     </p>
                     <button
                       className="flex items-center gap-1 self-end"
@@ -181,7 +209,16 @@ export function CommentsList({ postId }: CommentsListProps) {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <span>{formatTimeToNow(comment.createdAt)}</span>
-                        <button className="font-semibold">Reply</button>
+                        <button
+                          className="font-semibold"
+                          onClick={() => {
+                            if (onReply && comment.user?.username) {
+                              onReply(comment.user.username, comment.id);
+                            }
+                          }}
+                        >
+                          Reply
+                        </button>
                         {isCurrentUser && (
                           <button
                             className="font-semibold opacity-0 transition-opacity duration-200 group-hover:opacity-100"
@@ -191,7 +228,7 @@ export function CommentsList({ postId }: CommentsListProps) {
                           </button>
                         )}
                       </div>
-                      {comment.replyCount > 0 && (
+                      {replyCount > 0 && (
                         <button
                           className="font-semibold text-muted-foreground"
                           onClick={() => toggleReplies(comment.id)}
@@ -204,7 +241,7 @@ export function CommentsList({ postId }: CommentsListProps) {
                           ) : (
                             <div className="flex items-center gap-2">
                               <LucideIcons.Minus className="size-3.5" />
-                              View replies ({comment.replyCount})
+                              View replies ({replyCount})
                             </div>
                           )}
                         </button>

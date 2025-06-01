@@ -117,21 +117,8 @@ export async function getComments(input: WithUserId<GetCommentsInput>) {
             .where(inArray(users.id, userIds))
         : [];
 
-    // Get reply counts for each comment
-    const commentIds = postComments.map((comment) => comment.id);
-    const replyCounts =
-      commentIds.length > 0
-        ? await db
-            .select({
-              commentId: commentReplies.commentId,
-              count: count(),
-            })
-            .from(commentReplies)
-            .where(inArray(commentReplies.commentId, commentIds))
-            .groupBy(commentReplies.commentId)
-        : [];
-
     // Get like counts for each comment
+    const commentIds = postComments.map((comment) => comment.id);
     const likeCounts =
       commentIds.length > 0
         ? await db
@@ -162,8 +149,6 @@ export async function getComments(input: WithUserId<GetCommentsInput>) {
 
     const commentsWithUser = postComments.map((comment) => {
       const user = authors.find((u) => u.id === comment.userId);
-      const replyCount =
-        replyCounts.find((rc) => rc.commentId === comment.id)?.count ?? 0;
       const likeCount =
         likeCounts.find((lc) => lc.commentId === comment.id)?.count ?? 0;
       const hasLiked = userLikes.some((ul) => ul.commentId === comment.id);
@@ -178,7 +163,6 @@ export async function getComments(input: WithUserId<GetCommentsInput>) {
               imageUrl: user.imageUrl,
             }
           : null,
-        replyCount,
         likeCount,
         hasLiked,
       };
@@ -429,6 +413,30 @@ export async function deleteReply({
     await db.delete(commentReplies).where(eq(commentReplies.id, replyId));
 
     return { success: true };
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+}
+
+export async function getReplyCountsForComments(commentIds: string[]) {
+  try {
+    if (commentIds.length === 0) {
+      return [];
+    }
+
+    const replyCounts = await db
+      .select({
+        commentId: commentReplies.commentId,
+        count: count(),
+      })
+      .from(commentReplies)
+      .where(inArray(commentReplies.commentId, commentIds))
+      .groupBy(commentReplies.commentId);
+
+    return replyCounts;
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,

@@ -1,17 +1,11 @@
 import { type Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { CommentsList } from "~/app/(home)/_components/comments/comments-list";
-import { AddComment } from "~/app/(home)/_components/forms/add-comment";
-import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { PostCarousel } from "~/components/utils/post-carousel";
 import { siteConfig } from "~/config/site";
-import { formatDate, formatTimeToNow, getInitials } from "~/lib/utils";
+import { formatDate } from "~/lib/utils";
 import { getUserById } from "~/server/api/services/user.service";
 import { api, HydrateClient } from "~/trpc/server";
-import { ActionButtons } from "../../_components/action-buttons";
-import { PostActions } from "../../_components/forms/post-actions";
-import { UserHoverCard } from "../../_components/profile/profile-mini";
+import { PostContent } from "../../_components/post-content";
 
 interface PostModalPageProps {
   params: {
@@ -82,95 +76,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
           />
         </div>
         <div className="flex w-[450px] flex-col">
-          <div className="flex items-center justify-between border-b px-3.5 py-4">
-            <UserHoverCard user={author}>
-              <div className="flex items-center gap-2">
-                <Link href={`/${author.username}`} role="button">
-                  <Avatar className="size-7">
-                    <AvatarImage
-                      src={author.imageUrl ?? ""}
-                      alt={author.name ?? "VH"}
-                    />
-                    <AvatarFallback>
-                      {getInitials(author.name ?? "VH")}
-                    </AvatarFallback>
-                  </Avatar>
-                </Link>
-                <span
-                  role="button"
-                  className="text-sm font-semibold transition-colors duration-200 hover:text-muted-foreground"
-                >
-                  {author.username}
-                </span>
-              </div>
-            </UserHoverCard>
-
-            <PostActions postId={post.id} authorId={author.id} post={post} />
-          </div>
-
-          <div className="h-[calc(100%-8rem)] overflow-y-auto scrollbar-hide">
-            {post.title && (
-              <div className="px-3.5 py-4">
-                <div className="flex items-start gap-2">
-                  <UserHoverCard user={author}>
-                    <Link href={`/${author.username}`} role="button">
-                      <Avatar className="size-7">
-                        <AvatarImage
-                          src={author.imageUrl ?? ""}
-                          alt={author.name ?? "VH"}
-                        />
-                        <AvatarFallback>
-                          {getInitials(author.name ?? "VH")}
-                        </AvatarFallback>
-                      </Avatar>
-                    </Link>
-                  </UserHoverCard>
-                  <div className="flex flex-col gap-1">
-                    <div>
-                      <UserHoverCard user={author}>
-                        <span
-                          className="text-sm font-semibold transition-colors duration-200 hover:text-muted-foreground"
-                          role="button"
-                        >
-                          {author.username}
-                        </span>
-                      </UserHoverCard>{" "}
-                      <span className="text-sm">{post.title}</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {formatTimeToNow(post.createdAt, {
-                        showDateAfterDays: 10,
-                      })}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <CommentsList postId={post.id} />
-          </div>
-
-          <div className="border-t py-4">
-            <div className="px-3.5">
-              <ActionButtons postId={post.id} />
-              <p className="pb-3.5 text-xs font-medium text-muted-foreground">
-                {formatTimeToNow(
-                  post.createdAt,
-                  {
-                    showDateAfterDays: 10,
-                  },
-                  {
-                    addSuffix: true,
-                    locale: undefined,
-                  },
-                )}
-              </p>
-            </div>
-            <div className="border-b"></div>
-            <div className="px-3.5">
-              <AddComment postId={post.id} />
-            </div>
-          </div>
+          <PostContent post={post} author={author} />
         </div>
       </div>
     </HydrateClient>
