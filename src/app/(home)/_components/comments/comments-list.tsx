@@ -7,6 +7,7 @@ import { Icons, LucideIcons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Loading } from "~/components/ui/icons";
+import { MentionText } from "~/components/ui/mention-parser";
 import { Modal } from "~/components/ui/modal";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useAuth } from "~/hooks/use-auth";
@@ -174,9 +175,10 @@ export function CommentsList({ postId, onReply }: CommentsListProps) {
                           {comment.user.username}
                         </Link>
                       </UserHoverCard>
-                      <span className="whitespace-pre-wrap break-words">
-                        {comment.text}
-                      </span>
+                      <MentionText
+                        text={comment.text ?? ""}
+                        className="whitespace-pre-wrap break-words"
+                      />
                     </p>
                     <button
                       className="flex items-center gap-1 self-end"

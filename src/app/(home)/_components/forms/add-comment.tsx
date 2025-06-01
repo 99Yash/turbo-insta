@@ -50,7 +50,7 @@ export function AddComment({
   // Handle reply state changes
   React.useEffect(() => {
     if (replyState?.username && textareaRef.current) {
-      const replyText = `@${replyState.username} `;
+      const replyText = `@{${replyState.username}} `;
       form.setValue("text", replyText);
       textareaRef.current.textArea.focus();
       // Set cursor position at the end

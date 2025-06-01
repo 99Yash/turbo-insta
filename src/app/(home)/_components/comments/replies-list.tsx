@@ -7,6 +7,7 @@ import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Loading } from "~/components/ui/icons";
+import { MentionText } from "~/components/ui/mention-parser";
 import { Modal } from "~/components/ui/modal";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useAuth } from "~/hooks/use-auth";
@@ -134,9 +135,10 @@ export function RepliesList({ commentId }: RepliesListProps) {
                         {reply.user.username}
                       </Link>
                     </UserHoverCard>
-                    <span className="whitespace-pre-wrap break-words">
-                      {reply.text}
-                    </span>
+                    <MentionText
+                      text={reply.text ?? ""}
+                      className="whitespace-pre-wrap break-words"
+                    />
                   </p>
 
                   <div className="flex flex-col items-center gap-1">
