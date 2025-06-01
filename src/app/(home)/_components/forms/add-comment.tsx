@@ -80,13 +80,10 @@ export function AddComment({
       toast.success("Reply added successfully");
       form.reset();
       onClearReply?.();
-      if (replyState?.commentId) {
-        void trpcUtils.comments.getReplies.invalidate({
-          commentId: replyState.commentId,
-        });
-      } else {
-        void trpcUtils.comments.getByPostId.invalidate({ postId });
-      }
+      void trpcUtils.comments.getReplies.invalidate({
+        commentId: replyState?.commentId,
+      });
+      void trpcUtils.comments.getReplyCountsForComments.invalidate();
     },
     onError: (error) => {
       showErrorToast(error);

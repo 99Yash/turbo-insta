@@ -44,7 +44,7 @@ export function RepliesList({ commentId }: RepliesListProps) {
     onSuccess: () => {
       setReplyToDelete(null);
       void trpcUtils.comments.getReplies.invalidate({ commentId });
-      void trpcUtils.comments.getByPostId.invalidate();
+      void trpcUtils.comments.getReplyCountsForComments.invalidate();
     },
   });
 

@@ -44,12 +44,36 @@ export function CommentsList({ postId, onReply }: CommentsListProps) {
     },
   );
 
+  // Get all comment IDs from the data to fetch reply counts
+  const commentIds = React.useMemo(() => {
+    if (!data?.pages) return [];
+    return data.pages.flatMap((page) =>
+      page.comments.map((comment) => comment.id),
+    );
+  }, [data]);
+
+  // Fetch reply counts separately
+  const { data: replyCountsData } =
+    api.comments.getReplyCountsForComments.useQuery(
+      { commentIds },
+      { enabled: commentIds.length > 0 },
+    );
+
+  // Create a map for quick reply count lookup
+  const replyCountsMap = React.useMemo(() => {
+    if (!replyCountsData) return new Map<string, number>();
+    return new Map(replyCountsData.map((item) => [item.commentId, item.count]));
+  }, [replyCountsData]);
+
   const trpcUtils = api.useUtils();
 
   const deleteCommentMutation = api.comments.delete.useMutation({
     onSuccess: () => {
       setCommentToDelete(null);
       void trpcUtils.comments.getByPostId.invalidate({ postId });
+      void trpcUtils.comments.getReplyCountsForComments.invalidate({
+        commentIds,
+      });
     },
   });
 
@@ -120,6 +144,7 @@ export function CommentsList({ postId, onReply }: CommentsListProps) {
         page.comments.map((comment) => {
           if (!comment.user) return null;
           const isCurrentUser = comment.userId === userId;
+          const replyCount = replyCountsMap.get(comment.id) ?? 0;
 
           return (
             <div key={comment.id} className="flex flex-col">
@@ -201,7 +226,7 @@ export function CommentsList({ postId, onReply }: CommentsListProps) {
                           </button>
                         )}
                       </div>
-                      {comment.replyCount > 0 && (
+                      {replyCount > 0 && (
                         <button
                           className="font-semibold text-muted-foreground"
                           onClick={() => toggleReplies(comment.id)}
@@ -214,7 +239,7 @@ export function CommentsList({ postId, onReply }: CommentsListProps) {
                           ) : (
                             <div className="flex items-center gap-2">
                               <LucideIcons.Minus className="size-3.5" />
-                              View replies ({comment.replyCount})
+                              View replies ({replyCount})
                             </div>
                           )}
                         </button>

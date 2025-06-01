@@ -52,3 +52,9 @@ export const deleteReplySchema = z.object({
 });
 
 export type DeleteReplyInput = z.infer<typeof deleteReplySchema>;
+
+export const getReplyCountsSchema = z.object({
+  commentIds: z.array(z.string()),
+});
+
+export type GetReplyCountsInput = z.infer<typeof getReplyCountsSchema>;
