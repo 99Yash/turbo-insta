@@ -1,10 +1,11 @@
 "use client";
 
-import { Heart, Loader2, MessageCircle } from "lucide-react";
+import { Heart, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import * as React from "react";
 import { useInView } from "react-intersection-observer";
+import { Icons } from "~/components/icons";
 import { Book2Small, GridLayoutRows } from "~/components/ui/icons/nucleo";
 import { api } from "~/trpc/react";
 
@@ -38,7 +39,7 @@ export function SavedPosts() {
   if (status === "pending") {
     return (
       <div className="flex w-full items-center justify-center py-16">
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+        <Icons.spinner className="size-8 text-muted-foreground" />
       </div>
     );
   }
@@ -135,14 +136,14 @@ export function SavedPosts() {
       {hasNextPage && (
         <div ref={ref} className="flex w-full items-center justify-center py-8">
           {isFetchingNextPage && (
-            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+            <Icons.spinner className="size-6 text-muted-foreground" />
           )}
         </div>
       )}
 
       {isFetching && !isFetchingNextPage && (
         <div className="flex w-full items-center justify-center py-4">
-          <Loader2 className="size-4 animate-spin text-muted-foreground" />
+          <Icons.spinner className="size-4 text-muted-foreground" />
         </div>
       )}
     </div>

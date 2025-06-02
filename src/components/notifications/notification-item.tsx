@@ -141,7 +141,7 @@ export function NotificationItem({
     >
       {/* Avatar with icon */}
       <div className="relative flex-shrink-0">
-        <Avatar className="size-7 border border-background">
+        <Avatar className="size-8 border border-background">
           <AvatarImage
             src={notification.actor.imageUrl ?? undefined}
             alt={notification.actor.name}

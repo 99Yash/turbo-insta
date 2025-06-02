@@ -1,7 +1,7 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ImageIcon, Loader2 } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useForm } from "react-hook-form";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import * as z from "zod";
 
 import { FileUploader } from "~/components/file-uploader";
+import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import {
   Form,
@@ -254,7 +255,7 @@ export function ProfileEditForm({
             className="gap-1"
           >
             {(isPending || isUploading) && (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Icons.spinner className="h-4 w-4 animate-spin" />
             )}
             Save Changes
           </Button>

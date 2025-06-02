@@ -1,9 +1,10 @@
 "use client";
 
-import { Bell, Loader2 } from "lucide-react";
+import { Bell } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { api } from "~/trpc/react";
+import { Icons } from "../icons";
 import { NotificationItem } from "./notification-item";
 
 interface NotificationsListProps {
@@ -77,7 +78,7 @@ export function NotificationsList({ unreadCount }: NotificationsListProps) {
             title="Mark all as read"
           >
             {markAsReadMutation.isPending ? (
-              <Loader2 className="h-3 w-3 animate-spin" />
+              <Icons.spinner className="h-3 w-3" />
             ) : (
               "Clear all"
             )}
@@ -89,7 +90,7 @@ export function NotificationsList({ unreadCount }: NotificationsListProps) {
       <ScrollArea className="h-full w-full overflow-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            <Icons.spinner className="h-6 w-6 text-muted-foreground" />
           </div>
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
@@ -126,7 +127,7 @@ export function NotificationsList({ unreadCount }: NotificationsListProps) {
                 >
                   {isFetchingNextPage ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Icons.spinner className="mr-2 h-4 w-4" />
                       Loading more...
                     </>
                   ) : (
