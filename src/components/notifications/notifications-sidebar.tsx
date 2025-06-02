@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
+import { NucleoIcons } from "../icons";
 import { NotificationsList } from "./notifications-list";
 
 interface NotificationsSidebarProps {
@@ -80,8 +81,9 @@ export function NotificationsSidebar({
           </Button>
           <h2
             id="notifications-sidebar-title"
-            className="text-lg font-semibold text-sidebar-foreground"
+            className="flex items-center gap-1.5 text-lg font-semibold text-sidebar-foreground"
           >
+            <NucleoIcons.Cards className="size-5" />
             Notifications
           </h2>
           {unreadCount > 0 && (

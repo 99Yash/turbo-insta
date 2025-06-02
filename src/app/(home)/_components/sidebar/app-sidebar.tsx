@@ -129,7 +129,7 @@ export function AppSidebar() {
                     aria-haspopup="dialog"
                   >
                     <div className="relative">
-                      <NucleoIcons.HeartFill className="size-5" />
+                      <NucleoIcons.Cards className="size-5" />
                       {count > 0 && (
                         <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
                           {count > 9 ? "9+" : count}
