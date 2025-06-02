@@ -88,7 +88,7 @@ export function NotificationItem({
     if (notification.postId) return `/posts/${notification.postId}`;
     if (notification.type === "follow")
       return `/profile/${notification.actor.username}`;
-    return "#";
+    return "";
   };
 
   const handleMarkAsRead = () => {
