@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft } from "lucide-react";
-import { useEffect } from "react";
+import * as React from "react";
 import { NucleoIcons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
@@ -19,7 +19,7 @@ export function NotificationsSidebar({
   unreadCount,
 }: NotificationsSidebarProps) {
   // Handle keyboard events
-  useEffect(() => {
+  React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && isOpen) {
         onClose();
