@@ -177,7 +177,6 @@ export function PostCarousel({
                     {loadingStates[f.id] && (
                       <div className="absolute inset-0 flex animate-pulse flex-col items-center justify-center bg-muted">
                         <Icons.placeholder className="size-8 animate-pulse text-muted-foreground" />
-                        <Icons.spinner className="size-8 animate-spin text-muted-foreground" />
                       </div>
                     )}
                     {/* Error placeholder */}
