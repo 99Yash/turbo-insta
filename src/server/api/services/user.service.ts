@@ -1,5 +1,5 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
-import { and, eq, ilike, inArray } from "drizzle-orm";
+import { and, eq, ilike, inArray, or } from "drizzle-orm";
 import { DISALLOWED_USERNAMES } from "~/lib/utils";
 import { db } from "~/server/db";
 import { follows, users } from "~/server/db/schema/users";
@@ -345,8 +345,8 @@ export async function toggleFollow(
 }
 
 /**
- * Get users by username
- * @param query The search query
+ * Get users by username or name with enhanced search
+ * @param query The search query to match against username or name
  * @param limitCount The maximum number of results to return
  * @returns Array of matching users
  */
@@ -361,8 +361,52 @@ export async function getUsersByUsername(query: string, limitCount = 5) {
         isVerified: users.isVerified,
       })
       .from(users)
-      .where(ilike(users.username, `%${query}%`))
+      .where(
+        or(
+          ilike(users.username, `%${query}%`),
+          ilike(users.name, `%${query}%`),
+        ),
+      )
       .limit(limitCount)
+      .orderBy(users.username);
+
+    return searchResults;
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+}
+
+/**
+ * Search users by username or name with pagination support
+ * @param query The search query to match against username or name
+ * @param offset The number of results to skip
+ * @param size The maximum number of results to return
+ * @returns Array of matching users
+ */
+export async function searchUsers(query: string, offset: number, size: number) {
+  try {
+    const searchResults = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        username: users.username,
+        imageUrl: users.imageUrl,
+        isVerified: users.isVerified,
+      })
+      .from(users)
+      .where(
+        query.trim() === ""
+          ? undefined // Return all users if no query
+          : or(
+              ilike(users.username, `%${query}%`),
+              ilike(users.name, `%${query}%`),
+            ),
+      )
+      .offset(offset)
+      .limit(size)
       .orderBy(users.username);
 
     return searchResults;

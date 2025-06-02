@@ -67,3 +67,11 @@ export const getUsersByUsernameSchema = z.object({
 });
 
 export type GetUsersByUsernameInput = z.infer<typeof getUsersByUsernameSchema>;
+
+export const searchUsersSchema = z.object({
+  query: z.string().max(50).default(""),
+  offset: z.number().min(0).default(0),
+  size: z.number().min(1).max(50).default(25),
+});
+
+export type SearchUsersInput = z.infer<typeof searchUsersSchema>;
