@@ -5,7 +5,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
 import { Icons, NucleoIcons } from "~/components/icons";
-import { NotificationsSidebar } from "~/components/notifications/notifications-sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   Sidebar,
@@ -24,6 +23,7 @@ import { siteConfig } from "~/config/site";
 import { useUser } from "~/contexts/user-context";
 import { cn, getInitials } from "~/lib/utils";
 import { api } from "~/trpc/react";
+import { NotificationsSidebar } from "../notifications/notifications-sidebar";
 
 export function AppSidebar() {
   const { user } = useUser();

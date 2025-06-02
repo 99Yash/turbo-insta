@@ -2,9 +2,9 @@
 
 import { ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
+import { NucleoIcons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
-import { NucleoIcons } from "../icons";
 import { NotificationsList } from "./notifications-list";
 
 interface NotificationsSidebarProps {

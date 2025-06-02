@@ -42,23 +42,23 @@ export const ComboBox = <T extends object>({
   const [search, setSearch] = React.useState<string>("");
   const [options, setOptions] = React.useState<T[]>([]);
   const [canLoadMore, setCanLoadMore] = React.useState<boolean>(true);
-  const debouncedsearch = useDebounce<string>(search, 500);
+  const debouncedSearch = useDebounce<string>(search, 500);
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
 
   const getOptions = React.useCallback(async () => {
     setIsLoading(true);
-    const searchResult = await searchFn(debouncedsearch || "", 0, size);
+    const searchResult = await searchFn(debouncedSearch || "", 0, size);
     if (searchResult.length === 0 || searchResult.length < size) {
       setCanLoadMore(false);
     }
     setOptions(searchResult);
     setIsLoading(false);
-  }, [debouncedsearch, searchFn, size]);
+  }, [debouncedSearch, searchFn, size]);
 
   const getMoreOptions = React.useCallback(async () => {
     setIsLoading(true);
     const searchResult = await searchFn(
-      debouncedsearch || "",
+      debouncedSearch || "",
       options.length,
       size,
     );
@@ -74,7 +74,7 @@ export const ComboBox = <T extends object>({
     }
     setOptions([...options, ...searchResult]);
     setIsLoading(false);
-  }, [debouncedsearch, searchFn, options, valueKey, size]);
+  }, [debouncedSearch, searchFn, options, valueKey, size]);
 
   React.useEffect(() => {
     void getOptions();
