@@ -23,7 +23,6 @@ interface ProfileViewProps {
     likeCount?: number;
     commentCount?: number;
   })[];
-  isCurrentUser: boolean;
   defaultTab?: "posts" | "saved" | "tagged";
   postCount?: number;
 }
@@ -31,12 +30,12 @@ interface ProfileViewProps {
 export function ProfileView({
   user,
   posts,
-  isCurrentUser,
   defaultTab = "posts",
   postCount,
 }: ProfileViewProps) {
   const [isEditModalOpen, setIsEditModalOpen] = React.useState(false);
   const { user: currentUser } = useUser();
+  const isCurrentUser = currentUser?.id === user.id;
   const utils = api.useUtils();
 
   const { data: followers } = api.user.getFollowers.useQuery({
