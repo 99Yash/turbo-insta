@@ -1,6 +1,7 @@
 "use client";
 
 import { Bell } from "lucide-react";
+import React from "react";
 import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
@@ -9,9 +10,13 @@ import { NotificationItem } from "./notification-item";
 
 interface NotificationsListProps {
   readonly unreadCount: number;
+  readonly isFullyRendered: boolean;
 }
 
-export function NotificationsList({ unreadCount }: NotificationsListProps) {
+export function NotificationsList({
+  unreadCount,
+  isFullyRendered,
+}: NotificationsListProps) {
   const utils = api.useUtils();
 
   // Fetch notifications immediately since this is in a collapsible
@@ -44,9 +49,18 @@ export function NotificationsList({ unreadCount }: NotificationsListProps) {
     markAsReadMutation.mutate({ notificationIds: [notificationId] });
   };
 
-  const handleMarkAllAsRead = () => {
-    markAsReadMutation.mutate({});
-  };
+  // Automatically mark all notifications as read when sidebar is fully rendered
+  React.useEffect(() => {
+    if (
+      unreadCount > 0 &&
+      !isLoading &&
+      !markAsReadMutation.isPending &&
+      isFullyRendered
+    ) {
+      void markAsReadMutation.mutateAsync({});
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unreadCount, isLoading, markAsReadMutation.isPending, isFullyRendered]);
 
   const handleLoadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -72,7 +86,7 @@ export function NotificationsList({ unreadCount }: NotificationsListProps) {
           <Button
             variant="outline"
             size="sm"
-            onClick={handleMarkAllAsRead}
+            onClick={() => void markAsReadMutation.mutateAsync({})}
             disabled={markAsReadMutation.isPending}
             className="h-8 px-3 text-xs"
             title="Mark all as read"

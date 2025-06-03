@@ -18,6 +18,8 @@ export function NotificationsSidebar({
   onClose,
   unreadCount,
 }: NotificationsSidebarProps) {
+  const [isFullyRendered, setIsFullyRendered] = React.useState(false);
+
   // Handle keyboard events
   React.useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -30,12 +32,25 @@ export function NotificationsSidebar({
       document.addEventListener("keydown", handleKeyDown);
       // Prevent body scroll when sidebar is open
       document.body.style.overflow = "hidden";
-    }
 
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "unset";
-    };
+      // Wait for animation to complete before marking as fully rendered
+      // Content animation has 200ms delay + 500ms duration = 700ms total
+      const timer = setTimeout(() => {
+        setIsFullyRendered(true);
+      }, 700);
+
+      return () => {
+        clearTimeout(timer);
+        document.removeEventListener("keydown", handleKeyDown);
+        document.body.style.overflow = "unset";
+      };
+    } else {
+      setIsFullyRendered(false);
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+        document.body.style.overflow = "unset";
+      };
+    }
   }, [isOpen, onClose]);
 
   return (
@@ -101,7 +116,10 @@ export function NotificationsSidebar({
           )}
           style={{ transitionDelay: isOpen ? "200ms" : "0ms" }}
         >
-          <NotificationsList unreadCount={unreadCount} />
+          <NotificationsList
+            unreadCount={unreadCount}
+            isFullyRendered={isFullyRendered}
+          />
         </div>
       </div>
     </>

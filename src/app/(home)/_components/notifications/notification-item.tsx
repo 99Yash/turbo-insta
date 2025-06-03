@@ -1,11 +1,10 @@
 "use client";
 
-import { formatDistanceToNow } from "date-fns";
 import { Heart, MessageCircle, Reply, UserPlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
-import { cn } from "~/lib/utils";
+import { cn, formatTimeToNow } from "~/lib/utils";
 import type { NotificationWithDetails } from "~/server/api/services/notifications.service";
 import type { StoredFile } from "~/types";
 
@@ -164,8 +163,8 @@ export function NotificationItem({
             {getNotificationText()}
           </p>
           <span className="whitespace-nowrap text-[10px] text-muted-foreground">
-            {formatDistanceToNow(new Date(notification.createdAt), {
-              addSuffix: false,
+            {formatTimeToNow(notification.createdAt, {
+              showDateAfterDays: 7,
             })}
           </span>
         </div>
