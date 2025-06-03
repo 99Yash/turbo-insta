@@ -10,12 +10,12 @@ import { NotificationItem } from "./notification-item";
 
 interface NotificationsListProps {
   readonly unreadCount: number;
-  readonly isFullyRendered: boolean;
+  readonly isOpen: boolean;
 }
 
 export function NotificationsList({
   unreadCount,
-  isFullyRendered,
+  isOpen,
 }: NotificationsListProps) {
   const utils = api.useUtils();
 
@@ -55,12 +55,12 @@ export function NotificationsList({
       unreadCount > 0 &&
       !isLoading &&
       !markAsReadMutation.isPending &&
-      isFullyRendered
+      isOpen
     ) {
       void markAsReadMutation.mutateAsync({});
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [unreadCount, isLoading, markAsReadMutation.isPending, isFullyRendered]);
+  }, [unreadCount, isLoading, markAsReadMutation.isPending, isOpen]);
 
   const handleLoadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {
