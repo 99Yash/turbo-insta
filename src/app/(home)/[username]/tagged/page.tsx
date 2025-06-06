@@ -56,7 +56,6 @@ export default async function TaggedPostsPage({
         <ProfileView
           user={user}
           posts={[]}
-          isCurrentUser={userId === user.id}
           defaultTab="tagged"
           postCount={userPosts.length}
         />

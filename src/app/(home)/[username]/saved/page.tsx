@@ -59,7 +59,6 @@ export default async function SavedPostsPage({ params }: SavedPostsPageProps) {
         <ProfileView
           user={user}
           posts={[]}
-          isCurrentUser={true}
           defaultTab="saved"
           postCount={userPosts.length}
         />
