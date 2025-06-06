@@ -2,13 +2,13 @@ import "~/styles/globals.css";
 
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
-import { AblyProvider } from "ably/react";
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
 import TailwindIndicator from "~/components/tailwind-indicator";
 import { Toaster } from "~/components/ui/sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { siteConfig } from "~/config/site";
+import { AblyProvider } from "~/lib/providers/ably-provider";
 import { ThemeProvider } from "~/lib/providers/theme-provider";
 import { UserProvider } from "~/lib/providers/user-provider";
 import { TRPCReactProvider } from "~/trpc/react";
