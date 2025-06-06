@@ -1,4 +1,3 @@
-import { auth } from "@clerk/nextjs/server";
 import { type Metadata } from "next";
 import { notFound } from "next/navigation";
 import { siteConfig } from "~/config/site";
@@ -40,7 +39,6 @@ interface TaggedPostsPageProps {
 export default async function TaggedPostsPage({
   params,
 }: TaggedPostsPageProps) {
-  const { userId } = await auth();
   const user = await getUserByUsername(params.username);
 
   if (!user) return notFound();
