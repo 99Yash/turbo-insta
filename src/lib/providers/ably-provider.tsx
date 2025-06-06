@@ -8,24 +8,59 @@ import { api } from "~/trpc/react";
 
 function useAblyClient() {
   const { userId } = useAuth();
-  const { data: tokenData } = api.user.getAblyToken.useQuery(undefined, {
+  const tokenQuery = api.user.getAblyToken.useQuery(undefined, {
     enabled: !!userId,
     refetchOnWindowFocus: false,
   });
 
-  return React.useMemo(() => {
-    if (!userId || !tokenData?.token) return;
+  const refetchTokenRef = React.useRef(tokenQuery.refetch);
+  const [ablyClient, setAblyClient] = React.useState<
+    Ably.Realtime | undefined
+  >();
 
-    const ablyClient = new Ably.Realtime({
+  // Update refetch ref when it changes
+  React.useEffect(() => {
+    refetchTokenRef.current = tokenQuery.refetch;
+  }, [tokenQuery.refetch]);
+
+  React.useEffect(() => {
+    if (!userId || !tokenQuery.data?.token) {
+      setAblyClient(undefined);
+      return;
+    }
+
+    const client = new Ably.Realtime({
       authCallback(data, callback) {
-        callback(null, tokenData.token);
+        // Use refetch function to get fresh token instead of stale closure
+        refetchTokenRef
+          .current()
+          .then((result) => {
+            if (result.data?.token) {
+              callback(null, result.data.token);
+            } else {
+              callback("Failed to get fresh token", null);
+            }
+          })
+          .catch((error) => {
+            callback(
+              error instanceof Error ? error.message : "Authentication error",
+              null,
+            );
+          });
       },
       autoConnect: typeof window !== "undefined",
       closeOnUnload: false,
     });
 
-    return ablyClient;
-  }, [userId, tokenData]);
+    setAblyClient(client);
+
+    // Cleanup: close the previous client when effect runs again or component unmounts
+    return () => {
+      client.close();
+    };
+  }, [userId, tokenQuery.data?.token]);
+
+  return ablyClient;
 }
 
 /**
