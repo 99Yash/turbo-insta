@@ -17,6 +17,9 @@ function useAblyClient() {
     if (!userId || !tokenData?.token) return;
 
     const ablyClient = new Ably.Realtime({
+      authCallback(data, callback) {
+        callback(null, tokenData.token);
+      },
       autoConnect: typeof window !== "undefined",
       closeOnUnload: false,
     });
