@@ -19,6 +19,7 @@ import {
   SidebarMenuItem,
   SidebarSeparator,
 } from "~/components/ui/sidebar";
+import { UserCommandDialog } from "~/components/ui/user-command-dialog";
 import { siteConfig } from "~/config/site";
 import { useUser } from "~/contexts/user-context";
 import { cn, getInitials } from "~/lib/utils";
@@ -79,6 +80,9 @@ export function AppSidebar() {
         </SidebarHeader>
 
         <SidebarContent>
+          <div className="p-4">
+            <UserCommandDialog />
+          </div>
           <SidebarGroup>
             <SidebarGroupLabel>Navigation</SidebarGroupLabel>
             <SidebarGroupContent>
