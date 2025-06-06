@@ -42,9 +42,7 @@ export function PostContent({ post, author }: PostContentProps) {
                   src={author.imageUrl ?? ""}
                   alt={author.name ?? "VH"}
                 />
-                <AvatarFallback>
-                  {getInitials(author.name ?? "VH")}
-                </AvatarFallback>
+                <AvatarFallback>{getInitials(author.name)}</AvatarFallback>
               </Avatar>
             </Link>
             <span
@@ -70,9 +68,7 @@ export function PostContent({ post, author }: PostContentProps) {
                       src={author.imageUrl ?? ""}
                       alt={author.name ?? "VH"}
                     />
-                    <AvatarFallback>
-                      {getInitials(author.name ?? "VH")}
-                    </AvatarFallback>
+                    <AvatarFallback>{getInitials(author.name)}</AvatarFallback>
                   </Avatar>
                 </Link>
               </UserHoverCard>

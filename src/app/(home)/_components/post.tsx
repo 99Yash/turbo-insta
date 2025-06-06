@@ -33,9 +33,7 @@ export function Post({ post, author }: PostProps) {
                   src={author.imageUrl ?? ""}
                   alt={author.name ?? "VH"}
                 />
-                <AvatarFallback>
-                  {getInitials(author.name ?? "VH")}
-                </AvatarFallback>
+                <AvatarFallback>{getInitials(author.name)}</AvatarFallback>
               </Avatar>
             </Link>
 

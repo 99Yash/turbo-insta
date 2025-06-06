@@ -41,7 +41,7 @@ export function UserHoverCard({ user, children }: UserHoverCardProps) {
             <Avatar className="size-14 border-2 border-background">
               <AvatarImage src={user.imageUrl ?? ""} alt={user.name ?? ""} />
               <AvatarFallback className="text-base">
-                {getInitials(user.name ?? "")}
+                {getInitials(user.name)}
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">

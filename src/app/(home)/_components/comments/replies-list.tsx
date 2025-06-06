@@ -118,7 +118,7 @@ export function RepliesList({ commentId }: RepliesListProps) {
                       alt={reply.user.name ?? ""}
                     />
                     <AvatarFallback className="text-xs">
-                      {getInitials(reply.user.name ?? "")}
+                      {getInitials(reply.user.name)}
                     </AvatarFallback>
                   </Avatar>
                 </UserHoverCard>

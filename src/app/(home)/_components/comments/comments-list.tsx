@@ -158,7 +158,7 @@ export function CommentsList({ postId, onReply }: CommentsListProps) {
                         alt={comment.user.name ?? ""}
                       />
                       <AvatarFallback>
-                        {getInitials(comment.user.name ?? "")}
+                        {getInitials(comment.user.name)}
                       </AvatarFallback>
                     </Avatar>
                   </UserHoverCard>

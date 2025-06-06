@@ -125,9 +125,9 @@ export function sanitizeFileName(fileName: string): string {
   return fileName.replace(/[^\w\/!-\.\*'\(\) &\$@=;:+,\?]/g, "_");
 }
 
-export function getInitials(name: string, all?: boolean) {
-  if (!name) {
-    return "";
+export function getInitials(name: string | undefined | null, all?: boolean) {
+  if (!name || name === "") {
+    return "VH";
   }
   if (all) {
     return name

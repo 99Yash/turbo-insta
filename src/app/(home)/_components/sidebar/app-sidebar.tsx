@@ -166,7 +166,7 @@ export function AppSidebar() {
                           alt={user.name ?? ""}
                         />
                         <AvatarFallback className="text-xs">
-                          {getInitials(user.name ?? "VH")}
+                          {getInitials(user.name)}
                         </AvatarFallback>
                       </Avatar>
                       <span className="font-medium">{user.username}</span>
