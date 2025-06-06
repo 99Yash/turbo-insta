@@ -2,6 +2,7 @@ import "~/styles/globals.css";
 
 import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
+import { AblyProvider } from "ably/react";
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
 import TailwindIndicator from "~/components/tailwind-indicator";
@@ -60,21 +61,23 @@ export default function RootLayout({
         <head />
         <body className="h-full min-h-screen bg-background">
           <TRPCReactProvider>
-            <TooltipProvider delayDuration={10}>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme={"dark"}
-                enableSystem={false}
-                disableTransitionOnChange={false}
-              >
-                <UserProvider>
-                  <div className="h-full">{children}</div>
-                </UserProvider>
-              </ThemeProvider>
-            </TooltipProvider>
-            <Toaster />
-            <Analytics />
-            <TailwindIndicator />
+            <AblyProvider>
+              <TooltipProvider delayDuration={10}>
+                <ThemeProvider
+                  attribute="class"
+                  defaultTheme={"dark"}
+                  enableSystem={false}
+                  disableTransitionOnChange={false}
+                >
+                  <UserProvider>
+                    <div className="h-full">{children}</div>
+                  </UserProvider>
+                </ThemeProvider>
+              </TooltipProvider>
+              <Toaster />
+              <Analytics />
+              <TailwindIndicator />
+            </AblyProvider>
           </TRPCReactProvider>
         </body>
       </html>
