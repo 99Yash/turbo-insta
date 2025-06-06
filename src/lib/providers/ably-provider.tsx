@@ -42,7 +42,7 @@ export function createPrivateChannelName(userId1: string, userId2: string) {
 
 export function AblyProvider({ children }: { children: React.ReactNode }) {
   const ablyClient = useAblyClient();
-  if (!ablyClient) return;
+  if (!ablyClient) return <>{children}</>;
 
   return <AblyProviderBase client={ablyClient}>{children}</AblyProviderBase>;
 }
