@@ -20,16 +20,26 @@ interface SidebarLayoutProps {
    * Only applies when variant is "centered"
    */
   width?: `w-[${string}px]`;
+  /**
+   * Force sidebar to start minimized for screens above sm breakpoint
+   * Useful for pages like messages where you want more space
+   */
+  forceMinimized?: boolean;
 }
 
 function SidebarLayoutContent({
   children,
   variant = "centered",
   width = "w-[670px]",
+  forceMinimized = false,
 }: SidebarLayoutProps) {
   const { isMobile, toggleSidebar } = useSidebar();
+  const isSmAndBelow = useMediaQuery("(max-width: 640px)");
 
-  if (isMobile) {
+  // Use custom mobile breakpoint for forceMinimized pages
+  const shouldShowMobileLayout = forceMinimized ? isSmAndBelow : isMobile;
+
+  if (shouldShowMobileLayout) {
     // On mobile, sidebar is an overlay with trigger button at top
     return (
       <div className="flex h-full min-h-screen w-full">
@@ -88,18 +98,30 @@ export function SidebarLayout({
   children,
   variant = "centered",
   width = "w-[670px]",
+  forceMinimized = false,
 }: SidebarLayoutProps) {
   const isXlAndAbove = useMediaQuery("(min-width: 1280px)");
-  const [sidebarOpen, setSidebarOpen] = React.useState(true);
+  const isSmAndAbove = useMediaQuery("(min-width: 640px)");
+  const [sidebarOpen, setSidebarOpen] = React.useState(!forceMinimized);
 
-  // Automatically collapse sidebar when screen is smaller than xl
+  // Handle sidebar state based on screen size and forceMinimized prop
   React.useEffect(() => {
-    setSidebarOpen(isXlAndAbove);
-  }, [isXlAndAbove]);
+    if (forceMinimized && isSmAndAbove) {
+      // For forceMinimized pages, keep sidebar collapsed for sm and above
+      setSidebarOpen(false);
+    } else {
+      // Default behavior: collapse sidebar when screen is smaller than xl
+      setSidebarOpen(isXlAndAbove);
+    }
+  }, [isXlAndAbove, isSmAndAbove, forceMinimized]);
 
   return (
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
-      <SidebarLayoutContent variant={variant} width={width}>
+      <SidebarLayoutContent
+        variant={variant}
+        width={width}
+        forceMinimized={forceMinimized}
+      >
         {children}
       </SidebarLayoutContent>
     </SidebarProvider>
