@@ -5,11 +5,9 @@ import {
   PageHeaderHeading,
 } from "~/components/page-header";
 import { Shell } from "~/components/utils/shell";
-import { env } from "~/env";
 import { LogOutButtons } from "../../_components/logout-buttons";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   title: "Sign out",
   description: "Sign out of your account",
 };
