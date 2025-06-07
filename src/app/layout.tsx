@@ -1,17 +1,9 @@
 import "~/styles/globals.css";
 
-import { ClerkProvider } from "@clerk/nextjs";
-import { Analytics } from "@vercel/analytics/react";
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
-import TailwindIndicator from "~/components/tailwind-indicator";
-import { Toaster } from "~/components/ui/sonner";
-import { TooltipProvider } from "~/components/ui/tooltip";
 import { siteConfig } from "~/config/site";
-import { AblyContextProvider } from "~/lib/providers/ably-provider";
-import { ThemeProvider } from "~/lib/providers/theme-provider";
-import { UserProvider } from "~/lib/providers/user-provider";
-import { TRPCReactProvider } from "~/trpc/react";
+import { Providers } from "~/lib/providers";
 import { cn } from "../lib/utils";
 
 const inter = Inter({
@@ -53,34 +45,14 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <ClerkProvider>
-      <html
-        lang="en"
-        className={cn("h-full scroll-smooth antialiased", inter.variable)}
-      >
-        <head />
-        <body className="h-full min-h-screen bg-background">
-          <TRPCReactProvider>
-            <AblyContextProvider>
-              <TooltipProvider delayDuration={10}>
-                <ThemeProvider
-                  attribute="class"
-                  defaultTheme={"dark"}
-                  enableSystem={false}
-                  disableTransitionOnChange={false}
-                >
-                  <UserProvider>
-                    <div className="h-full">{children}</div>
-                  </UserProvider>
-                </ThemeProvider>
-              </TooltipProvider>
-              <Toaster />
-              <Analytics />
-              <TailwindIndicator />
-            </AblyContextProvider>
-          </TRPCReactProvider>
-        </body>
-      </html>
-    </ClerkProvider>
+    <html
+      lang="en"
+      className={cn("h-full scroll-smooth antialiased", inter.variable)}
+    >
+      <head />
+      <body className="h-full min-h-screen bg-background">
+        <Providers>{children}</Providers>
+      </body>
+    </html>
   );
 }
