@@ -80,7 +80,7 @@ export function AppSidebar() {
         </SidebarHeader>
 
         <SidebarContent>
-          <div className="p-4">
+          <div className="p-4 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2">
             <UserCommandDialog />
           </div>
           <SidebarGroup>

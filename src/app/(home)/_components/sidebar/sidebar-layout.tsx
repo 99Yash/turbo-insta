@@ -34,7 +34,8 @@ function SidebarLayoutContent({
   forceMinimized = false,
 }: SidebarLayoutProps) {
   const { isMobile, toggleSidebar } = useSidebar();
-  const isSmAndBelow = useMediaQuery("(max-width: 640px)");
+  const isSmAndAbove = useMediaQuery("(min-width: 640px)");
+  const isSmAndBelow = !isSmAndAbove;
 
   // Use custom mobile breakpoint for forceMinimized pages
   const shouldShowMobileLayout = forceMinimized ? isSmAndBelow : isMobile;
@@ -104,15 +105,12 @@ export function SidebarLayout({
   const isSmAndAbove = useMediaQuery("(min-width: 640px)");
   const [sidebarOpen, setSidebarOpen] = React.useState(!forceMinimized);
 
-  // Handle sidebar state based on screen size and forceMinimized prop
   React.useEffect(() => {
-    if (forceMinimized && isSmAndAbove) {
-      // For forceMinimized pages, keep sidebar collapsed for sm and above
-      setSidebarOpen(false);
-    } else {
-      // Default behavior: collapse sidebar when screen is smaller than xl
-      setSidebarOpen(isXlAndAbove);
-    }
+    const shouldOpen = forceMinimized
+      ? !isSmAndAbove // For forceMinimized: only open on mobile (below sm)
+      : isXlAndAbove; // Default: only open on desktop (xl and above)
+
+    setSidebarOpen(shouldOpen);
   }, [isXlAndAbove, isSmAndAbove, forceMinimized]);
 
   return (

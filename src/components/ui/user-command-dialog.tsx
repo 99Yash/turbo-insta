@@ -12,6 +12,7 @@ import {
   CommandItem,
   CommandList,
 } from "./command";
+import { useSidebar } from "./sidebar";
 
 export interface UserOption {
   readonly id: string;
@@ -31,6 +32,7 @@ export function UserCommandDialog({ onUserSelect }: UserCommandDialogProps) {
   const [users, setUsers] = React.useState<UserOption[]>([]);
   const [isLoading, setIsLoading] = React.useState(false);
 
+  const { state } = useSidebar();
   const debouncedSearch = useDebounce(search, 300);
   const utils = api.useUtils();
 
@@ -106,6 +108,66 @@ export function UserCommandDialog({ onUserSelect }: UserCommandDialogProps) {
     </CommandItem>
   );
 
+  // Render icon-only trigger when sidebar is collapsed
+  if (state === "collapsed") {
+    return (
+      <>
+        <button
+          onClick={() => setOpen(true)}
+          className="flex h-10 w-10 items-center justify-center rounded-md border border-input bg-background transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+          title="Search users (⌘K)"
+        >
+          <Search className="h-4 w-4" />
+        </button>
+
+        <CommandDialog open={open} onOpenChange={setOpen}>
+          <CommandInput
+            placeholder="Type a username to search users..."
+            value={search}
+            onValueChange={setSearch}
+          />
+          <CommandList>
+            {!search.trim() ? (
+              // Show helper content when not searching
+              <div className="flex flex-col items-center justify-center py-8 text-center">
+                <Users className="mb-4 h-8 w-8 text-muted-foreground" />
+                <h3 className="mb-2 text-sm font-medium">Search for Users</h3>
+                <p className="max-w-xs text-xs text-muted-foreground">
+                  Start typing a username or name to find users in your network.
+                </p>
+              </div>
+            ) : (
+              <>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-6">
+                    <Search className="h-4 w-4 animate-pulse text-muted-foreground" />
+                    <span className="ml-2 text-sm text-muted-foreground">
+                      Searching users...
+                    </span>
+                  </div>
+                ) : users.length > 0 ? (
+                  <CommandGroup heading="Users">
+                    {users.map(renderUserItem)}
+                  </CommandGroup>
+                ) : (
+                  <CommandEmpty>
+                    <div className="flex flex-col items-center justify-center py-6">
+                      <Users className="mb-2 h-6 w-6 text-muted-foreground" />
+                      <span className="text-sm">
+                        No users found for &ldquo;{search}&rdquo;
+                      </span>
+                    </div>
+                  </CommandEmpty>
+                )}
+              </>
+            )}
+          </CommandList>
+        </CommandDialog>
+      </>
+    );
+  }
+
+  // Render full input-styled trigger when sidebar is expanded
   return (
     <>
       {/* Input-styled trigger */}
