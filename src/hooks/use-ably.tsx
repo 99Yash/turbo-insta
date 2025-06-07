@@ -1,12 +1,10 @@
-"use client";
-
 import { useAuth } from "@clerk/nextjs";
 import * as Ably from "ably";
 import { api } from "~/trpc/react";
 
 export function useAblyClient() {
   const { userId } = useAuth();
-  if (!userId) return;
+  if (!userId) return null;
   const utils = api.useUtils();
 
   const ablyClient = new Ably.Realtime({

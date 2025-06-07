@@ -1,14 +1,9 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
-import * as Ably from "ably";
 import { and, eq, ilike, inArray, or } from "drizzle-orm";
-import { env } from "~/env";
+import { ably } from "~/lib/ably";
 import { DISALLOWED_USERNAMES } from "~/lib/utils";
 import { db } from "~/server/db";
 import { follows, users } from "~/server/db/schema/users";
-
-const ably = new Ably.Rest({
-  key: env.ABLY_API_KEY,
-});
 
 /**
  * Find a user by their ID
@@ -429,6 +424,7 @@ export async function getAblyToken(userId: string) {
     const token = await ably.auth.createTokenRequest({
       clientId: userId,
     });
+    console.log(">>>>>>>TOKEN", token);
     return token;
   } catch (e) {
     throw new TRPCError({

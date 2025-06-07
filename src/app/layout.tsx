@@ -4,6 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
+import { AblyProviderWrapper } from "~/components/ably-provider-wrapper";
 import TailwindIndicator from "~/components/tailwind-indicator";
 import { Toaster } from "~/components/ui/sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
@@ -60,21 +61,23 @@ export default function RootLayout({
         <head />
         <body className="h-full min-h-screen bg-background">
           <TRPCReactProvider>
-            <TooltipProvider delayDuration={10}>
-              <ThemeProvider
-                attribute="class"
-                defaultTheme={"dark"}
-                enableSystem={false}
-                disableTransitionOnChange={false}
-              >
-                <UserProvider>
-                  <div className="h-full">{children}</div>
-                </UserProvider>
-              </ThemeProvider>
-            </TooltipProvider>
-            <Toaster />
-            <Analytics />
-            <TailwindIndicator />
+            <AblyProviderWrapper>
+              <TooltipProvider delayDuration={10}>
+                <ThemeProvider
+                  attribute="class"
+                  defaultTheme={"dark"}
+                  enableSystem={false}
+                  disableTransitionOnChange={false}
+                >
+                  <UserProvider>
+                    <div className="h-full">{children}</div>
+                  </UserProvider>
+                </ThemeProvider>
+              </TooltipProvider>
+              <Toaster />
+              <Analytics />
+              <TailwindIndicator />
+            </AblyProviderWrapper>
           </TRPCReactProvider>
         </body>
       </html>
