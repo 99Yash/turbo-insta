@@ -27,6 +27,7 @@ export function UserProfileDisplay() {
   return (
     <div className="flex items-center space-x-3">
       {user.imageUrl && (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={user.imageUrl}
           alt={`${user.name}'s profile`}
