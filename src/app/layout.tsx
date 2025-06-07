@@ -4,11 +4,11 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Analytics } from "@vercel/analytics/react";
 import { type Metadata } from "next";
 import { Inter } from "next/font/google";
-import { AblyProviderWrapper } from "~/components/ably-provider-wrapper";
 import TailwindIndicator from "~/components/tailwind-indicator";
 import { Toaster } from "~/components/ui/sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
 import { siteConfig } from "~/config/site";
+import { AblyContextProvider } from "~/lib/providers/ably-provider";
 import { ThemeProvider } from "~/lib/providers/theme-provider";
 import { UserProvider } from "~/lib/providers/user-provider";
 import { TRPCReactProvider } from "~/trpc/react";
@@ -61,7 +61,7 @@ export default function RootLayout({
         <head />
         <body className="h-full min-h-screen bg-background">
           <TRPCReactProvider>
-            <AblyProviderWrapper>
+            <AblyContextProvider>
               <TooltipProvider delayDuration={10}>
                 <ThemeProvider
                   attribute="class"
@@ -77,7 +77,7 @@ export default function RootLayout({
               <Toaster />
               <Analytics />
               <TailwindIndicator />
-            </AblyProviderWrapper>
+            </AblyContextProvider>
           </TRPCReactProvider>
         </body>
       </html>
