@@ -51,10 +51,7 @@ export function OAuthSignIn() {
             disabled={loading !== null}
           >
             {loading === provider.strategy ? (
-              <Icons.spinner
-                className="mr-2 size-4 animate-spin"
-                aria-hidden="true"
-              />
+              <Icons.spinner className="mr-2 size-4" aria-hidden="true" />
             ) : (
               <Icon className="mr-2 size-4" aria-hidden="true" />
             )}
