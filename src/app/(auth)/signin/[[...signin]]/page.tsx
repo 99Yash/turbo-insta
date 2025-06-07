@@ -12,10 +12,8 @@ import {
   CardHeader,
   CardTitle,
 } from "~/components/ui/card";
-import { env } from "~/env";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   title: "Sign In",
   description: "Sign in to your account",
 };
