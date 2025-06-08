@@ -31,7 +31,6 @@ export function UserCommandDialog() {
   const { state } = useSidebar();
   const debouncedSearch = useDebounce(search, 300);
 
-  // Keyboard shortcut to open dialog
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
@@ -90,7 +89,6 @@ export function UserCommandDialog() {
       />
       <CommandList>
         {!search.trim() ? (
-          // Show helper content when not searching
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <Users className="mb-4 h-8 w-8 text-muted-foreground" />
             <h3 className="mb-2 text-sm font-medium">Search for Users</h3>

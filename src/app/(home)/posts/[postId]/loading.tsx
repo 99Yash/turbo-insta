@@ -55,9 +55,9 @@ export default function PostModalLoading() {
           <div className="px-2">
             {/* Action buttons */}
             <div className="flex gap-2 pb-2">
-              <Skeleton className="h-6 w-6" />
-              <Skeleton className="h-6 w-6" />
-              <Skeleton className="h-6 w-6" />
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-6 w-6" />
+              ))}
             </div>
             <Skeleton className="h-3 w-32" />
           </div>
