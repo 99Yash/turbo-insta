@@ -1,6 +1,7 @@
 "use client";
 
 import { Search, User, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { useDebounce } from "~/hooks/use-debounce";
 import { api } from "~/trpc/react";
@@ -22,19 +23,13 @@ export interface UserOption {
   readonly isVerified: boolean;
 }
 
-interface UserCommandDialogProps {
-  onUserSelect?: (user: UserOption) => void;
-}
-
-export function UserCommandDialog({ onUserSelect }: UserCommandDialogProps) {
+export function UserCommandDialog() {
+  const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
-  const [users, setUsers] = React.useState<UserOption[]>([]);
-  const [isLoading, setIsLoading] = React.useState(false);
 
   const { state } = useSidebar();
   const debouncedSearch = useDebounce(search, 300);
-  const utils = api.useUtils();
 
   // Keyboard shortcut to open dialog
   React.useEffect(() => {
@@ -49,44 +44,22 @@ export function UserCommandDialog({ onUserSelect }: UserCommandDialogProps) {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  // Search users when debounced search changes
-  React.useEffect(() => {
-    if (!debouncedSearch.trim()) {
-      setUsers([]);
-      setIsLoading(false);
-      return;
-    }
-
-    const searchUsers = async () => {
-      setIsLoading(true);
-      try {
-        const result = await utils.user.searchUsers.fetch({
-          query: debouncedSearch,
-          offset: 0,
-          size: 10, // Limit results for command palette
-        });
-        setUsers(result);
-      } catch (error) {
-        console.error("Error searching users:", error);
-        setUsers([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    void searchUsers();
-  }, [debouncedSearch, utils]);
-
-  // Reset search when dialog closes
-  React.useEffect(() => {
-    if (!open) {
-      setSearch("");
-      setUsers([]);
-    }
-  }, [open]);
+  const { data: users, isLoading } = api.user.searchUsers.useQuery(
+    {
+      query: debouncedSearch,
+      offset: 0,
+      size: 5,
+    },
+    {
+      enabled: !!debouncedSearch,
+      refetchOnReconnect: false,
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+    },
+  );
 
   const handleUserSelect = (user: UserOption) => {
-    onUserSelect?.(user);
+    router.push(`/${user.username}`);
     setOpen(false);
   };
 
@@ -134,7 +107,7 @@ export function UserCommandDialog({ onUserSelect }: UserCommandDialogProps) {
                   Searching users...
                 </span>
               </div>
-            ) : users.length > 0 ? (
+            ) : users && users.length > 0 ? (
               <CommandGroup heading="Users">
                 {users.map(renderUserItem)}
               </CommandGroup>
