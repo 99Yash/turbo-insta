@@ -3,6 +3,7 @@
 import { useAuth } from "@clerk/nextjs";
 import Ably from "ably";
 import { AblyProvider } from "ably/react";
+import * as React from "react";
 
 const ablyClient = (userId: string) =>
   new Ably.Realtime({
@@ -28,8 +29,15 @@ export const AblyContextProvider = ({
   children: React.ReactNode;
 }) => {
   const { userId } = useAuth();
-  if (!userId) {
+
+  const client = React.useMemo(() => {
+    if (!userId) return null;
+    return ablyClient(userId);
+  }, [userId]);
+
+  if (!userId || !client) {
     return <>{children}</>;
   }
-  return <AblyProvider client={ablyClient(userId)}>{children}</AblyProvider>;
+
+  return <AblyProvider client={client}>{children}</AblyProvider>;
 };
