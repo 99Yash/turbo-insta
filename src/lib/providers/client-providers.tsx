@@ -4,7 +4,7 @@ import { Analytics } from "@vercel/analytics/react";
 import * as React from "react";
 import { Toaster } from "~/components/ui/sonner";
 import { TooltipProvider } from "~/components/ui/tooltip";
-import { UserProvider as UserProviderComponent } from "~/contexts/user-context";
+import { UserProvider } from "~/contexts/user-context";
 import type { getCachedUser } from "~/lib/queries/user";
 import { TRPCReactProvider } from "~/trpc/react";
 import { AblyContextProvider } from "./ably-provider";
@@ -32,9 +32,7 @@ export function ClientProviders({
             enableSystem={false}
             disableTransitionOnChange={false}
           >
-            <UserProviderComponent initialUser={initialUser}>
-              {children}
-            </UserProviderComponent>
+            <UserProvider initialUser={initialUser}>{children}</UserProvider>
           </ThemeProvider>
         </TooltipProvider>
         <Toaster />
