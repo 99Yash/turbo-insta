@@ -6,9 +6,9 @@ export default function HomeLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
 
-  if (!user) {
+  if (!user || !isLoaded || !isSignedIn) {
     return <>{children}</>;
   }
 
