@@ -50,7 +50,6 @@ export function AppSidebar() {
       void fetchInitialCount().then((result) => {
         if (result.data !== undefined) {
           setUnreadCount(result.data);
-          console.log("📊 Initial unread count:", result.data);
         }
       });
     }
@@ -58,46 +57,34 @@ export function AppSidebar() {
 
   // Subscribe to websocket notifications for real-time count updates
   React.useEffect(() => {
-    if (!user || !client) {
-      console.log("⏸️ Websocket subscription skipped:", {
-        user: !!user,
-        client: !!client,
-      });
-      return;
-    }
+    if (!user || !client) return;
 
     const channelName = `notifications:${user.id}`;
     const channel = client.channels.get(channelName);
 
     const handler = (message: Ably.Message) => {
-      console.log("🔔 Received websocket notification:", message.data);
-
       // Update local unread count directly from websocket message
       const data = message.data as {
         unreadCount?: number;
         type?: string;
         timestamp?: string;
       };
-      if (typeof data?.unreadCount === "number") {
+      if (data?.unreadCount !== undefined) {
         setUnreadCount(data.unreadCount);
-        console.log("📊 Updated unread count to:", data.unreadCount);
       }
     };
 
-    console.log("🔗 Attempting to subscribe to channel:", channelName);
-
     void channel.subscribe("notification", handler);
-    console.log(
-      "✅ Successfully subscribed to notifications channel:",
-      channelName,
-    );
 
     return () => {
-      console.log("🔇 Unsubscribing from notifications channel");
-      // eslint-disable-next-line @typescript-eslint/no-floating-promises
-      channel.unsubscribe("notification", handler);
+      void channel.unsubscribe("notification", handler);
     };
   }, [user, client]);
+
+  // Handle when notifications are marked as read
+  const handleUnreadCountChange = React.useCallback((newCount: number) => {
+    setUnreadCount(newCount);
+  }, []);
 
   // Use the real-time unread count
   const count = unreadCount;
@@ -281,6 +268,7 @@ export function AppSidebar() {
         isOpen={isNotificationsSidebarOpen}
         onClose={() => setIsNotificationsSidebarOpen(false)}
         unreadCount={count}
+        onUnreadCountChange={handleUnreadCountChange}
       />
     </>
   );

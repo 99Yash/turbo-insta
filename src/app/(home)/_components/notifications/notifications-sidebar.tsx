@@ -11,12 +11,14 @@ interface NotificationsSidebarProps {
   readonly isOpen: boolean;
   readonly onClose: () => void;
   readonly unreadCount: number;
+  readonly onUnreadCountChange?: (newCount: number) => void;
 }
 
 export function NotificationsSidebar({
   isOpen,
   onClose,
   unreadCount,
+  onUnreadCountChange,
 }: NotificationsSidebarProps) {
   // Handle keyboard events
   React.useEffect(() => {
@@ -106,7 +108,11 @@ export function NotificationsSidebar({
           )}
           style={{ transitionDelay: isOpen ? "200ms" : "0ms" }}
         >
-          <NotificationsList unreadCount={unreadCount} isOpen={isOpen} />
+          <NotificationsList
+            unreadCount={unreadCount}
+            isOpen={isOpen}
+            onUnreadCountChange={onUnreadCountChange}
+          />
         </div>
       </div>
     </>

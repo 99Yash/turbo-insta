@@ -14,11 +14,13 @@ import { NotificationItem } from "./notification-item";
 interface NotificationsListProps {
   readonly unreadCount: number;
   readonly isOpen: boolean;
+  readonly onUnreadCountChange?: (newCount: number) => void;
 }
 
 export function NotificationsList({
   unreadCount,
   isOpen,
+  onUnreadCountChange,
 }: NotificationsListProps) {
   const utils = api.useUtils();
   const { user } = useUser();
@@ -79,9 +81,9 @@ export function NotificationsList({
   // Mutations
   const markAsReadMutation = api.notifications.markAsRead.useMutation({
     onSuccess: () => {
-      // Invalidate both notifications list and unread count
+      // Invalidate notifications list and notify parent of count change
       void utils.notifications.getAll.invalidate();
-      void utils.notifications.getUnreadCount.invalidate();
+      onUnreadCountChange?.(0); // All notifications are now read
     },
   });
 
