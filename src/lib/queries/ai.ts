@@ -15,28 +15,24 @@ export const generateAltText = async (imagePath: string) => {
     `Use simple language. ` +
     `No more than 18 words.`;
 
-  try {
-    const { text } = await generateText({
-      model: openai_4o_mini,
-      system: systemPrompt,
-      abortSignal: AbortSignal.timeout(20000),
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "image",
-              image: imagePath,
-            },
-          ],
-        },
-      ],
-    });
+  const { text } = await generateText({
+    model: openai_4o_mini,
+    system: systemPrompt,
+    abortSignal: AbortSignal.timeout(20000),
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "image",
+            image: imagePath,
+          },
+        ],
+      },
+    ],
+  });
 
-    return text;
-  } catch (error) {
-    throw error;
-  }
+  return text;
 };
 
 export async function generateUniqueUsername(name: string): Promise<string> {
