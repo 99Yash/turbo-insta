@@ -78,12 +78,10 @@ export function NotificationsList({
     },
   );
 
-  // Mutations
   const markAsReadMutation = api.notifications.markAsRead.useMutation({
     onSuccess: () => {
-      // Invalidate notifications list and notify parent of count change
-      void utils.notifications.getAll.invalidate();
-      onUnreadCountChange?.(0); // All notifications are now read
+      onUnreadCountChange?.(0);
+      void utils.notifications.getUnreadCount.invalidate();
     },
   });
 
