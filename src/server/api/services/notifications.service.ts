@@ -124,26 +124,16 @@ export async function createNotification(
       });
     }
 
-    // Get the current unread count for the recipient
-    const [unreadCountResult] = await db
-      .select({ count: count() })
-      .from(notifications)
-      .where(
-        and(
-          eq(notifications.recipientId, input.recipientId),
-          eq(notifications.isRead, false),
-        ),
-      );
+    const unreadCount = await getUnreadNotificationCount(
+      notification.recipientId,
+    );
 
-    const currentUnreadCount = unreadCountResult?.count ?? 0;
-
-    // Publish lightweight real-time event to Ably with actual unread count
     try {
       await ably.channels
         .get(`notifications:${notification.recipientId}`)
         .publish("notification", {
           type: "new_notification",
-          unreadCount: currentUnreadCount,
+          unreadCount,
           timestamp: notification.createdAt,
         });
 
@@ -153,7 +143,7 @@ export async function createNotification(
           type: notification.type,
           actorId: notification.actorId,
           recipientId: notification.recipientId,
-          unreadCount: currentUnreadCount,
+          unreadCount,
         },
       );
     } catch (ablyError) {

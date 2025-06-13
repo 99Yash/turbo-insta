@@ -58,7 +58,6 @@ export async function createComment(
           commentId: comment.id,
         });
       } catch (notificationError) {
-        // Log error but don't fail the comment creation
         console.error(
           "Failed to create comment notification:",
           notificationError,
@@ -257,7 +256,6 @@ export async function createReply(input: WithUser<typeof createReplySchema>) {
           replyId: reply.id,
         });
       } catch (notificationError) {
-        // Log error but don't fail the reply creation
         console.error(
           "Failed to create reply notification:",
           notificationError,

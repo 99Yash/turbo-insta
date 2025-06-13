@@ -162,6 +162,20 @@
       "when": 1749786505662,
       "tag": "0022_wandering_serpent_society",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "6",
+      "when": 1749794824894,
+      "tag": "0023_loving_the_liberteens",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "6",
+      "when": 1749794962002,
+      "tag": "0024_absurd_micromacro",
+      "breakpoints": true
     }
   ]
 }

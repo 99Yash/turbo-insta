@@ -104,7 +104,6 @@ async function togglePostLike({
           likeId: newLike.id,
         });
       } catch (notificationError) {
-        // Log error but don't fail the like creation
         console.error("Failed to create like notification:", notificationError);
       }
     }
@@ -178,7 +177,6 @@ async function toggleCommentLike({
           commentLikeId: newLike.id,
         });
       } catch (notificationError) {
-        // Log error but don't fail the like creation
         console.error(
           "Failed to create comment like notification:",
           notificationError,
@@ -255,7 +253,6 @@ async function toggleReplyLike({
           commentReplyLikeId: newLike.id,
         });
       } catch (notificationError) {
-        // Log error but don't fail the like creation
         console.error(
           "Failed to create reply like notification:",
           notificationError,
