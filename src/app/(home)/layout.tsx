@@ -11,7 +11,7 @@ export default function HomeLayout({
   const { user, isLoaded, isSignedIn } = useUser();
 
   if (!user || !isLoaded || !isSignedIn) {
-    return <>{children}</>;
+    return null;
   }
 
   return (
