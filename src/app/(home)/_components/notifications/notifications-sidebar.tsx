@@ -11,6 +11,11 @@ interface NotificationsSidebarProps {
   readonly isOpen: boolean;
   readonly onClose: () => void;
   readonly unreadCount: number;
+  /**
+   * Callback to update the unread count. Should be a stable reference
+   * (e.g., wrapped with useCallback) to prevent unnecessary re-renders
+   * down the component tree.
+   */
   readonly onUnreadCountChange?: (newCount: number) => void;
 }
 
@@ -108,11 +113,13 @@ export function NotificationsSidebar({
           )}
           style={{ transitionDelay: isOpen ? "200ms" : "0ms" }}
         >
-          <NotificationsList
-            unreadCount={unreadCount}
-            isOpen={isOpen}
-            onUnreadCountChange={onUnreadCountChange}
-          />
+          {isOpen && (
+            <NotificationsList
+              unreadCount={unreadCount}
+              isOpen={isOpen}
+              onUnreadCountChange={onUnreadCountChange}
+            />
+          )}
         </div>
       </div>
     </>
