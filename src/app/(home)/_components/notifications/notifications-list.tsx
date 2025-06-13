@@ -104,8 +104,13 @@ export function NotificationsList({
     ) {
       void markAsReadMutation.mutateAsync({});
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [unreadCount, isLoading, markAsReadMutation.isPending, isOpen]);
+  }, [
+    unreadCount,
+    isLoading,
+    markAsReadMutation.isPending,
+    isOpen,
+    markAsReadMutation,
+  ]);
 
   const handleLoadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {

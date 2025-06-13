@@ -35,7 +35,16 @@ export async function createPost(input: CreatePostInput, userId: string) {
             const description = await generateAltText(file.url);
             file.alt = description;
           } catch (error) {
-            console.error("Failed to generate alt text:", error);
+            console.error(
+              `Failed to generate alt text for ${file.name}:`,
+              error,
+            );
+            // More specific error logging for timeout issues
+            if (error instanceof Error && error.name === "TimeoutError") {
+              console.error(
+                `Alt text generation timed out for ${file.name}, using filename as fallback`,
+              );
+            }
             file.alt = file.name; // Fallback to using the filename as alt text
           }
         }
@@ -131,7 +140,16 @@ export async function editPost(input: WithUserId<EditPostInput>) {
               const description = await generateAltText(file.url);
               file.alt = description;
             } catch (error) {
-              console.error("Failed to generate alt text:", error);
+              console.error(
+                `Failed to generate alt text for ${file.name}:`,
+                error,
+              );
+              // More specific error logging for timeout issues
+              if (error instanceof Error && error.name === "TimeoutError") {
+                console.error(
+                  `Alt text generation timed out for ${file.name}, using filename as fallback`,
+                );
+              }
               file.alt = file.name; // Fallback to using the filename as alt text
             }
           }
