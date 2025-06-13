@@ -33,17 +33,28 @@ export function AppSidebar() {
   const pathname = usePathname();
   const [isNotificationsSidebarOpen, setIsNotificationsSidebarOpen] =
     React.useState(false);
-  const utils = api.useUtils();
   const client = useAbly();
 
-  // Get initial unread count (no polling)
-  const { data: unreadCount } = api.notifications.getUnreadCount.useQuery(
-    undefined,
-    {
-      staleTime: Infinity, // Never consider stale
-      gcTime: Infinity, // Never garbage collect
-    },
-  );
+  // Local state for real-time unread count updates (start with 0)
+  const [unreadCount, setUnreadCount] = React.useState<number>(0);
+
+  // Get initial unread count once on mount
+  const { refetch: fetchInitialCount } =
+    api.notifications.getUnreadCount.useQuery(undefined, {
+      refetchOnWindowFocus: false,
+    });
+
+  // Fetch initial count once when user is available
+  React.useEffect(() => {
+    if (user) {
+      void fetchInitialCount().then((result) => {
+        if (result.data !== undefined) {
+          setUnreadCount(result.data);
+          console.log("📊 Initial unread count:", result.data);
+        }
+      });
+    }
+  }, [user, fetchInitialCount]);
 
   // Subscribe to websocket notifications for real-time count updates
   React.useEffect(() => {
@@ -60,43 +71,36 @@ export function AppSidebar() {
 
     const handler = (message: Ably.Message) => {
       console.log("🔔 Received websocket notification:", message.data);
-      console.log("🔄 Invalidating unread count...");
-      // Invalidate unread count to refetch from server
-      void utils.notifications.getUnreadCount.invalidate();
+
+      // Update local unread count directly from websocket message
+      const data = message.data as {
+        unreadCount?: number;
+        type?: string;
+        timestamp?: string;
+      };
+      if (typeof data?.unreadCount === "number") {
+        setUnreadCount(data.unreadCount);
+        console.log("📊 Updated unread count to:", data.unreadCount);
+      }
     };
 
     console.log("🔗 Attempting to subscribe to channel:", channelName);
 
-    void channel
-      .subscribe("notification", handler)
-      .then(() => {
-        console.log(
-          "✅ Successfully subscribed to notifications channel:",
-          channelName,
-        );
-      })
-      .catch((error) => {
-        console.error("❌ Error subscribing to notifications:", error);
-      });
-
-    // Test connection
-    channel.presence
-      .enter({ status: "online" })
-      .then(() => {
-        console.log("👋 Entered presence for channel:", channelName);
-      })
-      .catch((error) => {
-        console.error("❌ Error entering presence:", error);
-      });
+    void channel.subscribe("notification", handler);
+    console.log(
+      "✅ Successfully subscribed to notifications channel:",
+      channelName,
+    );
 
     return () => {
       console.log("🔇 Unsubscribing from notifications channel");
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
       channel.unsubscribe("notification", handler);
-      void channel.presence.leave();
     };
-  }, [user, client, utils]);
+  }, [user, client]);
 
-  const count = unreadCount ?? 0;
+  // Use the real-time unread count
+  const count = unreadCount;
 
   const navItems = [
     {

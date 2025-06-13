@@ -31,21 +31,32 @@ export function NotificationsList({
     const channelName = `notifications:${user.id}`;
     const channel = client.channels.get(channelName);
 
-    const handler = (_message: Ably.Message) => {
-      // Just invalidate the unread count and notifications list
-      void utils.notifications.getUnreadCount.invalidate();
+    const handler = (message: Ably.Message) => {
+      console.log(
+        "🔔 [NotificationsList] Received websocket notification:",
+        message.data,
+      );
+
+      // Only invalidate the notifications list if sidebar is open
+      // The unread count is handled by the sidebar component
       if (isOpen) {
+        console.log(
+          "🔄 [NotificationsList] Invalidating notifications list...",
+        );
         void utils.notifications.getAll.invalidate();
       }
     };
 
-    try {
-      void channel.subscribe("notification", handler);
-    } catch (error) {
-      console.error("Error subscribing to notifications:", error);
-    }
+    void channel.subscribe("notification", handler);
+    console.log(
+      "✅ [NotificationsList] Subscribed to notifications channel:",
+      channelName,
+    );
 
     return () => {
+      console.log(
+        "🔇 [NotificationsList] Unsubscribing from notifications channel",
+      );
       void channel.unsubscribe("notification", handler);
     };
   }, [user, client, isOpen, utils]);
