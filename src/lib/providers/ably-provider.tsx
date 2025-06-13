@@ -35,7 +35,7 @@ export const AblyContextProvider = ({
     return ablyClient(userId);
   }, [userId]);
 
-  if (!userId || !client) {
+  if (!client) {
     return <>{children}</>;
   }
 
