@@ -155,6 +155,13 @@
       "when": 1748880668326,
       "tag": "0021_kind_stark_industries",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "6",
+      "when": 1749786505662,
+      "tag": "0022_wandering_serpent_society",
+      "breakpoints": true
     }
   ]
 }

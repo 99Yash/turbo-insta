@@ -9,7 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { generateId } from "~/lib/utils";
 import { commentReplies, comments } from "./comments";
-import { commentLikes, likes } from "./likes";
+import { commentLikes, commentReplyLikes, likes } from "./likes";
 import { posts } from "./posts";
 import { follows, users } from "./users";
 import { lifecycleDates } from "./utils";
@@ -54,6 +54,12 @@ export const notifications = pgTable(
     }),
     commentLikeId: varchar("comment_like_id").references(
       () => commentLikes.id,
+      {
+        onDelete: "cascade",
+      },
+    ),
+    commentReplyLikeId: varchar("comment_reply_like_id").references(
+      () => commentReplyLikes.id,
       {
         onDelete: "cascade",
       },
@@ -108,6 +114,10 @@ export const notificationRelations = relations(notifications, ({ one }) => ({
   commentLike: one(commentLikes, {
     fields: [notifications.commentLikeId],
     references: [commentLikes.id],
+  }),
+  commentReplyLike: one(commentReplyLikes, {
+    fields: [notifications.commentReplyLikeId],
+    references: [commentReplyLikes.id],
   }),
   follow: one(follows, {
     fields: [notifications.followId],

@@ -1,5 +1,7 @@
 "use client";
 
+import type * as Ably from "ably";
+import { useAbly } from "ably/react";
 import { CogIcon, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -31,13 +33,68 @@ export function AppSidebar() {
   const pathname = usePathname();
   const [isNotificationsSidebarOpen, setIsNotificationsSidebarOpen] =
     React.useState(false);
+  const utils = api.useUtils();
+  const client = useAbly();
 
+  // Get initial unread count (no polling)
   const { data: unreadCount } = api.notifications.getUnreadCount.useQuery(
     undefined,
     {
-      refetchInterval: 30000, // Refetch every 30 seconds
+      staleTime: Infinity, // Never consider stale
+      gcTime: Infinity, // Never garbage collect
     },
   );
+
+  // Subscribe to websocket notifications for real-time count updates
+  React.useEffect(() => {
+    if (!user || !client) {
+      console.log("⏸️ Websocket subscription skipped:", {
+        user: !!user,
+        client: !!client,
+      });
+      return;
+    }
+
+    const channelName = `notifications:${user.id}`;
+    const channel = client.channels.get(channelName);
+
+    const handler = (message: Ably.Message) => {
+      console.log("🔔 Received websocket notification:", message.data);
+      console.log("🔄 Invalidating unread count...");
+      // Invalidate unread count to refetch from server
+      void utils.notifications.getUnreadCount.invalidate();
+    };
+
+    console.log("🔗 Attempting to subscribe to channel:", channelName);
+
+    void channel
+      .subscribe("notification", handler)
+      .then(() => {
+        console.log(
+          "✅ Successfully subscribed to notifications channel:",
+          channelName,
+        );
+      })
+      .catch((error) => {
+        console.error("❌ Error subscribing to notifications:", error);
+      });
+
+    // Test connection
+    channel.presence
+      .enter({ status: "online" })
+      .then(() => {
+        console.log("👋 Entered presence for channel:", channelName);
+      })
+      .catch((error) => {
+        console.error("❌ Error entering presence:", error);
+      });
+
+    return () => {
+      console.log("🔇 Unsubscribing from notifications channel");
+      channel.unsubscribe("notification", handler);
+      void channel.presence.leave();
+    };
+  }, [user, client, utils]);
 
   const count = unreadCount ?? 0;
 

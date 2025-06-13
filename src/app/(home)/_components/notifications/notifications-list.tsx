@@ -1,10 +1,13 @@
 "use client";
 
+import type * as Ably from "ably";
+import { useAbly } from "ably/react";
 import { Bell } from "lucide-react";
 import React from "react";
 import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import { useUser } from "~/contexts/user-context";
 import { api } from "~/trpc/react";
 import { NotificationItem } from "./notification-item";
 
@@ -18,8 +21,34 @@ export function NotificationsList({
   isOpen,
 }: NotificationsListProps) {
   const utils = api.useUtils();
+  const { user } = useUser();
+  const client = useAbly();
 
-  // Fetch notifications immediately since this is in a collapsible
+  // Subscribe to websocket notifications for count updates
+  React.useEffect(() => {
+    if (!user || !client) return;
+
+    const channelName = `notifications:${user.id}`;
+    const channel = client.channels.get(channelName);
+
+    const handler = (message: Ably.Message) => {
+      // Just invalidate the unread count and notifications list
+      void utils.notifications.getUnreadCount.invalidate();
+      if (isOpen) {
+        void utils.notifications.getAll.invalidate();
+      }
+    };
+
+    void channel.subscribe("notification", handler).catch((error) => {
+      console.error("Error subscribing to notifications:", error);
+    });
+
+    return () => {
+      channel.unsubscribe("notification", handler);
+    };
+  }, [user, client, isOpen, utils]);
+
+  // Fetch notifications only when sidebar is open
   const {
     data: notificationsData,
     isLoading,
@@ -30,6 +59,7 @@ export function NotificationsList({
     { limit: 8 }, // Smaller limit for sidebar
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
+      enabled: isOpen, // Only fetch when sidebar is open
     },
   );
 
@@ -49,7 +79,7 @@ export function NotificationsList({
     markAsReadMutation.mutate({ notificationIds: [notificationId] });
   };
 
-  // Automatically mark all notifications as read when sidebar is fully rendered
+  // Automatically mark all notifications as read when sidebar is opened
   React.useEffect(() => {
     if (
       unreadCount > 0 &&

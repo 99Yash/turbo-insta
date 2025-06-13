@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { ChannelProvider } from "ably/react";
+import { SidebarLayout } from "./_components/sidebar/sidebar-layout";
 
 export default function HomeLayout({
   children,
@@ -15,8 +15,8 @@ export default function HomeLayout({
   }
 
   return (
-    <ChannelProvider channelName={`notifications:${user.id}`}>
+    <SidebarLayout variant="centered" width="w-[470px]">
       {children}
-    </ChannelProvider>
+    </SidebarLayout>
   );
 }

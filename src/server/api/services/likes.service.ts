@@ -236,9 +236,31 @@ async function toggleReplyLike({
       );
   } else {
     // Add like
-    await db.insert(commentReplyLikes).values({
-      userId,
-      commentReplyId,
-    });
+    const [newLike] = await db
+      .insert(commentReplyLikes)
+      .values({
+        userId,
+        commentReplyId,
+      })
+      .returning();
+
+    // Create notification for reply owner (if not liking own reply)
+    if (newLike && commentReplyWithOwner.commentReplyOwnerId !== userId) {
+      try {
+        await createNotification({
+          recipientId: commentReplyWithOwner.commentReplyOwnerId,
+          actorId: userId,
+          type: "comment_like", // Using comment_like type for reply likes too
+          replyId: commentReplyId,
+          commentReplyLikeId: newLike.id,
+        });
+      } catch (notificationError) {
+        // Log error but don't fail the like creation
+        console.error(
+          "Failed to create reply like notification:",
+          notificationError,
+        );
+      }
+    }
   }
 }
