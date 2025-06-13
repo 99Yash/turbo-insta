@@ -31,7 +31,7 @@ export function NotificationsList({
     const channelName = `notifications:${user.id}`;
     const channel = client.channels.get(channelName);
 
-    const handler = (message: Ably.Message) => {
+    const handler = (_message: Ably.Message) => {
       // Just invalidate the unread count and notifications list
       void utils.notifications.getUnreadCount.invalidate();
       if (isOpen) {
@@ -39,12 +39,14 @@ export function NotificationsList({
       }
     };
 
-    void channel.subscribe("notification", handler).catch((error) => {
+    try {
+      void channel.subscribe("notification", handler);
+    } catch (error) {
       console.error("Error subscribing to notifications:", error);
-    });
+    }
 
     return () => {
-      channel.unsubscribe("notification", handler);
+      void channel.unsubscribe("notification", handler);
     };
   }, [user, client, isOpen, utils]);
 
