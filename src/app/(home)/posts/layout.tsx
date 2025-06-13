@@ -1,11 +1,5 @@
-import { SidebarLayout } from "../_components/sidebar/sidebar-layout";
-
-export default async function LobbyLayout({
+export default async function PostsLayout({
   children,
 }: React.PropsWithChildren) {
-  return (
-    <SidebarLayout variant="centered" width="w-[470px]">
-      {children}
-    </SidebarLayout>
-  );
+  return <>{children}</>;
 }
