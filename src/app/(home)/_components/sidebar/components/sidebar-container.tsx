@@ -38,27 +38,16 @@ export function SidebarContainer({
     breakpoint === "xl" ? "(min-width: 1280px)" : "(min-width: 640px)",
   );
 
-  const [sidebarOpen, setSidebarOpen] = React.useState(() => {
-    if (defaultOpen !== undefined) return defaultOpen;
-    return isAboveBreakpoint;
-  });
-
-  React.useEffect(() => {
-    if (defaultOpen === undefined) {
-      setSidebarOpen(isAboveBreakpoint);
-    }
-  }, [isAboveBreakpoint, defaultOpen]);
-
-  const handleOpenChange = React.useCallback(
-    (open: boolean) => {
-      setSidebarOpen(open);
-      onOpenChange?.(open);
-    },
-    [onOpenChange],
-  );
+  // Compute the default open state based on breakpoint if not explicitly provided
+  const computedDefaultOpen = React.useMemo(() => {
+    return defaultOpen ?? isAboveBreakpoint;
+  }, [defaultOpen, isAboveBreakpoint]);
 
   return (
-    <SidebarProvider open={sidebarOpen} onOpenChange={handleOpenChange}>
+    <SidebarProvider
+      defaultOpen={computedDefaultOpen}
+      onOpenChange={onOpenChange}
+    >
       {children}
     </SidebarProvider>
   );

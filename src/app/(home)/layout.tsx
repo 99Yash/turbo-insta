@@ -13,19 +13,25 @@ export default function HomeLayout({
   const { user, isLoaded, isSignedIn } = useUser();
   const pathname = usePathname();
 
-  if (!user || !isLoaded || !isSignedIn) {
-    return null;
-  }
-
-  // Provide sidebar container for shared state (websockets, etc.)
-  // but let individual layouts handle their own content layout
   const sidebarBreakpoint = pathname.startsWith("/messages") ? "sm" : "xl";
   const defaultOpen = pathname.startsWith("/messages") ? false : undefined;
 
+  // Always provide sidebar context to avoid context errors
+  // Individual pages handle their own authentication redirects
   return (
     <SidebarContainer breakpoint={sidebarBreakpoint} defaultOpen={defaultOpen}>
-      <AppSidebar />
-      {children}
+      {isLoaded && user && isSignedIn ? (
+        <>
+          <AppSidebar />
+          {children}
+        </>
+      ) : // Show loading or render children without sidebar for unauthenticated states
+      // Pages will handle redirects appropriately
+      isLoaded ? (
+        children
+      ) : (
+        <div>Loading...</div>
+      )}
     </SidebarContainer>
   );
 }

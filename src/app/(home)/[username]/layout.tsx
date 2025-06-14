@@ -1,14 +1,25 @@
+"use client";
+
+import { useUser } from "@clerk/nextjs";
 import { redirect } from "next/navigation";
-import { getCachedUser } from "~/lib/queries/user";
+import * as React from "react";
 import { FullWidthLayout } from "../_components/sidebar/components";
 
-export default async function ProfileLayout({
-  children,
-}: React.PropsWithChildren) {
-  const user = await getCachedUser();
+export default function ProfileLayout({ children }: React.PropsWithChildren) {
+  const { user, isLoaded, isSignedIn } = useUser();
 
-  if (!user) {
-    redirect("/signin");
+  React.useEffect(() => {
+    if (isLoaded && (!user || !isSignedIn)) {
+      redirect("/signin");
+    }
+  }, [user, isLoaded, isSignedIn]);
+
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user || !isSignedIn) {
+    return null;
   }
 
   return (
