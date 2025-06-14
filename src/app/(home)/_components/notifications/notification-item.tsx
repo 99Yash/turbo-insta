@@ -35,51 +35,24 @@ export function NotificationItem({
   };
 
   const getNotificationText = () => {
-    const actorName = notification.actor.name;
+    const actorName = notification.actor.username;
+    const timeText = formatTimeToNow(notification.createdAt, {
+      showDateAfterDays: 7,
+    });
+
     switch (notification.type) {
       case "like":
-        return (
-          <>
-            {actorName}{" "}
-            <span className="font-normal text-muted-foreground">
-              liked your post
-            </span>
-          </>
-        );
+        return `${actorName} liked your post • ${timeText}`;
       case "comment":
-        return (
-          <>
-            {actorName}{" "}
-            <span className="font-normal text-muted-foreground">commented</span>
-          </>
-        );
+        return `${actorName} commented • ${timeText}`;
       case "reply":
-        return (
-          <>
-            {actorName}{" "}
-            <span className="font-normal text-muted-foreground">replied</span>
-          </>
-        );
+        return `${actorName} replied • ${timeText}`;
       case "follow":
-        return (
-          <>
-            {actorName}{" "}
-            <span className="font-normal text-muted-foreground">
-              followed you
-            </span>
-          </>
-        );
+        return `${actorName} followed you • ${timeText}`;
       case "comment_like":
-        return (
-          <>
-            {actorName}{" "}
-            <span className="font-normal text-muted-foreground">
-              liked comment
-            </span>
-          </>
-        );
+        return `${actorName} liked comment • ${timeText}`;
       default:
-        return <>{actorName}</>;
+        return `${actorName} • ${timeText}`;
     }
   };
 
@@ -123,11 +96,6 @@ export function NotificationItem({
   };
 
   const firstImage = getPostImage();
-  const showContent =
-    notification.reply ??
-    notification.comment ??
-    (["like", "comment", "reply"].includes(notification.type) &&
-      notification.post);
 
   return (
     <Link
@@ -158,36 +126,31 @@ export function NotificationItem({
 
       {/* Content */}
       <div className="min-w-0 flex-1">
-        <div className="flex items-center justify-between gap-1">
-          <p className="truncate text-xs font-medium">
-            {getNotificationText()}
-          </p>
-          <span className="whitespace-nowrap text-[10px] text-muted-foreground">
-            {formatTimeToNow(notification.createdAt, {
-              showDateAfterDays: 7,
-            })}
-          </span>
-        </div>
-
-        {/* Content preview */}
-        {showContent && (
-          <div className="mt-1 flex items-center gap-1.5">
-            {firstImage && (
-              <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded">
-                <Image
-                  src={firstImage.url || "/placeholder.svg"}
-                  alt="Post image"
-                  fill
-                  className="object-cover"
-                  sizes="32px"
-                />
-              </div>
-            )}
-            <p className="line-clamp-1 text-[11px] text-muted-foreground">
-              {getContentText()}
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm text-muted-foreground">
+              {getNotificationText()}
             </p>
+            {/* Content text for comments, replies, etc. */}
+            {getContentText() && (
+              <p className="mt-1 line-clamp-2 text-xs text-muted-foreground/80">
+                &ldquo;{getContentText()}&rdquo;
+              </p>
+            )}
           </div>
-        )}
+          {/* Bigger image on the right */}
+          {firstImage && (
+            <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-md">
+              <Image
+                src={firstImage.url || "/placeholder.svg"}
+                alt="Post image"
+                fill
+                className="object-cover"
+                sizes="48px"
+              />
+            </div>
+          )}
+        </div>
       </div>
     </Link>
   );
