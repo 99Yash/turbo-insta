@@ -9,17 +9,37 @@ export function useMediaQuery(query: string) {
   });
 
   React.useEffect(() => {
-    const result = matchMedia(query);
+    // Guard against SSR and environments where matchMedia is not available
+    if (typeof window === "undefined" || !window.matchMedia) {
+      return;
+    }
+
+    const result = window.matchMedia(query);
 
     function onChange(event: MediaQueryListEvent) {
       setValue(event.matches);
     }
 
-    result.addEventListener("change", onChange);
+    // Use modern addEventListener if available, fallback to addListener for older Safari
+    if (result.addEventListener) {
+      result.addEventListener("change", onChange);
+    } else if (result.addListener) {
+      // Fallback for older Safari versions
+      result.addListener(onChange);
+    }
+
     // Ensure we have the current value
     setValue(result.matches);
 
-    return () => result.removeEventListener("change", onChange);
+    return () => {
+      // Clean up using the same method we used to attach
+      if (result.removeEventListener) {
+        result.removeEventListener("change", onChange);
+      } else if (result.removeListener) {
+        // Fallback for older Safari versions
+        result.removeListener(onChange);
+      }
+    };
   }, [query]);
 
   return value;

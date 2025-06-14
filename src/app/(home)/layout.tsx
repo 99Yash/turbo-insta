@@ -16,8 +16,6 @@ export default function HomeLayout({
   const sidebarBreakpoint = pathname.startsWith("/messages") ? "sm" : "xl";
   const defaultOpen = pathname.startsWith("/messages") ? false : undefined;
 
-  // Always provide sidebar context to avoid context errors
-  // Individual pages handle their own authentication redirects
   return (
     <SidebarContainer breakpoint={sidebarBreakpoint} defaultOpen={defaultOpen}>
       {isLoaded && user && isSignedIn ? (

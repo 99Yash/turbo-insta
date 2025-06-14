@@ -1,18 +1,19 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 import * as React from "react";
 import { FullWidthLayout } from "../_components/sidebar/components";
 
 export default function ProfileLayout({ children }: React.PropsWithChildren) {
   const { user, isLoaded, isSignedIn } = useUser();
+  const router = useRouter();
 
   React.useEffect(() => {
     if (isLoaded && (!user || !isSignedIn)) {
-      redirect("/signin");
+      router.replace("/signin");
     }
-  }, [user, isLoaded, isSignedIn]);
+  }, [user, isLoaded, isSignedIn, router]);
 
   if (!isLoaded) {
     return <div>Loading...</div>;
