@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { getCachedUser } from "~/lib/queries/user";
-import { SidebarLayout } from "../_components/sidebar/sidebar-layout";
 
 export default async function ProfileLayout({
   children,
@@ -11,5 +10,6 @@ export default async function ProfileLayout({
     redirect("/signin");
   }
 
-  return <SidebarLayout variant="full-width">{children}</SidebarLayout>;
+  // Don't nest SidebarLayout - parent layout handles sidebar
+  return <>{children}</>;
 }
