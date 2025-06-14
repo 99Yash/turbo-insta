@@ -38,17 +38,20 @@ export function SidebarContainer({
     breakpoint === "xl" ? "(min-width: 1280px)" : "(min-width: 640px)",
   );
 
+  // Initialize sidebar state based on defaultOpen or responsive behavior
   const [sidebarOpen, setSidebarOpen] = React.useState(() => {
-    if (defaultOpen !== undefined) return defaultOpen;
-    return isAboveBreakpoint;
+    return defaultOpen ?? isAboveBreakpoint;
   });
 
+  // Update sidebar state when breakpoint changes (responsive behavior)
+  // Only apply responsive behavior if no explicit defaultOpen was provided
   React.useEffect(() => {
     if (defaultOpen === undefined) {
       setSidebarOpen(isAboveBreakpoint);
     }
   }, [isAboveBreakpoint, defaultOpen]);
 
+  // Handle sidebar state changes from user interactions
   const handleOpenChange = React.useCallback(
     (open: boolean) => {
       setSidebarOpen(open);
