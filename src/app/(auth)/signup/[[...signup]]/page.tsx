@@ -10,11 +10,9 @@ import {
   CardTitle,
 } from "~/components/ui/card";
 import { Shell } from "~/components/utils/shell";
-import { env } from "~/env";
 import { OAuthSignIn } from "../../_components/oauth-signin";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   title: "Sign Up",
   description: "Sign up for an account",
 };

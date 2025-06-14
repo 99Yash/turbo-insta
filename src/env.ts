@@ -8,6 +8,10 @@ export const env = createEnv({
    */
   server: {
     DATABASE_URL: z.string().url(),
+    // Optional: Docker Compose database configuration
+    DB_PASSWORD: z.string().optional(),
+    DB_PORT: z.string().optional(),
+    DB_NAME: z.string().optional(),
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
@@ -36,6 +40,9 @@ export const env = createEnv({
    */
   runtimeEnv: {
     DATABASE_URL: process.env.DATABASE_URL,
+    DB_PASSWORD: process.env.DB_PASSWORD,
+    DB_PORT: process.env.DB_PORT,
+    DB_NAME: process.env.DB_NAME,
     NODE_ENV: process.env.NODE_ENV,
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
     CLERK_WEBHOOK_SIGNING_SECRET: process.env.CLERK_WEBHOOK_SIGNING_SECRET,

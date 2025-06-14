@@ -1,5 +1,7 @@
 "use client";
 
+import type * as Ably from "ably";
+import { useAbly } from "ably/react";
 import { CogIcon, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -31,15 +33,61 @@ export function AppSidebar() {
   const pathname = usePathname();
   const [isNotificationsSidebarOpen, setIsNotificationsSidebarOpen] =
     React.useState(false);
+  const client = useAbly();
 
-  const { data: unreadCount } = api.notifications.getUnreadCount.useQuery(
-    undefined,
-    {
-      refetchInterval: 30000, // Refetch every 30 seconds
-    },
-  );
+  // Local state for real-time unread count updates (start with 0)
+  const [unreadCount, setUnreadCount] = React.useState<number>(0);
 
-  const count = unreadCount ?? 0;
+  // Get initial unread count once on mount
+  const { refetch: fetchInitialCount } =
+    api.notifications.getUnreadCount.useQuery(undefined, {
+      refetchOnWindowFocus: false,
+    });
+
+  // Fetch initial count once when user is available
+  React.useEffect(() => {
+    if (user) {
+      void fetchInitialCount().then((result) => {
+        if (result.data !== undefined) {
+          setUnreadCount(result.data);
+        }
+      });
+    }
+  }, [user, fetchInitialCount]);
+
+  // Subscribe to websocket notifications for real-time count updates
+  React.useEffect(() => {
+    if (!user || !client) return;
+
+    const channelName = `notifications:${user.id}`;
+    const channel = client.channels.get(channelName);
+
+    const handler = (message: Ably.Message) => {
+      // Update local unread count directly from websocket message
+      const data = message.data as {
+        unreadCount?: number;
+        type?: string;
+        timestamp?: string;
+      };
+      if (data?.unreadCount !== undefined) {
+        setUnreadCount(data.unreadCount);
+      }
+    };
+
+    void channel.subscribe("notification", handler);
+
+    return () => {
+      void channel.unsubscribe("notification", handler);
+    };
+  }, [user, client]);
+
+  // Handle when notifications are marked as read
+  const handleUnreadCountChange = React.useCallback((newCount: number) => {
+    setUnreadCount(newCount);
+  }, []);
+
+  // Use the real-time unread count
+  const count = unreadCount;
 
   const navItems = [
     {
@@ -80,7 +128,7 @@ export function AppSidebar() {
         </SidebarHeader>
 
         <SidebarContent>
-          <div className="p-4">
+          <div className="p-4 group-data-[collapsible=icon]:flex group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2">
             <UserCommandDialog />
           </div>
           <SidebarGroup>
@@ -220,6 +268,7 @@ export function AppSidebar() {
         isOpen={isNotificationsSidebarOpen}
         onClose={() => setIsNotificationsSidebarOpen(false)}
         unreadCount={count}
+        onUnreadCountChange={handleUnreadCountChange}
       />
     </>
   );

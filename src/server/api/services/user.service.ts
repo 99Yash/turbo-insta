@@ -1,5 +1,6 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
 import { and, eq, ilike, inArray, or } from "drizzle-orm";
+import { ably } from "~/lib/ably";
 import { DISALLOWED_USERNAMES } from "~/lib/utils";
 import { db } from "~/server/db";
 import { follows, users } from "~/server/db/schema/users";
@@ -410,6 +411,21 @@ export async function searchUsers(query: string, offset: number, size: number) {
       .orderBy(users.username);
 
     return searchResults;
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+}
+
+export async function getAblyToken(userId: string) {
+  try {
+    const token = await ably.auth.createTokenRequest({
+      clientId: userId,
+    });
+    console.log(">>>>>>>TOKEN", token);
+    return token;
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,

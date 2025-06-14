@@ -4,6 +4,10 @@ import { currentUser } from "@clerk/nextjs/server";
 import * as React from "react";
 import { getUserById } from "~/server/api/services/user.service";
 
+/**
+ * Get the user from the database
+ * @returns The user or null if the user is not found
+ */
 export const getCachedUser = React.cache(async () => {
   const clerkUser = await currentUser();
   if (!clerkUser) {

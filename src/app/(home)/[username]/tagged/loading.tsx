@@ -51,9 +51,9 @@ export default function TaggedPostsLoading() {
           </div>
 
           {/* Tagged Posts Grid Loading */}
-          <div className="mt-6 grid grid-cols-3 gap-1 md:gap-4">
+          <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
             {Array.from({ length: 9 }).map((_, i) => (
-              <Skeleton key={i} className="aspect-square w-full" />
+              <Skeleton key={i} className="aspect-square w-full rounded-lg" />
             ))}
           </div>
         </div>

@@ -6,6 +6,7 @@ import {
   userSchema,
 } from "../schema/user.schema";
 import {
+  getAblyToken,
   getFollowers,
   getFollowing,
   getUserById,
@@ -68,4 +69,11 @@ export const userRouter = createTRPCRouter({
       const users = await searchUsers(input.query, input.offset, input.size);
       return users;
     }),
+
+  getAblyToken: protectedProcedure.query(async ({ ctx }) => {
+    const token = await getAblyToken(ctx.userId);
+    return {
+      token,
+    };
+  }),
 });

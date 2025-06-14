@@ -1,25 +1,69 @@
 "use client";
 
+import type * as Ably from "ably";
+import { useAbly } from "ably/react";
 import { Bell } from "lucide-react";
 import React from "react";
 import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import { useUser } from "~/contexts/user-context";
 import { api } from "~/trpc/react";
 import { NotificationItem } from "./notification-item";
 
 interface NotificationsListProps {
   readonly unreadCount: number;
   readonly isOpen: boolean;
+  readonly onUnreadCountChange?: (newCount: number) => void;
 }
 
 export function NotificationsList({
   unreadCount,
   isOpen,
+  onUnreadCountChange,
 }: NotificationsListProps) {
   const utils = api.useUtils();
+  const { user } = useUser();
+  const client = useAbly();
 
-  // Fetch notifications immediately since this is in a collapsible
+  // Subscribe to websocket notifications for count updates
+  React.useEffect(() => {
+    if (!user || !client) return;
+
+    const channelName = `notifications:${user.id}`;
+    const channel = client.channels.get(channelName);
+
+    const handler = (message: Ably.Message) => {
+      console.log(
+        "🔔 [NotificationsList] Received websocket notification:",
+        message.data,
+      );
+
+      // Only invalidate the notifications list if sidebar is open
+      // The unread count is handled by the sidebar component
+      if (isOpen) {
+        console.log(
+          "🔄 [NotificationsList] Invalidating notifications list...",
+        );
+        void utils.notifications.getAll.invalidate();
+      }
+    };
+
+    void channel.subscribe("notification", handler);
+    console.log(
+      "✅ [NotificationsList] Subscribed to notifications channel:",
+      channelName,
+    );
+
+    return () => {
+      console.log(
+        "🔇 [NotificationsList] Unsubscribing from notifications channel",
+      );
+      void channel.unsubscribe("notification", handler);
+    };
+  }, [user, client, isOpen, utils]);
+
+  // Fetch notifications only when sidebar is open
   const {
     data: notificationsData,
     isLoading,
@@ -30,14 +74,13 @@ export function NotificationsList({
     { limit: 8 }, // Smaller limit for sidebar
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
+      enabled: isOpen, // Only fetch when sidebar is open
     },
   );
 
-  // Mutations
   const markAsReadMutation = api.notifications.markAsRead.useMutation({
     onSuccess: () => {
-      // Invalidate both notifications list and unread count
-      void utils.notifications.getAll.invalidate();
+      onUnreadCountChange?.(0);
       void utils.notifications.getUnreadCount.invalidate();
     },
   });
@@ -49,7 +92,7 @@ export function NotificationsList({
     markAsReadMutation.mutate({ notificationIds: [notificationId] });
   };
 
-  // Automatically mark all notifications as read when sidebar is fully rendered
+  // Automatically mark all notifications as read when sidebar is opened
   React.useEffect(() => {
     if (
       unreadCount > 0 &&
@@ -59,8 +102,13 @@ export function NotificationsList({
     ) {
       void markAsReadMutation.mutateAsync({});
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [unreadCount, isLoading, markAsReadMutation.isPending, isOpen]);
+  }, [
+    unreadCount,
+    isLoading,
+    markAsReadMutation.isPending,
+    isOpen,
+    markAsReadMutation,
+  ]);
 
   const handleLoadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {

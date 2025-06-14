@@ -1,6 +1,6 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
 import { and, count, desc, eq, gt, inArray, lt, or } from "drizzle-orm";
-import { notificationEvents } from "~/lib/queries/events";
+import { ably } from "~/lib/ably";
 import { db } from "~/server/db";
 import {
   commentReplies,
@@ -22,6 +22,7 @@ export interface CreateNotificationInput {
   readonly replyId?: string;
   readonly likeId?: string;
   readonly commentLikeId?: string;
+  readonly commentReplyLikeId?: string;
   readonly followId?: string;
   readonly message?: string;
 }
@@ -92,8 +93,8 @@ export async function createNotification(
       )
       .limit(1);
 
-    if (existingNotification.length > 0) {
-      return existingNotification[0]!;
+    if (existingNotification[0]) {
+      return existingNotification[0];
     }
 
     const notificationData: NewNotification = {
@@ -105,6 +106,7 @@ export async function createNotification(
       replyId: input.replyId,
       likeId: input.likeId,
       commentLikeId: input.commentLikeId,
+      commentReplyLikeId: input.commentReplyLikeId,
       followId: input.followId,
       message: input.message,
       isRead: false,
@@ -122,14 +124,32 @@ export async function createNotification(
       });
     }
 
-    // Emit real-time event
-    notificationEvents.emitNotification({
-      id: notification.id,
-      type: notification.type,
-      recipientId: notification.recipientId,
-      actorId: notification.actorId,
-      data: notification,
-    });
+    const unreadCount = await getUnreadNotificationCount(
+      notification.recipientId,
+    );
+
+    try {
+      await ably.channels
+        .get(`notifications:${notification.recipientId}`)
+        .publish("notification", {
+          type: "new_notification",
+          unreadCount,
+          timestamp: notification.createdAt,
+        });
+
+      console.log(
+        `✅ Published notification to channel: notifications:${notification.recipientId}`,
+        {
+          type: notification.type,
+          actorId: notification.actorId,
+          recipientId: notification.recipientId,
+          unreadCount,
+        },
+      );
+    } catch (ablyError) {
+      console.error("❌ Failed to publish notification to Ably:", ablyError);
+      // Don't throw error, just log it - notification was still created in DB
+    }
 
     return notification;
   } catch (e) {

@@ -28,12 +28,12 @@ export function ProfilePosts({ posts }: ProfilePostsProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
       {posts.map((post) => (
         <Link
           key={post.id}
           href={`/posts/${post.id}`}
-          className="group relative aspect-square overflow-hidden rounded-md bg-muted shadow-sm transition-all duration-300 hover:shadow-md"
+          className="group relative aspect-square overflow-hidden rounded-lg bg-muted shadow-sm transition-all duration-300 hover:shadow-md"
         >
           <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
 
@@ -42,7 +42,7 @@ export function ProfilePosts({ posts }: ProfilePostsProps) {
             alt={post.images[0]?.alt ?? post.title ?? "Post image"}
             fill
             className="object-cover transition-all duration-500 group-hover:scale-105 group-hover:brightness-90"
-            sizes="(max-width: 640px) 95vw, (max-width: 768px) 45vw, 30vw"
+            sizes="(max-width: 640px) 95vw, (max-width: 768px) 45vw, 25vw"
             priority
           />
 
