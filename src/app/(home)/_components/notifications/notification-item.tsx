@@ -40,20 +40,33 @@ export function NotificationItem({
       showDateAfterDays: 7,
     });
 
-    switch (notification.type) {
-      case "like":
-        return `${actorName} liked your post • ${timeText}`;
-      case "comment":
-        return `${actorName} commented • ${timeText}`;
-      case "reply":
-        return `${actorName} replied • ${timeText}`;
-      case "follow":
-        return `${actorName} followed you • ${timeText}`;
-      case "comment_like":
-        return `${actorName} liked comment • ${timeText}`;
-      default:
-        return `${actorName} • ${timeText}`;
-    }
+    const getActionVerb = () => {
+      switch (notification.type) {
+        case "like":
+          return "liked your post";
+        case "comment":
+          return "commented";
+        case "reply":
+          return "replied";
+        case "follow":
+          return "followed you";
+        case "comment_like":
+          return "liked comment";
+        default:
+          return "";
+      }
+    };
+
+    return (
+      <>
+        <span className="font-medium">{actorName}</span>{" "}
+        <span>{getActionVerb()}</span>
+        <span aria-hidden className="mx-1">
+          •
+        </span>
+        <time dateTime={notification.createdAt.toISOString()}>{timeText}</time>
+      </>
+    );
   };
 
   const getNotificationLink = () => {
@@ -128,9 +141,9 @@ export function NotificationItem({
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm text-muted-foreground">
+            <div className="truncate text-sm text-muted-foreground">
               {getNotificationText()}
-            </p>
+            </div>
             {/* Content text for comments, replies, etc. */}
             {getContentText() && (
               <p className="mt-1 line-clamp-2 text-xs text-muted-foreground/80">
