@@ -93,8 +93,8 @@ export async function createNotification(
       )
       .limit(1);
 
-    if (existingNotification.length > 0) {
-      return existingNotification[0]!;
+    if (existingNotification[0]) {
+      return existingNotification[0];
     }
 
     const notificationData: NewNotification = {
