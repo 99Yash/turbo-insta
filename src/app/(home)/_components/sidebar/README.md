@@ -118,20 +118,33 @@ Control how the sidebar behaves:
 </SidebarContainer>
 ```
 
-## Examples
+## Recommended Pattern
+
+Keep sidebar state management at the parent level, but let each layout handle its own content:
+
+### Parent Layout (Shared State)
+
+```tsx
+// src/app/(home)/layout.tsx
+export default function HomeLayout({ children }) {
+  return (
+    <SidebarContainer breakpoint="xl">
+      <AppSidebar />
+      {children}
+    </SidebarContainer>
+  );
+}
+```
 
 ### Feed Page Layout
 
 ```tsx
-function FeedLayout({ children }) {
+// src/app/(home)/page.tsx
+export default function HomePage() {
   return (
-    <SidebarLayout
-      layout="absolute-centered"
-      contentWidth="w-[470px]"
-      sidebarVariant="default"
-    >
-      {children}
-    </SidebarLayout>
+    <CenteredLayout maxWidth="max-w-[470px]">
+      <div>Feed content</div>
+    </CenteredLayout>
   );
 }
 ```
@@ -139,31 +152,33 @@ function FeedLayout({ children }) {
 ### Profile Page Layout
 
 ```tsx
-function ProfileLayout({ children }) {
+// src/app/(home)/[username]/layout.tsx
+export default function ProfileLayout({ children }) {
   return (
-    <SidebarLayout
-      layout="full-width"
-      contentWidth="max-w-[800px]"
-      sidebarVariant="default"
-    >
-      {children}
-    </SidebarLayout>
+    <FullWidthLayout>
+      <div className="mx-auto max-w-[800px]">{children}</div>
+    </FullWidthLayout>
   );
 }
 ```
 
-### Messages Page Layout
+### Messages Layout
 
 ```tsx
-function MessagesLayout({ children }) {
+// src/app/(home)/messages/layout.tsx
+export default function MessagesLayout({ children }) {
   return (
-    <SidebarContainer breakpoint="sm" defaultOpen={false}>
-      <AppSidebar />
-      <FullWidthLayout showMobileTrigger={false}>{children}</FullWidthLayout>
-    </SidebarContainer>
+    <FullWidthLayout showMobileTrigger={false}>{children}</FullWidthLayout>
   );
 }
+
+// src/app/(home)/messages/page.tsx
+export default function MessagesPage() {
+  return <div>Messages content</div>;
+}
 ```
+
+## Alternative Examples
 
 ### Custom Layout Composition
 

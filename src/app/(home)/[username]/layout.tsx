@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getCachedUser } from "~/lib/queries/user";
+import { FullWidthLayout } from "../_components/sidebar/components";
 
 export default async function ProfileLayout({
   children,
@@ -10,6 +11,9 @@ export default async function ProfileLayout({
     redirect("/signin");
   }
 
-  // Don't nest SidebarLayout - parent layout handles sidebar
-  return <>{children}</>;
+  return (
+    <FullWidthLayout>
+      <div className="mx-auto w-full max-w-[800px]">{children}</div>
+    </FullWidthLayout>
+  );
 }
