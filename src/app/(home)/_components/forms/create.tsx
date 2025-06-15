@@ -455,9 +455,11 @@ export function Create({
                                 images to add new ones.
                               </p>
                             )}
-                            <p className="text-sm text-muted-foreground">
-                              Total images: {getTotalImageCount()}/3
-                            </p>
+                            {getTotalImageCount() > 0 && (
+                              <p className="text-sm text-muted-foreground">
+                                Total images: {getTotalImageCount()}/3
+                              </p>
+                            )}
                           </FormItem>
                         )}
                       />
