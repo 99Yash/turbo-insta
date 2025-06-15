@@ -1,5 +1,6 @@
 import {
   createOrGetConversationSchema,
+  getConversationSchema,
   getConversationsSchema,
   getMessagesSchema,
   markAsReadSchema,
@@ -7,6 +8,7 @@ import {
 } from "../schema/messages.schema";
 import {
   createOrGetConversation,
+  getConversation,
   getConversations,
   getMessages,
   getUnreadMessageCount,
@@ -53,6 +55,18 @@ export const messagesRouter = createTRPCRouter({
         userId: ctx.userId,
         cursor: input.cursor,
         limit: input.limit,
+      });
+    }),
+
+  /**
+   * Get a single conversation by ID
+   */
+  getConversation: protectedProcedure
+    .input(getConversationSchema)
+    .query(async ({ input, ctx }) => {
+      return getConversation({
+        conversationId: input.conversationId,
+        userId: ctx.userId,
       });
     }),
 

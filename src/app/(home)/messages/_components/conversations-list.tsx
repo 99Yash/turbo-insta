@@ -90,7 +90,6 @@ export function ConversationsList({
             updated[existingIndex] = {
               ...conversation,
               lastMessage: data.lastMessage ?? null,
-              lastMessageAt: data.timestamp,
               unreadCount: data.unreadCount ?? conversation.unreadCount,
             };
 
@@ -124,17 +123,38 @@ export function ConversationsList({
     (conversationId: string) => {
       onConversationSelect(conversationId);
 
-      // Mark as read
-      void markAsReadMutation.mutateAsync({ conversationId }).then(() => {
-        // Update local state to reset unread count
+      // Store the original unread count for rollback
+      const originalConversation = conversations.find(
+        (conv) => conv.id === conversationId,
+      );
+      const originalUnreadCount = originalConversation?.unreadCount ?? 0;
+
+      // Optimistic update - mark as read immediately
+      setConversations((prev) =>
+        prev.map((conv) =>
+          conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv,
+        ),
+      );
+
+      // Mark as read on server
+      markAsReadMutation.mutateAsync({ conversationId }).catch((error) => {
+        // Rollback optimistic update on failure
         setConversations((prev) =>
           prev.map((conv) =>
-            conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv,
+            conv.id === conversationId
+              ? { ...conv, unreadCount: originalUnreadCount }
+              : conv,
           ),
         );
+
+        // Log error for debugging
+        console.error("Failed to mark conversation as read:", error);
+
+        // You could also show a toast notification here if you have a notification system
+        // toast.error("Failed to mark messages as read");
       });
     },
-    [onConversationSelect, markAsReadMutation],
+    [onConversationSelect, markAsReadMutation, conversations],
   );
 
   // Filter conversations based on search
@@ -286,9 +306,7 @@ export function ConversationsList({
                           {conversation.lastMessage && (
                             <span className="text-xs text-muted-foreground">
                               {formatTimeToNow(
-                                new Date(
-                                  conversation.lastMessageAt ?? new Date(),
-                                ),
+                                conversation.lastMessage.createdAt,
                               )}
                             </span>
                           )}

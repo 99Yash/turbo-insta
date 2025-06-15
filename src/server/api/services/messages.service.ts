@@ -1,17 +1,20 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
-import { and, desc, eq, inArray, lt, or } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, lt, ne, or, sql } from "drizzle-orm";
 import { ably } from "~/lib/ably";
 import { createPrivateChannelName } from "~/lib/utils";
 import { db } from "~/server/db";
 import {
   conversations,
+  messageReads,
   messages,
   users,
   type Conversation,
   type Message,
   type NewConversation,
   type NewMessage,
+  type NewMessageRead,
 } from "~/server/db/schema";
+import type { StoredFile } from "~/types";
 
 export interface CreateConversationInput {
   readonly participant1Id: string;
@@ -23,25 +26,24 @@ export interface SendMessageInput {
   readonly senderId: string;
   readonly content: string;
   readonly type?: "text" | "image" | "file" | "system";
-  readonly attachments?: string;
+  readonly attachments?: StoredFile[];
 }
 
 export interface GetConversationsInput {
   readonly userId: string;
-  readonly cursor?: {
-    readonly id: string;
-    readonly lastMessageAt: string;
-  };
+  readonly cursor?: { id: string; createdAt: Date };
   readonly limit?: number;
+}
+
+export interface GetConversationInput {
+  readonly conversationId: string;
+  readonly userId: string;
 }
 
 export interface GetMessagesInput {
   readonly conversationId: string;
-  readonly userId: string; // For authorization
-  readonly cursor?: {
-    readonly id: string;
-    readonly createdAt: Date;
-  };
+  readonly userId: string;
+  readonly cursor?: { id: string; createdAt: Date };
   readonly limit?: number;
 }
 
@@ -65,6 +67,7 @@ export interface ConversationWithDetails extends Conversation {
     readonly createdAt: Date;
   } | null;
   readonly unreadCount: number;
+  readonly channelName: string;
 }
 
 export interface MessageWithDetails extends Message {
@@ -93,34 +96,31 @@ export async function createOrGetConversation(
       });
     }
 
-    // Create channel name using the utility function
-    const channelName = createPrivateChannelName(
-      participant1Id,
-      participant2Id,
-    );
-
-    // Check if conversation already exists
-    const existingConversation = await db
-      .select()
-      .from(conversations)
-      .where(eq(conversations.channelName, channelName))
-      .limit(1);
-
-    if (existingConversation[0]) {
-      return existingConversation[0];
-    }
-
     // Sort participant IDs to ensure consistent ordering
     const [sortedParticipant1, sortedParticipant2] = [
       participant1Id,
       participant2Id,
     ].sort() as [string, string];
 
+    // Check if conversation already exists
+    const existingConversation = await db
+      .select()
+      .from(conversations)
+      .where(
+        and(
+          eq(conversations.participant1Id, sortedParticipant1),
+          eq(conversations.participant2Id, sortedParticipant2),
+        ),
+      )
+      .limit(1);
+
+    if (existingConversation[0]) {
+      return existingConversation[0];
+    }
+
     const conversationData: NewConversation = {
-      channelName,
       participant1Id: sortedParticipant1,
       participant2Id: sortedParticipant2,
-      lastMessageAt: new Date().toISOString(),
     };
 
     const [conversation] = await db
@@ -145,6 +145,128 @@ export async function createOrGetConversation(
 }
 
 /**
+ * Get a single conversation by ID with details
+ */
+export async function getConversation(
+  input: GetConversationInput,
+): Promise<ConversationWithDetails> {
+  try {
+    const { conversationId, userId } = input;
+
+    // Get the conversation and verify user is a participant
+    const [conversation] = await db
+      .select()
+      .from(conversations)
+      .where(eq(conversations.id, conversationId))
+      .limit(1);
+
+    if (!conversation) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: "Conversation not found",
+      });
+    }
+
+    if (
+      conversation.participant1Id !== userId &&
+      conversation.participant2Id !== userId
+    ) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You are not a participant in this conversation",
+      });
+    }
+
+    // Get participant details
+    const participantIds = [
+      conversation.participant1Id,
+      conversation.participant2Id,
+    ];
+
+    const participants = await db
+      .select({
+        id: users.id,
+        name: users.name,
+        username: users.username,
+        imageUrl: users.imageUrl,
+      })
+      .from(users)
+      .where(inArray(users.id, participantIds));
+
+    // Get last message
+    const [lastMessage] = await db
+      .select({
+        id: messages.id,
+        content: messages.content,
+        type: messages.type,
+        createdAt: messages.createdAt,
+      })
+      .from(messages)
+      .where(eq(messages.conversationId, conversationId))
+      .orderBy(desc(messages.createdAt))
+      .limit(1);
+
+    // Calculate unread count for current user
+    const unreadCount = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(messages)
+      .leftJoin(
+        messageReads,
+        and(
+          eq(messageReads.messageId, messages.id),
+          eq(messageReads.userId, userId),
+        ),
+      )
+      .where(
+        and(
+          eq(messages.conversationId, conversationId),
+          ne(messages.senderId, userId), // Don't count own messages
+          isNull(messageReads.id), // Messages that haven't been read
+        ),
+      )
+      .then((result) => result[0]?.count ?? 0);
+
+    // Build participant details
+    const participant1 = participants.find(
+      (p) => p.id === conversation.participant1Id,
+    );
+    const participant2 = participants.find(
+      (p) => p.id === conversation.participant2Id,
+    );
+
+    // Generate channel name
+    const channelName = createPrivateChannelName(
+      conversation.participant1Id,
+      conversation.participant2Id,
+    );
+
+    return {
+      ...conversation,
+      participant1: participant1 ?? {
+        id: conversation.participant1Id,
+        name: "Unknown User",
+        username: "unknown",
+        imageUrl: null,
+      },
+      participant2: participant2 ?? {
+        id: conversation.participant2Id,
+        name: "Unknown User",
+        username: "unknown",
+        imageUrl: null,
+      },
+      lastMessage: lastMessage ?? null,
+      unreadCount,
+      channelName,
+    };
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+}
+
+/**
  * Send a message and emit real-time event
  */
 export async function sendMessage(input: SendMessageInput): Promise<Message> {
@@ -158,34 +280,17 @@ export async function sendMessage(input: SendMessageInput): Promise<Message> {
     } = input;
 
     // Verify conversation exists and user is a participant
-    const conversation = await db
-      .select()
-      .from(conversations)
-      .where(eq(conversations.id, conversationId))
-      .limit(1);
-
-    if (!conversation[0]) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Conversation not found",
-      });
-    }
-
-    const conv = conversation[0];
-    if (conv.participant1Id !== senderId && conv.participant2Id !== senderId) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "You are not a participant in this conversation",
-      });
-    }
+    const conversation = await getConversation({
+      conversationId,
+      userId: senderId,
+    });
 
     const messageData: NewMessage = {
       conversationId,
       senderId,
       content,
       type,
-      attachments,
-      status: "sent",
+      attachments: attachments ?? null, // Drizzle handles JSON serialization automatically
     };
 
     const [message] = await db.insert(messages).values(messageData).returning();
@@ -196,30 +301,6 @@ export async function sendMessage(input: SendMessageInput): Promise<Message> {
         message: "Failed to send message",
       });
     }
-
-    // Update conversation's last message info and unread counts
-    const recipientId =
-      conv.participant1Id === senderId
-        ? conv.participant2Id
-        : conv.participant1Id;
-    const isParticipant1Sender = conv.participant1Id === senderId;
-
-    const newUnreadCount1 = isParticipant1Sender
-      ? "0"
-      : String(Number(conv.unreadCountParticipant1) + 1);
-    const newUnreadCount2 = !isParticipant1Sender
-      ? "0"
-      : String(Number(conv.unreadCountParticipant2) + 1);
-
-    await db
-      .update(conversations)
-      .set({
-        lastMessageId: message.id,
-        lastMessageAt: message.createdAt.toISOString(),
-        unreadCountParticipant1: newUnreadCount1,
-        unreadCountParticipant2: newUnreadCount2,
-      })
-      .where(eq(conversations.id, conversationId));
 
     // Get sender info for real-time event
     const [sender] = await db
@@ -240,9 +321,15 @@ export async function sendMessage(input: SendMessageInput): Promise<Message> {
       });
     }
 
+    // Get recipient ID
+    const recipientId =
+      conversation.participant1Id === senderId
+        ? conversation.participant2Id
+        : conversation.participant1Id;
+
     try {
       // Emit to conversation channel
-      await ably.channels.get(conv.channelName).publish("message", {
+      await ably.channels.get(conversation.channelName).publish("message", {
         type: "new_message",
         message: {
           ...message,
@@ -251,10 +338,27 @@ export async function sendMessage(input: SendMessageInput): Promise<Message> {
         timestamp: message.createdAt,
       });
 
+      // Calculate new unread count for recipient
+      const recipientUnreadCount = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(messages)
+        .leftJoin(
+          messageReads,
+          and(
+            eq(messageReads.messageId, messages.id),
+            eq(messageReads.userId, recipientId),
+          ),
+        )
+        .where(
+          and(
+            eq(messages.conversationId, conversationId),
+            ne(messages.senderId, recipientId), // Don't count recipient's own messages
+            isNull(messageReads.id), // Messages that haven't been read
+          ),
+        )
+        .then((result) => result[0]?.count ?? 0);
+
       // Notify recipient of new message (for sidebar badge, etc.)
-      const recipientUnreadCount = isParticipant1Sender
-        ? Number(newUnreadCount2)
-        : Number(newUnreadCount1);
       await ably.channels.get(`messages:${recipientId}`).publish("message", {
         type: "new_message",
         conversationId,
@@ -270,7 +374,7 @@ export async function sendMessage(input: SendMessageInput): Promise<Message> {
       });
 
       console.log(
-        `✅ Published message to channels: ${conv.channelName} and messages:${recipientId}`,
+        `✅ Published message to channels: ${conversation.channelName} and messages:${recipientId}`,
         {
           messageId: message.id,
           senderId,
@@ -297,7 +401,7 @@ export async function sendMessage(input: SendMessageInput): Promise<Message> {
  */
 export async function getConversations(input: GetConversationsInput): Promise<{
   conversations: ConversationWithDetails[];
-  nextCursor?: { id: string; lastMessageAt: string };
+  nextCursor?: { id: string; createdAt: Date };
 }> {
   try {
     const { userId, cursor, limit = 20 } = input;
@@ -313,16 +417,16 @@ export async function getConversations(input: GetConversationsInput): Promise<{
           ),
           cursor
             ? or(
-                lt(conversations.lastMessageAt, cursor.lastMessageAt),
+                lt(conversations.createdAt, cursor.createdAt),
                 and(
-                  eq(conversations.lastMessageAt, cursor.lastMessageAt),
+                  eq(conversations.createdAt, cursor.createdAt),
                   lt(conversations.id, cursor.id),
                 ),
               )
             : undefined,
         ),
       )
-      .orderBy(desc(conversations.lastMessageAt), desc(conversations.id))
+      .orderBy(desc(conversations.createdAt), desc(conversations.id))
       .limit(limit + 1);
 
     // Get participant details
@@ -345,23 +449,58 @@ export async function getConversations(input: GetConversationsInput): Promise<{
             .where(inArray(users.id, participantIds))
         : [];
 
-    // Get last messages
-    const lastMessageIds = userConversations
-      .map((c) => c.lastMessageId)
-      .filter(Boolean) as string[];
+    // Get last messages for each conversation
+    const conversationIds = userConversations.map((c) => c.id);
 
-    const lastMessages =
-      lastMessageIds.length > 0
-        ? await db
-            .select({
-              id: messages.id,
-              content: messages.content,
-              type: messages.type,
-              createdAt: messages.createdAt,
-            })
-            .from(messages)
-            .where(inArray(messages.id, lastMessageIds))
-        : [];
+    const lastMessagesSubquery = db
+      .select({
+        id: messages.id,
+        conversationId: messages.conversationId,
+        content: messages.content,
+        type: messages.type,
+        createdAt: messages.createdAt,
+        rowNumber:
+          sql<number>`row_number() over (partition by ${messages.conversationId} order by ${messages.createdAt} desc)`.as(
+            "row_number",
+          ),
+      })
+      .from(messages)
+      .where(inArray(messages.conversationId, conversationIds))
+      .as("ranked_messages");
+
+    const lastMessages = await db
+      .select({
+        id: lastMessagesSubquery.id,
+        conversationId: lastMessagesSubquery.conversationId,
+        content: lastMessagesSubquery.content,
+        type: lastMessagesSubquery.type,
+        createdAt: lastMessagesSubquery.createdAt,
+      })
+      .from(lastMessagesSubquery)
+      .where(eq(lastMessagesSubquery.rowNumber, 1));
+
+    // Get unread counts for each conversation
+    const unreadCounts = await db
+      .select({
+        conversationId: messages.conversationId,
+        unreadCount: sql<number>`count(*)`,
+      })
+      .from(messages)
+      .leftJoin(
+        messageReads,
+        and(
+          eq(messageReads.messageId, messages.id),
+          eq(messageReads.userId, userId),
+        ),
+      )
+      .where(
+        and(
+          inArray(messages.conversationId, conversationIds),
+          ne(messages.senderId, userId), // Don't count own messages
+          isNull(messageReads.id), // Messages that haven't been read
+        ),
+      )
+      .groupBy(messages.conversationId);
 
     // Combine conversations with details
     const conversationsWithDetails: ConversationWithDetails[] =
@@ -373,14 +512,16 @@ export async function getConversations(input: GetConversationsInput): Promise<{
           (p) => p.id === conversation.participant2Id,
         );
         const lastMessage = lastMessages.find(
-          (m) => m.id === conversation.lastMessageId,
+          (m) => m.conversationId === conversation.id,
+        );
+        const unreadData = unreadCounts.find(
+          (u) => u.conversationId === conversation.id,
         );
 
-        // Calculate unread count for current user
-        const isUserParticipant1 = conversation.participant1Id === userId;
-        const unreadCount = isUserParticipant1
-          ? Number(conversation.unreadCountParticipant1)
-          : Number(conversation.unreadCountParticipant2);
+        const channelName = createPrivateChannelName(
+          conversation.participant1Id,
+          conversation.participant2Id,
+        );
 
         return {
           ...conversation,
@@ -396,18 +537,25 @@ export async function getConversations(input: GetConversationsInput): Promise<{
             username: "unknown",
             imageUrl: null,
           },
-          lastMessage: lastMessage ?? null,
-          unreadCount,
+          lastMessage: lastMessage
+            ? {
+                id: lastMessage.id,
+                content: lastMessage.content,
+                type: lastMessage.type,
+                createdAt: lastMessage.createdAt,
+              }
+            : null,
+          unreadCount: unreadData?.unreadCount ?? 0,
+          channelName,
         };
       });
 
-    let nextCursor: { id: string; lastMessageAt: string } | undefined =
-      undefined;
+    let nextCursor: { id: string; createdAt: Date } | undefined = undefined;
     if (userConversations.length > limit) {
       const nextItem = userConversations.pop()!;
       nextCursor = {
         id: nextItem.id,
-        lastMessageAt: nextItem.lastMessageAt ?? "",
+        createdAt: nextItem.createdAt,
       };
     }
 
@@ -434,26 +582,7 @@ export async function getMessages(input: GetMessagesInput): Promise<{
     const { conversationId, userId, cursor, limit = 50 } = input;
 
     // Verify user is a participant in the conversation
-    const conversation = await db
-      .select()
-      .from(conversations)
-      .where(eq(conversations.id, conversationId))
-      .limit(1);
-
-    if (!conversation[0]) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Conversation not found",
-      });
-    }
-
-    const conv = conversation[0];
-    if (conv.participant1Id !== userId && conv.participant2Id !== userId) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "You are not a participant in this conversation",
-      });
-    }
+    await getConversation({ conversationId, userId });
 
     const conversationMessages = await db
       .select()
@@ -538,39 +667,41 @@ export async function markMessagesAsRead(
 ): Promise<{ count: number }> {
   try {
     // Verify user is a participant
-    const conversation = await db
-      .select()
-      .from(conversations)
-      .where(eq(conversations.id, conversationId))
-      .limit(1);
+    await getConversation({ conversationId, userId });
 
-    if (!conversation[0]) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: "Conversation not found",
-      });
+    // Get all unread messages in the conversation for this user
+    const unreadMessages = await db
+      .select({ id: messages.id })
+      .from(messages)
+      .leftJoin(
+        messageReads,
+        and(
+          eq(messageReads.messageId, messages.id),
+          eq(messageReads.userId, userId),
+        ),
+      )
+      .where(
+        and(
+          eq(messages.conversationId, conversationId),
+          ne(messages.senderId, userId), // Don't mark own messages as read
+          isNull(messageReads.id), // Messages that haven't been read
+        ),
+      );
+
+    if (unreadMessages.length === 0) {
+      return { count: 0 };
     }
 
-    const conv = conversation[0];
-    if (conv.participant1Id !== userId && conv.participant2Id !== userId) {
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: "You are not a participant in this conversation",
-      });
-    }
+    // Insert read receipts for all unread messages
+    const readReceipts: NewMessageRead[] = unreadMessages.map((message) => ({
+      messageId: message.id,
+      userId,
+      readAt: new Date().toISOString(),
+    }));
 
-    // Reset unread count for the user
-    const isUserParticipant1 = conv.participant1Id === userId;
-    const updateData = isUserParticipant1
-      ? { unreadCountParticipant1: "0" }
-      : { unreadCountParticipant2: "0" };
+    await db.insert(messageReads).values(readReceipts);
 
-    const result = await db
-      .update(conversations)
-      .set(updateData)
-      .where(eq(conversations.id, conversationId));
-
-    return { count: Number(result.count) };
+    return { count: readReceipts.length };
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,
@@ -584,31 +715,29 @@ export async function markMessagesAsRead(
  */
 export async function getUnreadMessageCount(userId: string): Promise<number> {
   try {
-    const userConversations = await db
-      .select({
-        unreadCountParticipant1: conversations.unreadCountParticipant1,
-        unreadCountParticipant2: conversations.unreadCountParticipant2,
-        participant1Id: conversations.participant1Id,
-        participant2Id: conversations.participant2Id,
-      })
-      .from(conversations)
+    const result = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(messages)
+      .leftJoin(
+        messageReads,
+        and(
+          eq(messageReads.messageId, messages.id),
+          eq(messageReads.userId, userId),
+        ),
+      )
+      .innerJoin(conversations, eq(conversations.id, messages.conversationId))
       .where(
-        or(
-          eq(conversations.participant1Id, userId),
-          eq(conversations.participant2Id, userId),
+        and(
+          or(
+            eq(conversations.participant1Id, userId),
+            eq(conversations.participant2Id, userId),
+          ),
+          ne(messages.senderId, userId), // Don't count own messages
+          isNull(messageReads.id), // Messages that haven't been read
         ),
       );
 
-    let totalUnread = 0;
-    for (const conv of userConversations) {
-      const isUserParticipant1 = conv.participant1Id === userId;
-      const unreadCount = isUserParticipant1
-        ? Number(conv.unreadCountParticipant1)
-        : Number(conv.unreadCountParticipant2);
-      totalUnread += unreadCount;
-    }
-
-    return totalUnread;
+    return result[0]?.count ?? 0;
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,

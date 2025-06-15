@@ -1,13 +1,14 @@
 import { relations } from "drizzle-orm";
 import {
-  boolean,
   index,
+  json,
   pgEnum,
   pgTable,
   text,
   varchar,
 } from "drizzle-orm/pg-core";
 import { generateId } from "~/lib/utils";
+import { type StoredFile } from "~/types";
 import { users } from "./users";
 import { lifecycleDates } from "./utils";
 
@@ -18,20 +19,12 @@ export const messageTypeEnum = pgEnum("message_type", [
   "system",
 ]);
 
-export const messageStatusEnum = pgEnum("message_status", [
-  "sent",
-  "delivered",
-  "read",
-]);
-
 export const conversations = pgTable(
   "conversations",
   {
     id: varchar("id")
       .$defaultFn(() => generateId())
       .primaryKey(),
-    // Channel name using the createPrivateChannelName utility
-    channelName: varchar("channel_name", { length: 255 }).notNull().unique(),
     // Store participant IDs for easy querying
     participant1Id: varchar("participant_1_id")
       .notNull()
@@ -39,30 +32,14 @@ export const conversations = pgTable(
     participant2Id: varchar("participant_2_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    // Last message info for conversation list
-    lastMessageId: varchar("last_message_id"),
-    lastMessageAt: text("last_message_at"),
-    // Unread counts for each participant
-    unreadCountParticipant1: text("unread_count_participant_1")
-      .default("0")
-      .notNull(),
-    unreadCountParticipant2: text("unread_count_participant_2")
-      .default("0")
-      .notNull(),
     ...lifecycleDates,
   },
   (conversation) => ({
-    channelNameIndex: index("conversation_channel_name_idx").on(
-      conversation.channelName,
-    ),
     participant1Index: index("conversation_participant_1_idx").on(
       conversation.participant1Id,
     ),
     participant2Index: index("conversation_participant_2_idx").on(
       conversation.participant2Id,
-    ),
-    lastMessageAtIndex: index("conversation_last_message_at_idx").on(
-      conversation.lastMessageAt,
     ),
   }),
 );
@@ -81,14 +58,7 @@ export const messages = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     type: messageTypeEnum("type").default("text").notNull(),
     content: text("content"), // Text content
-    attachments: text("attachments"), // JSON array of attachment URLs/metadata
-    status: messageStatusEnum("status").default("sent").notNull(),
-    isEdited: boolean("is_edited").default(false).notNull(),
-    editedAt: text("edited_at"),
-    // For message replies/threading (future enhancement)
-    replyToId: varchar("reply_to_id"),
-    // For message reactions (future enhancement)
-    reactions: text("reactions"), // JSON object with reaction counts
+    attachments: json("attachments").$type<StoredFile[]>(), // File attachments
     ...lifecycleDates,
   },
   (message) => ({
@@ -97,7 +67,32 @@ export const messages = pgTable(
     ),
     senderIndex: index("message_sender_idx").on(message.senderId),
     createdAtIndex: index("message_created_at_idx").on(message.createdAt),
-    statusIndex: index("message_status_idx").on(message.status),
+  }),
+);
+
+// Add read receipts table for proper unread tracking
+export const messageReads = pgTable(
+  "message_reads",
+  {
+    id: varchar("id")
+      .$defaultFn(() => generateId())
+      .primaryKey(),
+    messageId: varchar("message_id")
+      .notNull()
+      .references(() => messages.id, { onDelete: "cascade" }),
+    userId: varchar("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    readAt: text("read_at").notNull(),
+    ...lifecycleDates,
+  },
+  (messageRead) => ({
+    messageIndex: index("message_read_message_idx").on(messageRead.messageId),
+    userIndex: index("message_read_user_idx").on(messageRead.userId),
+    messageUserIndex: index("message_read_message_user_idx").on(
+      messageRead.messageId,
+      messageRead.userId,
+    ),
   }),
 );
 
@@ -118,7 +113,7 @@ export const conversationRelations = relations(
   }),
 );
 
-export const messageRelations = relations(messages, ({ one }) => ({
+export const messageRelations = relations(messages, ({ one, many }) => ({
   conversation: one(conversations, {
     fields: [messages.conversationId],
     references: [conversations.id],
@@ -127,11 +122,24 @@ export const messageRelations = relations(messages, ({ one }) => ({
     fields: [messages.senderId],
     references: [users.id],
   }),
+  reads: many(messageReads),
+}));
+
+export const messageReadRelations = relations(messageReads, ({ one }) => ({
+  message: one(messages, {
+    fields: [messageReads.messageId],
+    references: [messages.id],
+  }),
+  user: one(users, {
+    fields: [messageReads.userId],
+    references: [users.id],
+  }),
 }));
 
 export type Conversation = typeof conversations.$inferSelect;
 export type NewConversation = typeof conversations.$inferInsert;
 export type Message = typeof messages.$inferSelect;
 export type NewMessage = typeof messages.$inferInsert;
+export type MessageRead = typeof messageReads.$inferSelect;
+export type NewMessageRead = typeof messageReads.$inferInsert;
 export type MessageType = Message["type"];
-export type MessageStatus = Message["status"];

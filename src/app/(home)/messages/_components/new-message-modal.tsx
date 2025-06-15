@@ -8,7 +8,8 @@ import { Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useUser } from "~/contexts/user-context";
-import { cn, getInitials } from "~/lib/utils";
+import { useDebounce } from "~/hooks/use-debounce";
+import { cn, getInitials, showErrorToast } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 interface UserSearchResult {
@@ -34,10 +35,13 @@ export function NewMessageModal({
   const [searchQuery, setSearchQuery] = React.useState("");
   const [selectedUser, setSelectedUser] = React.useState<string>();
 
+  // Debounce search query to reduce API calls
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
   // Fetch users for suggestions
   const { data: usersData, isLoading } = api.user.getUsersByUsername.useQuery(
     {
-      query: searchQuery,
+      query: debouncedSearchQuery,
       limit: 20,
     },
     {
@@ -66,11 +70,11 @@ export function NewMessageModal({
 
     try {
       await createConversationMutation.mutateAsync({
-        participant1Id: user.id,
         participant2Id: selectedUser,
       });
     } catch (error) {
       console.error("Failed to create conversation:", error);
+      showErrorToast(error);
     }
   };
 

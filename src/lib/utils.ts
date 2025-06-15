@@ -1,8 +1,10 @@
 import { isClerkAPIResponseError } from "@clerk/nextjs/errors";
 import { type User } from "@clerk/nextjs/server";
-import { type ClassValue, clsx } from "clsx";
+import { clsx, type ClassValue } from "clsx";
 import {
   formatDistanceToNowStrict,
+  isValid,
+  parseISO,
   type FormatDistanceToNowStrictOptions,
 } from "date-fns";
 import { customAlphabet } from "nanoid";
@@ -144,16 +146,75 @@ export function getInitials(name: string | undefined | null, all?: boolean) {
   return `${firstNameInitial?.toUpperCase()}${lastNameInitial?.toUpperCase()}`;
 }
 
+/**
+ * Safely parse a date input and return a valid Date object or null
+ * @param date - Date input to parse
+ * @returns Valid Date object or null if parsing fails
+ */
+export function safeParseDate(date: Date | string | number): Date | null {
+  if (date instanceof Date) {
+    return isValid(date) ? date : null;
+  }
+
+  if (typeof date === "string") {
+    // Try parseISO first (for ISO-8601 strings from database/API)
+    const isoDate = parseISO(date);
+    if (isValid(isoDate)) {
+      return isoDate;
+    }
+    // Fallback to new Date() for other string formats
+    const fallbackDate = new Date(date);
+    return isValid(fallbackDate) ? fallbackDate : null;
+  }
+
+  if (typeof date === "number") {
+    const numericDate = new Date(date);
+    return isValid(numericDate) ? numericDate : null;
+  }
+
+  return null;
+}
+
+/**
+ * Log invalid date encounters for debugging
+ */
+function logInvalidDate(
+  functionName: string,
+  date: unknown,
+  context?: string,
+): void {
+  const errorInfo = {
+    function: functionName,
+    input: date,
+    inputType: typeof date,
+    context,
+    timestamp: new Date().toISOString(),
+  };
+
+  console.warn(`[Date Validation] Invalid date in ${functionName}:`, errorInfo);
+
+  // In development, also log stack trace to help identify the source
+  if (process.env.NODE_ENV === "development") {
+    console.trace("Invalid date source:");
+  }
+}
+
 export function formatDate(
   date: Date | string | number,
   opts: Intl.DateTimeFormatOptions = {},
-) {
+): string {
+  const validDate = safeParseDate(date);
+  if (!validDate) {
+    logInvalidDate("formatDate", date, "Date formatting failed");
+    return "Invalid date";
+  }
+
   return new Intl.DateTimeFormat("en-US", {
     month: opts.month ?? "long",
     day: opts.day ?? "numeric",
     year: opts.year ?? "numeric",
     ...opts,
-  }).format(new Date(date));
+  }).format(validDate);
 }
 
 export const formatDistanceLocale = {
@@ -189,18 +250,21 @@ export function formatTimeToNow(
   { showDateAfterDays = Infinity }: { showDateAfterDays?: number } = {},
   options?: FormatDistanceToNowStrictOptions,
 ): string {
-  // Convert string dates to Date objects to handle serialized dates from tRPC
-  const dateObj = date instanceof Date ? date : new Date(date);
+  const validDate = safeParseDate(date);
+  if (!validDate) {
+    logInvalidDate("formatTimeToNow", date, "Time-to-now formatting failed");
+    return "Invalid date";
+  }
 
   const daysDiff = Math.floor(
-    (new Date().getTime() - dateObj.getTime()) / (1000 * 60 * 60 * 24),
+    (new Date().getTime() - validDate.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   if (daysDiff > showDateAfterDays) {
-    return formatDate(dateObj, { month: "short", day: "numeric" });
+    return formatDate(validDate, { month: "short", day: "numeric" });
   }
 
-  return formatDistanceToNowStrict(dateObj, {
+  return formatDistanceToNowStrict(validDate, {
     locale: {
       formatDistance,
     },

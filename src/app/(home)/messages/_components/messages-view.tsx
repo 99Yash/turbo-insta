@@ -13,6 +13,7 @@ import {
   createPrivateChannelName,
   formatTimeToNow,
   getInitials,
+  safeParseDate,
 } from "~/lib/utils";
 import type { MessageWithDetails } from "~/server/api/services/messages.service";
 import { api } from "~/trpc/react";
@@ -46,10 +47,10 @@ export function MessagesView({ conversationId }: MessagesViewProps) {
   );
 
   // Fetch conversation details for header
-  const { data: conversationsData } = api.messages.getConversations.useQuery(
-    { limit: 1 },
+  const { data: conversationData } = api.messages.getConversation.useQuery(
+    { conversationId },
     {
-      enabled: !!user,
+      enabled: !!user && !!conversationId,
       refetchOnWindowFocus: false,
     },
   );
@@ -65,10 +66,8 @@ export function MessagesView({ conversationId }: MessagesViewProps) {
 
   // Set other participant from conversations data
   React.useEffect(() => {
-    if (conversationsData && user) {
-      const conversation = conversationsData.conversations.find(
-        (conv) => conv.id === conversationId,
-      );
+    if (conversationData && user) {
+      const conversation = conversationData;
       if (conversation) {
         const other =
           conversation.participant1.id === user.id
@@ -77,7 +76,7 @@ export function MessagesView({ conversationId }: MessagesViewProps) {
         setOtherParticipant(other);
       }
     }
-  }, [conversationsData, conversationId, user]);
+  }, [conversationData, conversationId, user]);
 
   // Subscribe to real-time messages for this conversation
   React.useEffect(() => {
@@ -265,8 +264,8 @@ export function MessagesView({ conversationId }: MessagesViewProps) {
                   !prevMessage || prevMessage.senderId !== message.senderId;
 
                 const timeSinceLastMessage = prevMessage
-                  ? new Date(message.createdAt).getTime() -
-                    new Date(prevMessage.createdAt).getTime()
+                  ? (safeParseDate(message.createdAt)?.getTime() ?? 0) -
+                    (safeParseDate(prevMessage.createdAt)?.getTime() ?? 0)
                   : 0;
                 const showTimestamp =
                   isFirstInGroup || timeSinceLastMessage > 300000; // 5 minutes
