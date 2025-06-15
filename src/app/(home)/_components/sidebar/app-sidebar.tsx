@@ -37,10 +37,17 @@ export function AppSidebar() {
 
   // Local state for real-time unread count updates (start with 0)
   const [unreadCount, setUnreadCount] = React.useState<number>(0);
+  const [unreadMessageCount, setUnreadMessageCount] = React.useState<number>(0);
 
   // Get initial unread count once on mount
   const { refetch: fetchInitialCount } =
     api.notifications.getUnreadCount.useQuery(undefined, {
+      refetchOnWindowFocus: false,
+    });
+
+  // Get initial unread message count once on mount
+  const { refetch: fetchInitialMessageCount } =
+    api.messages.getUnreadMessageCount.useQuery(undefined, {
       refetchOnWindowFocus: false,
     });
 
@@ -52,8 +59,13 @@ export function AppSidebar() {
           setUnreadCount(result.data);
         }
       });
+      void fetchInitialMessageCount().then((result) => {
+        if (result.data !== undefined) {
+          setUnreadMessageCount(result.data);
+        }
+      });
     }
-  }, [user, fetchInitialCount]);
+  }, [user, fetchInitialCount, fetchInitialMessageCount]);
 
   // Subscribe to websocket notifications for real-time count updates
   React.useEffect(() => {
@@ -78,6 +90,33 @@ export function AppSidebar() {
 
     return () => {
       void channel.unsubscribe("notification", handler);
+    };
+  }, [user, client]);
+
+  // Subscribe to websocket messages for real-time message count updates
+  React.useEffect(() => {
+    if (!user || !client) return;
+
+    const channelName = `messages:${user.id}`;
+    const channel = client.channels.get(channelName);
+
+    const handler = (message: Ably.Message) => {
+      // Update local unread message count directly from websocket message
+      const data = message.data as {
+        unreadCount?: number;
+        type?: string;
+        timestamp?: string;
+        conversationId?: string;
+      };
+      if (data?.unreadCount !== undefined) {
+        setUnreadMessageCount(data.unreadCount);
+      }
+    };
+
+    void channel.subscribe("message", handler);
+
+    return () => {
+      void channel.unsubscribe("message", handler);
     };
   }, [user, client]);
 
@@ -141,6 +180,9 @@ export function AppSidebar() {
                       ? pathname === "/"
                       : pathname.startsWith(item.href);
                   const Icon = isActive ? item.filledIcon : item.icon;
+                  const showMessageBadge =
+                    item.label === "Messages" && unreadMessageCount > 0;
+
                   return (
                     <SidebarMenuItem key={item.label}>
                       <SidebarMenuButton
@@ -153,9 +195,21 @@ export function AppSidebar() {
                           href={item.href}
                           className="flex items-center gap-3"
                         >
-                          <Icon
-                            className={cn("size-5", isActive && "text-primary")}
-                          />
+                          <div className="relative">
+                            <Icon
+                              className={cn(
+                                "size-5",
+                                isActive && "text-primary",
+                              )}
+                            />
+                            {showMessageBadge && (
+                              <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
+                                {unreadMessageCount > 9
+                                  ? "9+"
+                                  : unreadMessageCount}
+                              </span>
+                            )}
+                          </div>
                           <span
                             className={cn(
                               "font-medium transition-all duration-200",
@@ -230,12 +284,11 @@ export function AppSidebar() {
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter className="border-t border-border/40 p-2">
+        <SidebarFooter className="p-4">
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
-                isActive={pathname.startsWith("/settings")}
                 tooltip="Settings"
                 className="transition-all duration-200"
               >
@@ -245,17 +298,15 @@ export function AppSidebar() {
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
-
             <SidebarMenuItem>
               <SidebarMenuButton
                 asChild
-                isActive={pathname.startsWith("/signout")}
-                tooltip="Logout"
-                className="mt-2"
+                tooltip="Sign Out"
+                className="transition-all duration-200"
               >
-                <Link href="/signout" className="flex items-center gap-3">
+                <Link href="/sign-out" className="flex items-center gap-3">
                   <LogOutIcon className="size-5" />
-                  <span className="font-medium">Logout</span>
+                  <span className="font-medium">Sign Out</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
@@ -263,11 +314,10 @@ export function AppSidebar() {
         </SidebarFooter>
       </Sidebar>
 
-      {/* Overlay Notifications Sidebar */}
       <NotificationsSidebar
+        unreadCount={unreadCount}
         isOpen={isNotificationsSidebarOpen}
         onClose={() => setIsNotificationsSidebarOpen(false)}
-        unreadCount={count}
         onUnreadCountChange={handleUnreadCountChange}
       />
     </>

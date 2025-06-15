@@ -185,19 +185,22 @@ export function formatDistance(token: string, count: number): string {
 }
 
 export function formatTimeToNow(
-  date: Date,
+  date: Date | string,
   { showDateAfterDays = Infinity }: { showDateAfterDays?: number } = {},
   options?: FormatDistanceToNowStrictOptions,
 ): string {
+  // Convert string dates to Date objects to handle serialized dates from tRPC
+  const dateObj = date instanceof Date ? date : new Date(date);
+
   const daysDiff = Math.floor(
-    (new Date().getTime() - date.getTime()) / (1000 * 60 * 60 * 24),
+    (new Date().getTime() - dateObj.getTime()) / (1000 * 60 * 60 * 24),
   );
 
   if (daysDiff > showDateAfterDays) {
-    return formatDate(date, { month: "short", day: "numeric" });
+    return formatDate(dateObj, { month: "short", day: "numeric" });
   }
 
-  return formatDistanceToNowStrict(date, {
+  return formatDistanceToNowStrict(dateObj, {
     locale: {
       formatDistance,
     },
