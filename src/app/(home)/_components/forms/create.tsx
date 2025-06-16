@@ -7,7 +7,7 @@ import {
   ChevronRightIcon,
   Cross1Icon,
 } from "@radix-ui/react-icons";
-import { AnimatePresence, motion } from "framer-motion";
+import { AnimatePresence, motion, type Variants } from "framer-motion";
 import { UserIcon } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
@@ -257,7 +257,7 @@ export function Create({
     setCurrentImageIndex(0);
   };
 
-  const modalVariants = {
+  const modalVariants: Variants = {
     hidden: { opacity: 0, scale: 0.95 },
     visible: {
       opacity: 1,
