@@ -7,7 +7,7 @@ import {
   unique,
   varchar,
 } from "drizzle-orm/pg-core";
-import { generateId } from "~/lib/utils";
+import { createId } from "~/lib/utils";
 import { type StoredFile } from "~/types";
 import { users } from "./users";
 import { lifecycleDates } from "./utils";
@@ -16,7 +16,7 @@ export const messages = pgTable(
   "messages",
   {
     id: varchar("id")
-      .$defaultFn(() => generateId())
+      .$defaultFn(() => createId())
       .primaryKey(),
     text: text("text").notNull(),
     files: json("files").$type<StoredFile[]>(),
@@ -40,7 +40,7 @@ export const messageReactions = pgTable(
   "message_reactions",
   {
     id: varchar("id")
-      .$defaultFn(() => generateId())
+      .$defaultFn(() => createId())
       .primaryKey(),
     // user who reacted to the message
     userId: varchar("user_id", { length: 32 })
