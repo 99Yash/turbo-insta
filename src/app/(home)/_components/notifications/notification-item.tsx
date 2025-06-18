@@ -59,12 +59,17 @@ export function NotificationItem({
 
     return (
       <>
-        <span className="font-medium">{actorName}</span>{" "}
-        <span>{getActionVerb()}</span>
-        <span aria-hidden className="mx-1">
+        <span className="text-sm font-medium text-foreground">{actorName}</span>{" "}
+        <span className="text-sm text-muted-foreground">{getActionVerb()}</span>
+        <span aria-hidden className="mx-1 text-xs text-muted-foreground">
           •
         </span>
-        <time dateTime={notification.createdAt.toISOString()}>{timeText}</time>
+        <time
+          className="text-xs text-muted-foreground"
+          dateTime={notification.createdAt.toISOString()}
+        >
+          {timeText}
+        </time>
       </>
     );
   };
@@ -147,7 +152,7 @@ export function NotificationItem({
             {/* Content text for comments, replies, etc. */}
             {getContentText() && (
               <p className="mt-1 line-clamp-2 text-xs text-muted-foreground/80">
-                &ldquo;{getContentText()}&rdquo;
+                {getContentText()}
               </p>
             )}
           </div>
