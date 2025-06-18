@@ -51,7 +51,7 @@ export function NotificationItem({
         case "follow":
           return "followed you";
         case "comment_like":
-          return "liked comment";
+          return "liked your comment";
         default:
           return "";
       }

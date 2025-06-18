@@ -43,10 +43,13 @@ export type CreateNotificationInput =
     })
   | (BaseNotificationInput & {
       readonly type: "comment_like";
-      readonly commentId?: string;
-      readonly commentLikeId?: string;
-      readonly replyId?: string;
-      readonly commentReplyLikeId?: string;
+      readonly commentId: string;
+      readonly commentLikeId: string;
+    })
+  | (BaseNotificationInput & {
+      readonly type: "reply_like";
+      readonly replyId: string;
+      readonly commentReplyLikeId: string;
     })
   | (BaseNotificationInput & {
       readonly type: "follow";
@@ -113,7 +116,10 @@ export async function createNotification(
     const baseWhereConditions = [
       eq(notifications.recipientId, input.recipientId),
       eq(notifications.actorId, input.actorId),
-      eq(notifications.type, input.type),
+      eq(
+        notifications.type,
+        input.type === "reply_like" ? "comment_like" : input.type,
+      ),
       gt(notifications.createdAt, oneHourAgo),
     ];
 
@@ -136,14 +142,12 @@ export async function createNotification(
         typeSpecificConditions.push(eq(notifications.replyId, input.replyId));
         break;
       case "comment_like":
-        // Handle both comment likes and reply likes
-        if ("commentId" in input && input.commentId) {
-          typeSpecificConditions.push(
-            eq(notifications.commentId, input.commentId),
-          );
-        } else if ("replyId" in input && input.replyId) {
-          typeSpecificConditions.push(eq(notifications.replyId, input.replyId));
-        }
+        typeSpecificConditions.push(
+          eq(notifications.commentId, input.commentId),
+        );
+        break;
+      case "reply_like":
+        typeSpecificConditions.push(eq(notifications.replyId, input.replyId));
         break;
       case "follow":
         typeSpecificConditions.push(eq(notifications.followId, input.followId));
@@ -177,7 +181,6 @@ export async function createNotification(
     const baseNotificationData = {
       recipientId: input.recipientId,
       actorId: input.actorId,
-      type: input.type,
       message: input.message,
       isRead: false,
     };
@@ -187,6 +190,7 @@ export async function createNotification(
       case "like":
         notificationData = {
           ...baseNotificationData,
+          type: "like",
           postId: input.postId,
           likeId: input.likeId,
         };
@@ -194,6 +198,7 @@ export async function createNotification(
       case "comment":
         notificationData = {
           ...baseNotificationData,
+          type: "comment",
           postId: input.postId,
           commentId: input.commentId,
         };
@@ -201,41 +206,39 @@ export async function createNotification(
       case "reply":
         notificationData = {
           ...baseNotificationData,
+          type: "reply",
           commentId: input.commentId,
           replyId: input.replyId,
         };
         break;
       case "comment_like":
-        // Handle both comment likes and reply likes
-        if ("commentId" in input && input.commentId) {
-          notificationData = {
-            ...baseNotificationData,
-            commentId: input.commentId,
-            commentLikeId: input.commentLikeId,
-          };
-        } else if ("replyId" in input && input.replyId) {
-          notificationData = {
-            ...baseNotificationData,
-            replyId: input.replyId,
-            commentReplyLikeId: input.commentReplyLikeId,
-          };
-        } else {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message:
-              "Comment like notification must specify either commentId or replyId",
-          });
-        }
+        notificationData = {
+          ...baseNotificationData,
+          type: "comment_like",
+          commentId: input.commentId,
+          commentLikeId: input.commentLikeId,
+        };
+        break;
+      case "reply_like":
+        // Map reply_like to comment_like in database but keep type distinction in TS
+        notificationData = {
+          ...baseNotificationData,
+          type: "comment_like",
+          replyId: input.replyId,
+          commentReplyLikeId: input.commentReplyLikeId,
+        };
         break;
       case "follow":
         notificationData = {
           ...baseNotificationData,
+          type: "follow",
           followId: input.followId,
         };
         break;
       case "mention":
         notificationData = {
           ...baseNotificationData,
+          type: "mention",
           postId: input.postId,
           commentId: input.commentId,
           replyId: input.replyId,
