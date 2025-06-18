@@ -248,7 +248,7 @@ async function toggleReplyLike({
         await createNotification({
           recipientId: commentReplyWithOwner.commentReplyOwnerId,
           actorId: userId,
-          type: "comment_like", // Using comment_like type for reply likes too
+          type: "reply_like",
           replyId: commentReplyId,
           commentReplyLikeId: newLike.id,
         });

@@ -1,6 +1,6 @@
+import { generateId } from "ai";
 import { relations } from "drizzle-orm";
 import { index, json, pgTable, varchar } from "drizzle-orm/pg-core";
-import { generateId } from "~/lib/utils";
 import { type StoredFile } from "~/types";
 import { comments } from "./comments";
 import { likes } from "./likes";

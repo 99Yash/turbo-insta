@@ -6,6 +6,7 @@ export const notificationTypeSchema = z.enum([
   "reply",
   "follow",
   "comment_like",
+  "reply_like",
   "mention",
 ]);
 

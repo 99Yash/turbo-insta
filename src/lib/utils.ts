@@ -29,7 +29,7 @@ export function getErrorMessage(err: unknown) {
   }
 }
 
-export function generateId(
+export function createId(
   prefix?: string,
   { length = 12, separator = "_" } = {},
 ) {

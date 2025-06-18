@@ -10,31 +10,67 @@ import {
   users,
   type NewNotification,
   type Notification,
-  type NotificationType,
 } from "~/server/db/schema";
 
-export interface CreateNotificationInput {
+/**
+ * Base notification input with common fields
+ */
+type BaseNotificationInput = {
   readonly recipientId: string;
   readonly actorId: string;
-  readonly type: NotificationType;
-  readonly postId?: string;
-  readonly commentId?: string;
-  readonly replyId?: string;
-  readonly likeId?: string;
-  readonly commentLikeId?: string;
-  readonly commentReplyLikeId?: string;
-  readonly followId?: string;
   readonly message?: string;
-}
+};
 
-export interface GetNotificationsInput {
+/**
+ * Discriminated union for different notification types
+ * Each type requires its specific data fields
+ */
+export type CreateNotificationInput =
+  | (BaseNotificationInput & {
+      readonly type: "like";
+      readonly postId: string;
+      readonly likeId: string;
+    })
+  | (BaseNotificationInput & {
+      readonly type: "comment";
+      readonly postId: string;
+      readonly commentId: string;
+    })
+  | (BaseNotificationInput & {
+      readonly type: "reply";
+      readonly commentId: string;
+      readonly replyId: string;
+    })
+  | (BaseNotificationInput & {
+      readonly type: "comment_like";
+      readonly commentId: string;
+      readonly commentLikeId: string;
+    })
+  | (BaseNotificationInput & {
+      readonly type: "reply_like";
+      readonly replyId: string;
+      readonly commentReplyLikeId: string;
+    })
+  | (BaseNotificationInput & {
+      readonly type: "follow";
+      readonly followId: string;
+    })
+  | (BaseNotificationInput & {
+      readonly type: "mention";
+      readonly postId?: string;
+      readonly commentId?: string;
+      readonly replyId?: string;
+      readonly message: string; // Required for mentions
+    });
+
+export type GetNotificationsInput = {
   readonly userId: string;
   readonly cursor?: {
     readonly id: string;
     readonly createdAt: Date;
   };
   readonly limit?: number;
-}
+};
 
 export interface NotificationWithDetails extends Notification {
   readonly actor: {
@@ -75,42 +111,137 @@ export async function createNotification(
 
     // Check for duplicate notifications (same type, same entities, within last hour)
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+
+    // Build where conditions based on notification type
+    const baseWhereConditions = [
+      eq(notifications.recipientId, input.recipientId),
+      eq(notifications.actorId, input.actorId),
+      eq(notifications.type, input.type),
+      gt(notifications.createdAt, oneHourAgo),
+    ];
+
+    // Add type-specific conditions
+    const typeSpecificConditions = [];
+    switch (input.type) {
+      case "like":
+        typeSpecificConditions.push(eq(notifications.postId, input.postId));
+        break;
+      case "comment":
+        typeSpecificConditions.push(eq(notifications.postId, input.postId));
+        typeSpecificConditions.push(
+          eq(notifications.commentId, input.commentId),
+        );
+        break;
+      case "reply":
+        typeSpecificConditions.push(
+          eq(notifications.commentId, input.commentId),
+        );
+        typeSpecificConditions.push(eq(notifications.replyId, input.replyId));
+        break;
+      case "comment_like":
+        typeSpecificConditions.push(
+          eq(notifications.commentId, input.commentId),
+        );
+        break;
+      case "reply_like":
+        typeSpecificConditions.push(eq(notifications.replyId, input.replyId));
+        break;
+      case "follow":
+        typeSpecificConditions.push(eq(notifications.followId, input.followId));
+        break;
+      case "mention":
+        if (input.postId) {
+          typeSpecificConditions.push(eq(notifications.postId, input.postId));
+        }
+        if (input.commentId) {
+          typeSpecificConditions.push(
+            eq(notifications.commentId, input.commentId),
+          );
+        }
+        if (input.replyId) {
+          typeSpecificConditions.push(eq(notifications.replyId, input.replyId));
+        }
+        break;
+    }
+
     const existingNotification = await db
       .select()
       .from(notifications)
-      .where(
-        and(
-          eq(notifications.recipientId, input.recipientId),
-          eq(notifications.actorId, input.actorId),
-          eq(notifications.type, input.type),
-          input.postId ? eq(notifications.postId, input.postId) : undefined,
-          input.commentId
-            ? eq(notifications.commentId, input.commentId)
-            : undefined,
-          input.replyId ? eq(notifications.replyId, input.replyId) : undefined,
-          gt(notifications.createdAt, oneHourAgo),
-        ),
-      )
+      .where(and(...baseWhereConditions, ...typeSpecificConditions))
       .limit(1);
 
     if (existingNotification[0]) {
       return existingNotification[0];
     }
 
-    const notificationData: NewNotification = {
+    // Build notification data based on type
+    const baseNotificationData = {
       recipientId: input.recipientId,
       actorId: input.actorId,
-      type: input.type,
-      postId: input.postId,
-      commentId: input.commentId,
-      replyId: input.replyId,
-      likeId: input.likeId,
-      commentLikeId: input.commentLikeId,
-      commentReplyLikeId: input.commentReplyLikeId,
-      followId: input.followId,
       message: input.message,
       isRead: false,
     };
+
+    let notificationData: NewNotification;
+    switch (input.type) {
+      case "like":
+        notificationData = {
+          ...baseNotificationData,
+          type: "like",
+          postId: input.postId,
+          likeId: input.likeId,
+        };
+        break;
+      case "comment":
+        notificationData = {
+          ...baseNotificationData,
+          type: "comment",
+          postId: input.postId,
+          commentId: input.commentId,
+        };
+        break;
+      case "reply":
+        notificationData = {
+          ...baseNotificationData,
+          type: "reply",
+          commentId: input.commentId,
+          replyId: input.replyId,
+        };
+        break;
+      case "comment_like":
+        notificationData = {
+          ...baseNotificationData,
+          type: "comment_like",
+          commentId: input.commentId,
+          commentLikeId: input.commentLikeId,
+        };
+        break;
+      case "reply_like":
+        notificationData = {
+          ...baseNotificationData,
+          type: "reply_like",
+          replyId: input.replyId,
+          commentReplyLikeId: input.commentReplyLikeId,
+        };
+        break;
+      case "follow":
+        notificationData = {
+          ...baseNotificationData,
+          type: "follow",
+          followId: input.followId,
+        };
+        break;
+      case "mention":
+        notificationData = {
+          ...baseNotificationData,
+          type: "mention",
+          postId: input.postId,
+          commentId: input.commentId,
+          replyId: input.replyId,
+          message: input.message, // Required for mentions
+        };
+        break;
+    }
 
     const [notification] = await db
       .insert(notifications)
