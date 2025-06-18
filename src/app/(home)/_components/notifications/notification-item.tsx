@@ -29,6 +29,12 @@ export function NotificationItem({
         return <UserPlus className="size-3.5 text-purple-500" />;
       case "comment_like":
         return <Heart className="size-3.5 text-pink-500" fill="currentColor" />;
+      case "reply_like":
+        return (
+          <Heart className="size-3.5 text-orange-500" fill="currentColor" />
+        );
+      case "mention":
+        return <MessageCircle className="size-3.5 text-yellow-500" />;
       default:
         return <Heart className="size-3.5 text-muted-foreground" />;
     }
@@ -52,6 +58,10 @@ export function NotificationItem({
           return "followed you";
         case "comment_like":
           return "liked your comment";
+        case "reply_like":
+          return "liked your reply";
+        case "mention":
+          return "mentioned you";
         default:
           return "";
       }
@@ -78,6 +88,15 @@ export function NotificationItem({
     if (notification.postId) return `/posts/${notification.postId}`;
     if (notification.type === "follow")
       return `/profile/${notification.actor.username}`;
+    if (notification.type === "mention") {
+      // For mentions, check if they have context
+      if (notification.postId) return `/posts/${notification.postId}`;
+      if (notification.commentId && notification.postId)
+        return `/posts/${notification.postId}`;
+      if (notification.replyId && notification.postId)
+        return `/posts/${notification.postId}`;
+      return `/profile/${notification.actor.username}`;
+    }
     return "";
   };
 
@@ -106,8 +125,12 @@ export function NotificationItem({
       case "comment":
       case "comment_like":
         return notification.comment?.text ?? "";
+      case "reply_like":
+        return notification.reply?.text ?? "";
       case "like":
         return notification.post?.title ?? "";
+      case "mention":
+        return notification.message ?? "";
       default:
         return "";
     }

@@ -116,10 +116,7 @@ export async function createNotification(
     const baseWhereConditions = [
       eq(notifications.recipientId, input.recipientId),
       eq(notifications.actorId, input.actorId),
-      eq(
-        notifications.type,
-        input.type === "reply_like" ? "comment_like" : input.type,
-      ),
+      eq(notifications.type, input.type),
       gt(notifications.createdAt, oneHourAgo),
     ];
 
@@ -220,10 +217,9 @@ export async function createNotification(
         };
         break;
       case "reply_like":
-        // Map reply_like to comment_like in database but keep type distinction in TS
         notificationData = {
           ...baseNotificationData,
-          type: "comment_like",
+          type: "reply_like",
           replyId: input.replyId,
           commentReplyLikeId: input.commentReplyLikeId,
         };
