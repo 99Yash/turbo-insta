@@ -1,4 +1,3 @@
-import { generateId } from "ai";
 import { relations } from "drizzle-orm";
 import {
   index,
@@ -8,6 +7,7 @@ import {
   unique,
   varchar,
 } from "drizzle-orm/pg-core";
+import { generateId } from "~/lib/utils";
 import { type StoredFile } from "~/types";
 import { users } from "./users";
 import { lifecycleDates } from "./utils";
