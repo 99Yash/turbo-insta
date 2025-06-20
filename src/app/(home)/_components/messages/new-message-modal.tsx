@@ -117,7 +117,7 @@ export function NewMessageModal({
                         >
                           <Avatar className="h-10 w-10 border border-border/30">
                             <AvatarImage
-                              src={user.imageUrl ?? ""}
+                              src={user.imageUrl ?? undefined}
                               alt={user.name}
                             />
                             <AvatarFallback className="text-xs">
