@@ -8,7 +8,7 @@ export const sendMessageSchema = z.object({
       z.object({
         id: z.string(),
         name: z.string(),
-        url: z.string(),
+        url: z.string().url("Invalid URL"),
         alt: z.string().optional(),
       }),
     )
