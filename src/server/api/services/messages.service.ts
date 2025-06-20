@@ -1,5 +1,5 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
-import { and, desc, eq, gt, or } from "drizzle-orm";
+import { and, desc, eq, gt, lt, or } from "drizzle-orm";
 import { db } from "~/server/db";
 import {
   conversations,
@@ -231,7 +231,7 @@ export async function getConversationMessages(
     }
 
     if (cursor) {
-      whereConditions.push(gt(messages.createdAt, new Date(cursor)));
+      whereConditions.push(lt(messages.createdAt, new Date(cursor)));
     }
 
     // Get messages

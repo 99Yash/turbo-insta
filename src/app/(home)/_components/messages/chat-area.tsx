@@ -3,6 +3,7 @@
 import { Send } from "lucide-react";
 import { useState } from "react";
 import { Button } from "~/components/ui/button";
+import { useUser } from "~/contexts/user-context";
 import type { ConversationWithParticipants } from "~/server/api/services/messages.service";
 import { NewMessageModal } from "./new-message-modal";
 
@@ -17,10 +18,20 @@ export function ChatArea({
   onSendMessage,
   onUserSelect,
 }: ChatAreaProps) {
+  const { user } = useUser();
   const [showNewMessageModal, setShowNewMessageModal] = useState(false);
 
   const handleUserSelect = (userId: string) => {
     onUserSelect?.(userId);
+  };
+
+  /**
+   * Get the participant who is NOT the current user
+   */
+  const getOtherParticipant = (conversation: ConversationWithParticipants) => {
+    return conversation.participant1.id === user?.id
+      ? conversation.participant2
+      : conversation.participant1;
   };
 
   // Empty state when no conversation is selected
@@ -55,7 +66,8 @@ export function ChatArea({
     );
   }
 
-  // Chat interface when conversation is selected
+  const otherParticipant = getOtherParticipant(conversation);
+
   return (
     <div className="flex flex-1 flex-col bg-background">
       {/* Chat header */}
@@ -63,7 +75,7 @@ export function ChatArea({
         <div className="flex items-center gap-3">
           <div className="h-6 w-6 rounded-full bg-green-500"></div>
           <span className="font-medium">
-            Chat with {conversation.participant1.username}
+            Chat with {otherParticipant.username}
           </span>
         </div>
       </div>
