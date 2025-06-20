@@ -35,7 +35,7 @@ export function NewMessageModal({
       size: 10,
     },
     {
-      enabled: debouncedSearchQuery.length > 0,
+      enabled: debouncedSearchQuery.trim().length > 0,
     },
   );
 
