@@ -1,10 +1,10 @@
 import { HydrateClient } from "~/trpc/server";
-import { MessagesContainer } from "../_components/messages/messages-container";
+import { MessagesPageClient } from "./_components/messages-page-client";
 
 export default function MessagesPage() {
   return (
     <HydrateClient>
-      <MessagesContainer />
+      <MessagesPageClient />
     </HydrateClient>
   );
 }

@@ -1,5 +1,6 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
 import { and, desc, eq, gt, lt, or } from "drizzle-orm";
+import { ably } from "~/lib/ably";
 import { db } from "~/server/db";
 import {
   conversations,
@@ -399,10 +400,57 @@ export async function sendMessage(
       });
     }
 
-    return {
+    const messageWithSender = {
       ...newMessage,
       sender: sender[0]!,
     };
+
+    // Publish message to Ably channels for real-time updates
+    try {
+      // Publish to conversation channel for real-time message updates
+      const conversationChannelName = `conversation:${conversation.id}`;
+      await ably.channels.get(conversationChannelName).publish("message", {
+        type: "new_message",
+        message: messageWithSender,
+        conversationId: conversation.id,
+        timestamp: newMessage.createdAt,
+      });
+
+      // Publish to both users' personal channels for conversation list updates
+      const updatedConversation = {
+        ...conversation,
+        lastMessage: newMessage,
+      };
+
+      await Promise.all([
+        ably.channels
+          .get(`messages:${senderId}`)
+          .publish("conversation_update", {
+            type: "conversation_updated",
+            conversation: updatedConversation,
+            timestamp: newMessage.createdAt,
+          }),
+        ably.channels
+          .get(`messages:${receiverId}`)
+          .publish("conversation_update", {
+            type: "conversation_updated",
+            conversation: updatedConversation,
+            timestamp: newMessage.createdAt,
+          }),
+      ]);
+
+      console.log(`✅ Published message to Ably channels:`, {
+        conversationChannel: conversationChannelName,
+        senderId,
+        receiverId,
+        messageId: newMessage.id,
+      });
+    } catch (ablyError) {
+      console.error("❌ Failed to publish message to Ably:", ablyError);
+      // Don't throw error, message was still created in DB
+    }
+
+    return messageWithSender;
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,

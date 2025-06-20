@@ -1,13 +1,18 @@
 "use client";
 
+import type * as Ably from "ably";
+import { useAbly } from "ably/react";
 import { ArrowLeft, Plus, Send } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useUser } from "~/contexts/user-context";
 import { cn, formatTimeToNow, getInitials } from "~/lib/utils";
-import type { ConversationWithParticipants } from "~/server/api/services/messages.service";
+import type {
+  ConversationWithParticipants,
+  MessageWithSender,
+} from "~/server/api/services/messages.service";
 import { api } from "~/trpc/react";
 import { NewMessageModal } from "./new-message-modal";
 
@@ -25,6 +30,12 @@ export function ChatArea({
   const { user } = useUser();
   const [showNewMessageModal, setShowNewMessageModal] = useState(false);
   const [messageText, setMessageText] = useState("");
+  const client = useAbly();
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Local state to manage messages for real-time updates
+  const [localMessages, setLocalMessages] = useState<MessageWithSender[]>([]);
 
   const { data: messagesData } = api.messages.getConversationMessages.useQuery(
     {
@@ -33,14 +44,106 @@ export function ChatArea({
     },
     {
       enabled: !!conversation?.id,
-      refetchInterval: 3000, // Poll for new messages every 3 seconds
     },
   );
 
+  // Initialize local messages when data is fetched
+  useEffect(() => {
+    if (messagesData?.messages) {
+      setLocalMessages(messagesData.messages);
+    }
+  }, [messagesData?.messages]);
+
+  // Reset local messages when conversation changes
+  useEffect(() => {
+    setLocalMessages([]);
+  }, [conversation?.id]);
+
+  // Reverse messages to show oldest first (chronological order)
+  const orderedMessages = [...localMessages].reverse();
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [orderedMessages]);
+
+  // Subscribe to real-time messages for this conversation
+  useEffect(() => {
+    if (!conversation?.id || !client) return;
+
+    const conversationChannelName = `conversation:${conversation.id}`;
+    const channel = client.channels.get(conversationChannelName);
+
+    const handler = (message: Ably.Message) => {
+      const data = message.data as {
+        type?: string;
+        message?: MessageWithSender;
+        conversationId?: string;
+        timestamp?: string;
+      };
+
+      if (
+        data?.type === "new_message" &&
+        data?.conversationId === conversation.id &&
+        data.message
+      ) {
+        console.log("🔔 [ChatArea] Received new message:", data.message);
+
+        // Add the new message directly to local state for real-time display
+        setLocalMessages((prevMessages) => {
+          // Check if message already exists to avoid duplicates
+          const messageExists = prevMessages.some(
+            (msg) => msg.id === data.message!.id,
+          );
+          if (messageExists) {
+            return prevMessages;
+          }
+
+          // Normalize the message to ensure dates are Date objects
+          const normalizedMessage = {
+            ...data.message!,
+            createdAt: new Date(data.message!.createdAt),
+            updatedAt: data.message!.updatedAt
+              ? new Date(data.message!.updatedAt)
+              : null,
+          };
+
+          // Add new message at the beginning (since messages are sorted by createdAt desc)
+          return [normalizedMessage, ...prevMessages];
+        });
+      }
+    };
+
+    void channel.subscribe("message", handler);
+    console.log(
+      "✅ [ChatArea] Subscribed to conversation channel:",
+      conversationChannelName,
+    );
+
+    return () => {
+      console.log("🔇 [ChatArea] Unsubscribing from conversation channel");
+      void channel.unsubscribe("message", handler);
+    };
+  }, [conversation?.id, client]);
+
   const sendMessageMutation = api.messages.sendMessage.useMutation({
-    onSuccess: () => {
+    onSuccess: (sentMessage) => {
       setMessageText("");
-      // Trigger refetch of messages
+
+      // Optimistically add the sent message to local state immediately
+      setLocalMessages((prevMessages) => {
+        // Check if message already exists to avoid duplicates
+        const messageExists = prevMessages.some(
+          (msg) => msg.id === sentMessage.id,
+        );
+        if (messageExists) {
+          return prevMessages;
+        }
+
+        return [sentMessage, ...prevMessages];
+      });
     },
   });
 
@@ -106,7 +209,6 @@ export function ChatArea({
   }
 
   const otherParticipant = getOtherParticipant(conversation);
-  const messages = messagesData?.messages ?? [];
 
   return (
     <div className="flex flex-1 flex-col bg-background">
@@ -143,9 +245,9 @@ export function ChatArea({
       </div>
 
       {/* Messages area */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1" ref={scrollAreaRef}>
         <div className="flex flex-col gap-1 p-4">
-          {messages.length === 0 ? (
+          {orderedMessages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Avatar className="mb-4 h-16 w-16">
                 <AvatarImage
@@ -164,11 +266,11 @@ export function ChatArea({
               </p>
             </div>
           ) : (
-            messages.map((message, index) => {
+            orderedMessages.map((message, index) => {
               const isOwnMessage = message.senderId === user?.id;
               const showAvatar =
                 index === 0 ||
-                messages[index - 1]?.senderId !== message.senderId;
+                orderedMessages[index - 1]?.senderId !== message.senderId;
               const showSenderName = showAvatar && !isOwnMessage;
 
               return (
@@ -226,7 +328,7 @@ export function ChatArea({
 
                     {/* Timestamp */}
                     <span className="mt-1 text-xs text-muted-foreground">
-                      {formatTimeToNow(message.createdAt)}
+                      {formatTimeToNow(new Date(message.createdAt))}
                     </span>
                   </div>
 
@@ -236,6 +338,8 @@ export function ChatArea({
               );
             })
           )}
+          {/* Invisible element to scroll to */}
+          <div ref={messagesEndRef} />
         </div>
       </ScrollArea>
 
