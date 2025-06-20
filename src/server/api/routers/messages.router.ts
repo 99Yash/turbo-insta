@@ -1,9 +1,11 @@
 import {
+  getConversationMessagesSchema,
   getOrCreateConversationSchema,
   getUserConversationsSchema,
   sendMessageSchema,
 } from "../schema/messages.schema";
 import {
+  getConversationMessages,
   getOrCreateConversation,
   getUserConversations,
   sendMessage,
@@ -18,6 +20,20 @@ export const messagesRouter = createTRPCRouter({
     .input(getUserConversationsSchema)
     .query(async ({ input, ctx }) => {
       return getUserConversations(ctx.userId, input.limit);
+    }),
+
+  /**
+   * Get messages in a conversation
+   */
+  getConversationMessages: protectedProcedure
+    .input(getConversationMessagesSchema)
+    .query(async ({ input, ctx }) => {
+      return getConversationMessages(
+        ctx.userId,
+        input.conversationId,
+        input.limit,
+        input.cursor,
+      );
     }),
 
   /**

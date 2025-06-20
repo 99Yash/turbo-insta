@@ -31,6 +31,15 @@ export function ConversationsSidebar({
       limit: 20,
     });
 
+  const createConversationMutation =
+    api.messages.getOrCreateConversation.useMutation({
+      onSuccess: (conversation) => {
+        // The conversation now comes with participant details
+        onConversationSelect?.(conversation);
+        setShowNewMessageModal(false);
+      },
+    });
+
   const getOtherParticipant = (conversation: ConversationWithParticipants) => {
     return conversation.participant1.id === user?.id
       ? conversation.participant2
@@ -42,9 +51,9 @@ export function ConversationsSidebar({
   };
 
   const handleUserSelect = (userId: string) => {
-    // TODO: Create conversation and select it
-    console.log("Selected user:", userId);
-    setShowNewMessageModal(false);
+    createConversationMutation.mutate({
+      otherUserId: userId,
+    });
   };
 
   return (

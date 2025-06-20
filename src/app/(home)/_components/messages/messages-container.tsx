@@ -16,21 +16,37 @@ export function MessagesContainer() {
     setSelectedConversation(conversation);
   };
 
-  const handleSendMessage = () => {
-    // TODO: Implement message sending
-    console.log("Send message");
+  const handleUserSelect = (userId: string) => {
+    // TODO: Create conversation with user and navigate to it
+    console.log("Selected user:", userId);
+  };
+
+  const handleBack = () => {
+    setSelectedConversation(undefined);
   };
 
   return (
     <div className="flex h-full min-h-screen">
-      <ConversationsSidebar
-        onConversationSelect={handleConversationSelect}
-        selectedConversationId={selectedConversation?.id}
-      />
-      <ChatArea
-        conversation={selectedConversation}
-        onSendMessage={handleSendMessage}
-      />
+      {/* Sidebar - hidden on mobile when conversation is selected */}
+      <div
+        className={`${selectedConversation ? "hidden lg:flex" : "flex"} lg:flex`}
+      >
+        <ConversationsSidebar
+          onConversationSelect={handleConversationSelect}
+          selectedConversationId={selectedConversation?.id}
+        />
+      </div>
+
+      {/* Chat area - hidden on mobile when no conversation is selected */}
+      <div
+        className={`${selectedConversation ? "flex" : "hidden lg:flex"} flex-1`}
+      >
+        <ChatArea
+          conversation={selectedConversation}
+          onUserSelect={handleUserSelect}
+          onBack={handleBack}
+        />
+      </div>
     </div>
   );
 }

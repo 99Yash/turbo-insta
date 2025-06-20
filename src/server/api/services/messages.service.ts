@@ -43,7 +43,7 @@ export type MessageWithSender = Message & {
 export async function getOrCreateConversation(
   userId: string,
   otherUserId: string,
-): Promise<Conversation> {
+): Promise<ConversationWithParticipants> {
   try {
     // Always store participants in consistent order (lexicographically)
     const sortedIds = [userId, otherUserId].sort();
@@ -62,29 +62,84 @@ export async function getOrCreateConversation(
       )
       .limit(1);
 
+    let conversation: Conversation;
     if (existingConversation.length > 0) {
-      return existingConversation[0]!;
+      conversation = existingConversation[0]!;
+    } else {
+      // Create new conversation if it doesn't exist
+      const newConversationData: NewConversation = {
+        participant1Id,
+        participant2Id,
+      };
+
+      const [newConversation] = await db
+        .insert(conversations)
+        .values(newConversationData)
+        .returning();
+
+      if (!newConversation) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to create conversation",
+        });
+      }
+
+      conversation = newConversation;
     }
 
-    // Create new conversation if it doesn't exist
-    const newConversationData: NewConversation = {
-      participant1Id,
-      participant2Id,
+    // Get participant details
+    const [participant1, participant2] = await Promise.all([
+      db
+        .select({
+          id: users.id,
+          username: users.username,
+          name: users.name,
+          imageUrl: users.imageUrl,
+        })
+        .from(users)
+        .where(eq(users.id, conversation.participant1Id))
+        .limit(1),
+      db
+        .select({
+          id: users.id,
+          username: users.username,
+          name: users.name,
+          imageUrl: users.imageUrl,
+        })
+        .from(users)
+        .where(eq(users.id, conversation.participant2Id))
+        .limit(1),
+    ]);
+
+    // Get last message
+    const lastMessage = await db
+      .select()
+      .from(messages)
+      .where(eq(messages.conversationId, conversation.id))
+      .orderBy(desc(messages.createdAt))
+      .limit(1);
+
+    const isParticipant1 = conversation.participant1Id === userId;
+    const userDeletedAt = isParticipant1
+      ? conversation.participant1DeletedAt
+      : conversation.participant2DeletedAt;
+
+    // If user deleted conversation and last message is before deletion, hide last message
+    let filteredLastMessage = lastMessage[0] ?? null;
+    if (
+      userDeletedAt &&
+      filteredLastMessage &&
+      filteredLastMessage.createdAt <= userDeletedAt
+    ) {
+      filteredLastMessage = null;
+    }
+
+    return {
+      ...conversation,
+      participant1: participant1[0]!,
+      participant2: participant2[0]!,
+      lastMessage: filteredLastMessage,
     };
-
-    const [newConversation] = await db
-      .insert(conversations)
-      .values(newConversationData)
-      .returning();
-
-    if (!newConversation) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to create conversation",
-      });
-    }
-
-    return newConversation;
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,

@@ -23,10 +23,19 @@ export const getOrCreateConversationSchema = z.object({
   otherUserId: z.string().min(1, "Other user ID is required"),
 });
 
+export const getConversationMessagesSchema = z.object({
+  conversationId: z.string().min(1, "Conversation ID is required"),
+  limit: z.number().min(1).max(100).default(50),
+  cursor: z.string().optional(),
+});
+
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export type GetUserConversationsInput = z.infer<
   typeof getUserConversationsSchema
 >;
 export type GetOrCreateConversationInput = z.infer<
   typeof getOrCreateConversationSchema
+>;
+export type GetConversationMessagesInput = z.infer<
+  typeof getConversationMessagesSchema
 >;
