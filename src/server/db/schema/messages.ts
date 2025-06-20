@@ -4,6 +4,7 @@ import {
   json,
   pgTable,
   text,
+  timestamp,
   unique,
   varchar,
 } from "drizzle-orm/pg-core";
@@ -20,6 +21,9 @@ export const messages = pgTable(
       .primaryKey(),
     text: text("text").notNull(),
     files: json("files").$type<StoredFile[]>(),
+    conversationId: varchar("conversation_id", { length: 32 })
+      .references(() => conversations.id, { onDelete: "cascade" })
+      .notNull(),
     senderId: varchar("sender_id", { length: 32 })
       .references(() => users.id, { onDelete: "cascade" })
       .notNull(),
@@ -29,6 +33,7 @@ export const messages = pgTable(
     ...lifecycleDates,
   },
   (table) => [
+    index("messages_conversation_id_idx").on(table.conversationId),
     index("messages_sender_id_idx").on(table.senderId),
     index("messages_receiver_id_idx").on(table.receiverId),
     index("messages_sender_receiver_idx").on(table.senderId, table.receiverId),
@@ -63,6 +68,10 @@ export const messageReactions = pgTable(
 );
 
 export const messageRelations = relations(messages, ({ one, many }) => ({
+  conversation: one(conversations, {
+    fields: [messages.conversationId],
+    references: [conversations.id],
+  }),
   sender: one(users, {
     fields: [messages.senderId],
     references: [users.id],
@@ -88,7 +97,61 @@ export const messageReactionRelations = relations(
   }),
 );
 
+export const conversations = pgTable(
+  "conversations",
+  {
+    id: varchar("id")
+      .$defaultFn(() => createId())
+      .primaryKey(),
+    // always store participants in consistent order for easier querying
+    participant1Id: varchar("participant1_id", { length: 32 })
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    participant2Id: varchar("participant2_id", { length: 32 })
+      .references(() => users.id, { onDelete: "cascade" })
+      .notNull(),
+    // when each participant deleted the conversation from their view (null = not deleted)
+    participant1DeletedAt: timestamp("participant1_deleted_at"),
+    participant2DeletedAt: timestamp("participant2_deleted_at"),
+    // for future features like read receipts
+    participant1LastSeenAt: timestamp("participant1_last_seen_at"),
+    participant2LastSeenAt: timestamp("participant2_last_seen_at"),
+    ...lifecycleDates,
+  },
+  (table) => [
+    index("conversations_participant1_idx").on(table.participant1Id),
+    index("conversations_participant2_idx").on(table.participant2Id),
+    // for efficient lookups of conversations involving a user
+    index("conversations_participants_idx").on(
+      table.participant1Id,
+      table.participant2Id,
+    ),
+    // ensure unique conversation between two users
+    unique("conversations_participants_unique").on(
+      table.participant1Id,
+      table.participant2Id,
+    ),
+  ],
+);
+
+export const conversationRelations = relations(
+  conversations,
+  ({ one, many }) => ({
+    participant1: one(users, {
+      fields: [conversations.participant1Id],
+      references: [users.id],
+    }),
+    participant2: one(users, {
+      fields: [conversations.participant2Id],
+      references: [users.id],
+    }),
+    messages: many(messages),
+  }),
+);
+
 export type Message = typeof messages.$inferSelect;
 export type NewMessage = typeof messages.$inferInsert;
 export type MessageReaction = typeof messageReactions.$inferSelect;
 export type NewMessageReaction = typeof messageReactions.$inferInsert;
+export type Conversation = typeof conversations.$inferSelect;
+export type NewConversation = typeof conversations.$inferInsert;
