@@ -6,7 +6,7 @@ export const sendMessageSchema = z.object({
   files: z
     .array(
       z.object({
-        id: z.string(),
+        id: z.string().min(1, "File ID is required"),
         name: z.string(),
         url: z.string().url("Invalid URL"),
         alt: z.string().optional(),
