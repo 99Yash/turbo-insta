@@ -9,14 +9,16 @@ import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useAuthenticatedUser } from "~/contexts/user-context";
 import { cn, formatTimeToNow, getInitials } from "~/lib/utils";
-import type {
-  ConversationWithParticipants,
-  MessageWithSender,
-} from "~/server/api/services/messages.service";
 import type { RouterOutputs } from "~/trpc/react";
 import { api } from "~/trpc/react";
 import { MessageReactions } from "./message-reactions";
 import { NewMessageModal } from "./new-message-modal";
+
+// Use inferred types from router outputs
+type ConversationWithParticipants =
+  RouterOutputs["messages"]["getOrCreateConversation"];
+type MessageWithSender =
+  RouterOutputs["messages"]["getConversationMessages"]["messages"][number];
 
 interface ChatAreaProps {
   readonly conversation?: ConversationWithParticipants;
@@ -468,7 +470,7 @@ export function ChatArea({
                 <div
                   key={`group-${groupIndex}`}
                   className={cn(
-                    "mb-6 flex gap-3",
+                    "group/message relative mb-6 flex gap-3",
                     isOwnGroup ? "justify-end" : "justify-start",
                   )}
                 >
@@ -510,7 +512,7 @@ export function ChatArea({
                           <div
                             key={message.id}
                             className={cn(
-                              "group/message relative",
+                              "relative",
                               isOwnGroup
                                 ? "flex flex-col items-end"
                                 : "flex flex-col items-start",
@@ -556,6 +558,7 @@ export function ChatArea({
                               reactions={message.reactions}
                               onAddReaction={handleAddReaction}
                               onRemoveReaction={handleRemoveReaction}
+                              isOwnMessage={isOwnGroup}
                             />
                           </div>
                         );
