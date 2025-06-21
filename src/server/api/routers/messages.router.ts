@@ -1,4 +1,3 @@
-import { TRPCError } from "@trpc/server";
 import {
   addMessageReactionSchema,
   getConversationMessagesSchema,
@@ -62,39 +61,21 @@ export const messagesRouter = createTRPCRouter({
   addReaction: protectedProcedure
     .input(addMessageReactionSchema)
     .mutation(async ({ ctx, input }) => {
-      try {
-        const reaction = await addMessageReaction({
-          messageId: input.messageId,
-          userId: ctx.userId,
-          emoji: input.emoji,
-        });
+      const reaction = await addMessageReaction({
+        messageId: input.messageId,
+        userId: ctx.userId,
+        emoji: input.emoji,
+      });
 
-        return reaction;
-      } catch (error) {
-        console.error("❌ [messages.addReaction] Error:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to add reaction",
-        });
-      }
+      return reaction;
     }),
 
   removeReaction: protectedProcedure
     .input(removeMessageReactionSchema)
     .mutation(async ({ ctx, input }) => {
-      try {
-        await removeMessageReaction({
-          messageId: input.messageId,
-          userId: ctx.userId,
-        });
-
-        return { success: true };
-      } catch (error) {
-        console.error("❌ [messages.removeReaction] Error:", error);
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to remove reaction",
-        });
-      }
+      await removeMessageReaction({
+        messageId: input.messageId,
+        userId: ctx.userId,
+      });
     }),
 });
