@@ -445,7 +445,7 @@ export function ChatArea({
           </p>
           <Button
             onClick={() => setShowNewMessageModal(true)}
-            className="bg-blue-500 hover:bg-blue-600"
+            className="bg-primary text-primary-foreground hover:bg-primary/90"
           >
             Send message
           </Button>
@@ -510,7 +510,7 @@ export function ChatArea({
           {isFetchingNextPage && (
             <div className="flex justify-center py-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
                 Loading more messages...
               </div>
             </div>
@@ -518,7 +518,7 @@ export function ChatArea({
 
           {isLoadingMessages ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
+              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
               <p className="text-sm text-muted-foreground">
                 Loading messages...
               </p>
@@ -578,7 +578,7 @@ export function ChatArea({
                   >
                     {/* Sender name for incoming messages - ABOVE the first bubble */}
                     {!isOwnGroup && (
-                      <div className="mb-1 text-sm font-semibold text-purple-600 dark:text-purple-400">
+                      <div className="mb-1 text-sm font-semibold text-primary">
                         {sender.username.toUpperCase()}
                       </div>
                     )}
@@ -605,7 +605,7 @@ export function ChatArea({
                                 "max-w-full break-words px-4 py-2 text-sm shadow-sm transition-all",
                                 isOwnGroup
                                   ? cn(
-                                      "rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white",
+                                      "rounded-2xl bg-primary text-primary-foreground",
                                       messageIndex === 0 && "rounded-tr-lg",
                                       isLastInGroup && "rounded-br-lg",
                                     )
@@ -666,7 +666,7 @@ export function ChatArea({
               rows={1}
               aria-label="Type your message"
               aria-describedby="message-help"
-              className="max-h-32 min-h-[2.5rem] w-full resize-none rounded-2xl bg-transparent px-4 py-3 text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/20"
+              className="max-h-32 min-h-[2.5rem] w-full resize-none rounded-2xl bg-transparent px-4 py-3 text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <div id="message-help" className="sr-only">
               Press Enter to send, Shift+Enter for new line
@@ -679,7 +679,7 @@ export function ChatArea({
                 onClick={handleSendMessage}
                 disabled={sendMessageMutation.isPending}
                 aria-label="Send message"
-                className="mr-3 h-8 w-8 flex-shrink-0 rounded-full bg-red-500 p-0 text-white shadow-md transition-all duration-200 hover:scale-105 hover:bg-red-600 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+                className="mr-3 h-8 w-8 flex-shrink-0 rounded-full bg-primary p-0 text-primary-foreground shadow-md transition-all duration-200 hover:scale-105 hover:bg-primary/90 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
               >
                 <Send className="h-4 w-4" />
               </Button>
