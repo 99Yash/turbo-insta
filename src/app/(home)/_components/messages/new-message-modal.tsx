@@ -111,6 +111,7 @@ export function NewMessageModal({
 
                       return (
                         <button
+                          type="button"
                           key={user.id}
                           onClick={() => handleUserSelect(user.id)}
                           className="flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors hover:bg-muted/50"

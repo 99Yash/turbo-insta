@@ -34,7 +34,13 @@ type MessageEventData = {
 type ReactionEventData = {
   readonly type: "reaction_added" | "reaction_removed";
   readonly messageId: string;
-  readonly reaction?: RouterOutputs["messages"]["addReaction"] & {
+  readonly reaction?: {
+    readonly id: string;
+    readonly emoji: string;
+    readonly userId: string;
+    readonly messageId?: string;
+    readonly createdAt?: Date;
+    readonly updatedAt?: Date | null;
     readonly user: {
       readonly id: string;
       readonly name: string;
@@ -42,7 +48,7 @@ type ReactionEventData = {
     };
   };
   readonly userId?: string;
-  readonly timestamp: string;
+  readonly timestamp: Date;
 };
 
 export function ChatArea({
@@ -56,24 +62,6 @@ export function ChatArea({
   const client = useAbly();
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
-
-  // Log component mount and client state
-  React.useEffect(() => {
-    console.log("🚀 [ChatArea] Component mounted with:", {
-      conversationId: conversation?.id,
-      userId: user?.id,
-      clientExists: !!client,
-      clientState: client?.connection?.state,
-    });
-
-    if (client) {
-      console.log("🔗 [ChatArea] Ably client details:", {
-        clientId: client.auth.clientId,
-        connectionState: client.connection.state,
-        connectionKey: client.connection.key,
-      });
-    }
-  }, [conversation?.id, user?.id, client]);
 
   // Real-time message updates state
   const [realtimeMessages, setRealtimeMessages] = React.useState<
@@ -93,7 +81,6 @@ export function ChatArea({
   // Derive final messages list combining server data with real-time updates
   const messages = React.useMemo(() => {
     if (!messagesData?.messages?.length && realtimeMessages.size === 0) {
-      console.log("📭 [ChatArea] No messages to display");
       return [];
     }
 
@@ -111,18 +98,6 @@ export function ChatArea({
 
     const finalMessages = Array.from(messagesMap.values()).sort((a, b) => {
       return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-    });
-
-    console.log("📋 [ChatArea] Final messages derived:", {
-      serverMessagesCount: messagesData?.messages?.length ?? 0,
-      realtimeUpdatesCount: realtimeMessages.size,
-      finalMessagesCount: finalMessages.length,
-      messagesWithReactions: finalMessages.filter((m) => m.reactions.length > 0)
-        .length,
-      allReactionCounts: finalMessages.map((m) => ({
-        id: m.id,
-        reactions: m.reactions.length,
-      })),
     });
 
     return finalMessages;
@@ -143,45 +118,13 @@ export function ChatArea({
   // Subscribe to real-time messages for this conversation
   React.useEffect(() => {
     if (!conversation?.id || !client) {
-      console.log(
-        "⚠️ [ChatArea] Cannot subscribe - missing conversation or client:",
-        {
-          conversationId: conversation?.id,
-          clientExists: !!client,
-        },
-      );
       return;
     }
 
     const conversationChannelName = `conversation:${conversation.id}`;
     const channel = client.channels.get(conversationChannelName);
 
-    console.log("🔌 [ChatArea] Setting up channel subscription:", {
-      channelName: conversationChannelName,
-      channelState: channel.state,
-    });
-
-    // Add connection status debugging
-    client.connection.on("connected", () => {
-      console.log("✅ [ChatArea] Ably connected");
-    });
-
-    client.connection.on("disconnected", () => {
-      console.log("❌ [ChatArea] Ably disconnected");
-    });
-
-    client.connection.on("failed", (error) => {
-      console.error("💥 [ChatArea] Ably connection failed:", error);
-    });
-
-    // Check current connection state
-    console.log(
-      "🔗 [ChatArea] Current Ably connection state:",
-      client.connection.state,
-    );
-
     const messageHandler = (message: Ably.Message) => {
-      console.log("📨 [ChatArea] Raw message received:", message);
       const data = message.data as MessageEventData;
 
       if (
@@ -189,8 +132,6 @@ export function ChatArea({
         data?.conversationId === conversation.id &&
         data.message
       ) {
-        console.log("🔔 [ChatArea] Received new message:", data.message);
-
         // Normalize the message to ensure dates are Date objects
         const normalizedMessage = {
           ...data.message,
@@ -209,171 +150,116 @@ export function ChatArea({
     };
 
     const reactionHandler = (message: Ably.Message) => {
-      console.log("⚡ [ChatArea] Raw reaction event received:", message);
       const data = message.data as ReactionEventData;
 
-      if (data?.messageId) {
-        console.log("🔔 [ChatArea] Received reaction event:", data);
+      console.log("🎯 [ChatArea] Received reaction event:", data);
 
+      if (data?.messageId) {
         if (data.type === "reaction_added" && data.reaction) {
+          console.log("➕ [ChatArea] Adding reaction:", data.reaction);
           // Add reaction to the message
           setRealtimeMessages((prev) => {
-            console.log(
-              "🔄 [ChatArea] Processing reaction_added, current state size:",
-              prev.size,
-            );
             const newMap = new Map(prev);
 
-            // Check if we have this message in real-time state
-            const existingMessage = newMap.get(data.messageId);
-            if (existingMessage) {
+            // Find the message to update (from either real-time state or server data)
+            let messageToUpdate = newMap.get(data.messageId);
+
+            // If message isn't in real-time state, get it from server data
+            messageToUpdate ??= messagesData?.messages?.find(
+              (m) => m.id === data.messageId,
+            );
+
+            if (messageToUpdate) {
               const updatedMessage = {
-                ...existingMessage,
+                ...messageToUpdate,
                 reactions: [
-                  ...existingMessage.reactions.filter(
-                    (r) => !(r.userId === data.reaction!.userId),
+                  // Remove any existing reaction from this user first
+                  ...messageToUpdate.reactions.filter(
+                    (r) => r.userId !== data.reaction!.userId,
                   ),
+                  // Add the new reaction
                   data.reaction!,
                 ],
               };
               newMap.set(data.messageId, updatedMessage);
               console.log(
-                "🔄 [ChatArea] Updated message with reaction in real-time state:",
+                "✅ [ChatArea] Reaction added successfully to message:",
                 data.messageId,
-                "New reactions count:",
-                updatedMessage.reactions.length,
               );
             } else {
-              // If message isn't in real-time state, we need to get it from server data
-              // This handles cases where the message was loaded from server but reaction was added later
-              const serverMessage = messagesData?.messages?.find(
-                (m) => m.id === data.messageId,
-              );
-              if (serverMessage) {
-                const updatedMessage = {
-                  ...serverMessage,
-                  reactions: [
-                    ...serverMessage.reactions.filter(
-                      (r) => !(r.userId === data.reaction!.userId),
-                    ),
-                    data.reaction!,
-                  ],
-                };
-                newMap.set(data.messageId, updatedMessage);
-                console.log(
-                  "🔄 [ChatArea] Added message to real-time state with reaction:",
-                  data.messageId,
-                  "New reactions count:",
-                  updatedMessage.reactions.length,
-                );
-              } else {
-                console.warn(
-                  "⚠️ [ChatArea] Could not find message for reaction:",
-                  data.messageId,
-                  "Available server messages:",
-                  messagesData?.messages?.map((m) => m.id),
-                );
-              }
+              console.warn("⚠️ [ChatArea] Message not found for reaction:", {
+                messageId: data.messageId,
+                hasRealtimeMessages: newMap.size > 0,
+                hasServerMessages: (messagesData?.messages?.length ?? 0) > 0,
+              });
             }
 
-            console.log(
-              "🔄 [ChatArea] Updated real-time state size:",
-              newMap.size,
-            );
             return newMap;
           });
         } else if (data.type === "reaction_removed" && data.userId) {
+          console.log("🗑️ [ChatArea] Removing reaction:", {
+            messageId: data.messageId,
+            userId: data.userId,
+          });
           // Remove user's reaction from the message
           setRealtimeMessages((prev) => {
-            console.log(
-              "🔄 [ChatArea] Processing reaction_removed, current state size:",
-              prev.size,
-            );
             const newMap = new Map(prev);
 
-            // Check if we have this message in real-time state
-            const existingMessage = newMap.get(data.messageId);
-            if (existingMessage) {
+            // Find the message to update (from either real-time state or server data)
+            let messageToUpdate = newMap.get(data.messageId);
+
+            // If message isn't in real-time state, get it from server data
+            messageToUpdate ??= messagesData?.messages?.find(
+              (m) => m.id === data.messageId,
+            );
+
+            if (messageToUpdate) {
               const updatedMessage = {
-                ...existingMessage,
-                reactions: existingMessage.reactions.filter(
+                ...messageToUpdate,
+                reactions: messageToUpdate.reactions.filter(
                   (r) => r.userId !== data.userId,
                 ),
               };
               newMap.set(data.messageId, updatedMessage);
               console.log(
-                "🔄 [ChatArea] Removed reaction from message in real-time state:",
+                "✅ [ChatArea] Reaction removed successfully from message:",
                 data.messageId,
-                "Remaining reactions count:",
-                updatedMessage.reactions.length,
               );
             } else {
-              // If message isn't in real-time state, get it from server data
-              const serverMessage = messagesData?.messages?.find(
-                (m) => m.id === data.messageId,
+              console.warn(
+                "⚠️ [ChatArea] Message not found for reaction removal:",
+                {
+                  messageId: data.messageId,
+                  hasRealtimeMessages: newMap.size > 0,
+                  hasServerMessages: (messagesData?.messages?.length ?? 0) > 0,
+                },
               );
-              if (serverMessage) {
-                const updatedMessage = {
-                  ...serverMessage,
-                  reactions: serverMessage.reactions.filter(
-                    (r) => r.userId !== data.userId,
-                  ),
-                };
-                newMap.set(data.messageId, updatedMessage);
-                console.log(
-                  "🔄 [ChatArea] Added message to real-time state with reaction removed:",
-                  data.messageId,
-                  "Remaining reactions count:",
-                  updatedMessage.reactions.length,
-                );
-              } else {
-                console.warn(
-                  "⚠️ [ChatArea] Could not find message for reaction removal:",
-                  data.messageId,
-                  "Available server messages:",
-                  messagesData?.messages?.map((m) => m.id),
-                );
-              }
             }
 
-            console.log(
-              "🔄 [ChatArea] Updated real-time state size:",
-              newMap.size,
-            );
             return newMap;
           });
         }
-      } else {
-        console.warn("⚠️ [ChatArea] Reaction event missing messageId:", data);
       }
     };
 
     // Subscribe with error handling
     channel.subscribe("message", messageHandler).catch((error) => {
-      console.error(
-        "❌ [ChatArea] Failed to subscribe to message events:",
-        error,
-      );
+      console.error("❌ Failed to subscribe to message events:", error);
     });
 
     channel.subscribe("reaction", reactionHandler).catch((error) => {
-      console.error(
-        "❌ [ChatArea] Failed to subscribe to reaction events:",
-        error,
-      );
+      console.error("❌ Failed to subscribe to reaction events:", error);
     });
 
     console.log(
-      "✅ [ChatArea] Subscribed to conversation channel:",
-      conversationChannelName,
+      `✅ [ChatArea] Subscribed to channel: ${conversationChannelName}`,
     );
 
     return () => {
-      console.log("🔇 [ChatArea] Unsubscribing from conversation channel");
       void channel.unsubscribe("message", messageHandler);
       void channel.unsubscribe("reaction", reactionHandler);
     };
-  }, [conversation?.id, client]); // Removed messagesData?.messages dependency to prevent re-subscriptions
+  }, [conversation?.id, client, messagesData?.messages]); // Include messagesData for reaction handling
 
   const sendMessageMutation = api.messages.sendMessage.useMutation({
     onSuccess: (sentMessage) => {
@@ -388,25 +274,39 @@ export function ChatArea({
     },
   });
 
-  // Remove optimistic updates to prevent conflicts with real-time updates
+  // Add optimistic updates for immediate feedback
   const addReactionMutation = api.messages.addReaction.useMutation({
-    onError: (error) => {
-      console.error("❌ [ChatArea] Failed to add reaction:", error);
+    onMutate: ({ messageId, emoji }) => {
+      console.log("🔄 [ChatArea] Optimistically adding reaction:", {
+        messageId,
+        emoji,
+      });
+    },
+    onError: (error, { messageId, emoji }) => {
+      console.error("❌ [ChatArea] Failed to add reaction:", {
+        messageId,
+        emoji,
+        error,
+      });
     },
   });
 
   const removeReactionMutation = api.messages.removeReaction.useMutation({
-    onError: (error) => {
-      console.error("❌ [ChatArea] Failed to remove reaction:", error);
+    onMutate: ({ messageId }) => {
+      console.log("🔄 [ChatArea] Optimistically removing reaction:", {
+        messageId,
+      });
+    },
+    onError: (error, { messageId }) => {
+      console.error("❌ [ChatArea] Failed to remove reaction:", {
+        messageId,
+        error,
+      });
     },
   });
 
   const handleAddReaction = React.useCallback(
     (messageId: string, emoji: string) => {
-      console.log("🎯 [ChatArea] handleAddReaction called:", {
-        messageId,
-        emoji,
-      });
       addReactionMutation.mutate({ messageId, emoji });
     },
     [addReactionMutation],
@@ -414,7 +314,6 @@ export function ChatArea({
 
   const handleRemoveReaction = React.useCallback(
     (messageId: string) => {
-      console.log("🎯 [ChatArea] handleRemoveReaction called:", { messageId });
       removeReactionMutation.mutate({ messageId });
     },
     [removeReactionMutation],
