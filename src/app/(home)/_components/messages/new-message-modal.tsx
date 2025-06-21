@@ -91,6 +91,7 @@ export function NewMessageModal({
               <Search className="h-4 w-4 text-muted-foreground" />
               <input
                 ref={searchInputRef}
+                autoFocus
                 type="text"
                 placeholder="Search..."
                 value={searchQuery}
