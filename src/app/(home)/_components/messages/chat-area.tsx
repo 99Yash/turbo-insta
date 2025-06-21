@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useAuthenticatedUser } from "~/contexts/user-context";
-import { cn, getInitials } from "~/lib/utils";
+import { cn, getInitials, showErrorToast } from "~/lib/utils";
 import type { RouterOutputs } from "~/trpc/react";
 import { api } from "~/trpc/react";
 import { MessageReactions } from "./message-reactions";
@@ -66,10 +66,48 @@ export function ChatArea({
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
-  // Real-time message updates state
+  // Real-time message updates state with metadata for cleanup
   const [realtimeMessages, setRealtimeMessages] = React.useState<
-    Map<string, MessageWithSender>
+    Map<string, MessageWithSender & { addedAt: number }>
   >(new Map());
+
+  // Constants for memory management
+  const MAX_REALTIME_MESSAGES = 100; // Maximum number of messages to keep in memory
+  const MAX_MESSAGE_AGE_MS = 5 * 60 * 1000; // 5 minutes - messages older than this will be removed
+
+  /**
+   * Cleans up old and excess messages from the realtime messages map
+   */
+  const cleanupRealtimeMessages = React.useCallback(
+    (currentMap: Map<string, MessageWithSender & { addedAt: number }>) => {
+      const now = Date.now();
+      const entries = Array.from(currentMap.entries());
+
+      // Filter out messages that are too old
+      const recentEntries = entries.filter(
+        ([, messageWithMeta]) =>
+          now - messageWithMeta.addedAt <= MAX_MESSAGE_AGE_MS,
+      );
+
+      // If we still have too many messages, keep only the most recent ones
+      const limitedEntries = recentEntries
+        .sort(([, a], [, b]) => b.addedAt - a.addedAt) // Sort by addedAt descending
+        .slice(0, MAX_REALTIME_MESSAGES);
+
+      // Return a new map with cleaned entries
+      const cleanedMap = new Map(limitedEntries);
+
+      // Log cleanup stats if any cleanup occurred
+      if (currentMap.size !== cleanedMap.size) {
+        console.log(
+          `🧹 [ChatArea] Cleaned up realtime messages: ${currentMap.size} → ${cleanedMap.size}`,
+        );
+      }
+
+      return cleanedMap;
+    },
+    [MAX_REALTIME_MESSAGES, MAX_MESSAGE_AGE_MS],
+  );
 
   const { data: messagesData, isLoading: isLoadingMessages } =
     api.messages.getConversationMessages.useQuery(
@@ -98,9 +136,10 @@ export function ChatArea({
       messagesMap.set(msg.id, msg);
     });
 
-    // Apply real-time updates
-    realtimeMessages.forEach((update, id) => {
-      messagesMap.set(id, update);
+    // Apply real-time updates (strip addedAt metadata when deriving final messages)
+    realtimeMessages.forEach((updateWithMeta, id) => {
+      const { addedAt, ...update } = updateWithMeta;
+      messagesMap.set(id, update as MessageWithSender);
     });
 
     const finalMessages = Array.from(messagesMap.values()).sort((a, b) => {
@@ -114,6 +153,19 @@ export function ChatArea({
   React.useEffect(() => {
     setRealtimeMessages(new Map());
   }, [conversation?.id]);
+
+  // Periodic cleanup of old real-time messages
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setRealtimeMessages((prev) => {
+        if (prev.size === 0) return prev;
+        const cleaned = cleanupRealtimeMessages(prev);
+        return cleaned.size !== prev.size ? cleaned : prev;
+      });
+    }, 30000); // Clean up every 30 seconds
+
+    return () => clearInterval(interval);
+  }, [cleanupRealtimeMessages]);
 
   // Mark conversation as read when opened
   React.useEffect(() => {
@@ -173,19 +225,21 @@ export function ChatArea({
         data?.conversationId === conversation.id &&
         data.message
       ) {
-        // Normalize the message to ensure dates are Date objects
+        // Normalize the message to ensure dates are Date objects and add timestamp
         const normalizedMessage = {
           ...data.message,
           createdAt: new Date(data.message.createdAt),
           updatedAt: data.message.updatedAt
             ? new Date(data.message.updatedAt)
             : null,
+          addedAt: Date.now(),
         };
 
         setRealtimeMessages((prev) => {
           const newMap = new Map(prev);
           newMap.set(data.message.id, normalizedMessage);
-          return newMap;
+          // Clean up old/excess messages after adding new one
+          return cleanupRealtimeMessages(newMap);
         });
       }
     };
@@ -193,11 +247,8 @@ export function ChatArea({
     const reactionHandler = (message: Ably.Message) => {
       const data = message.data as ReactionEventData;
 
-      console.log("🎯 [ChatArea] Received reaction event:", data);
-
       if (data?.messageId) {
         if (data.type === "reaction_added" && data.reaction) {
-          console.log("➕ [ChatArea] Adding reaction:", data.reaction);
           // Add reaction to the message
           setRealtimeMessages((prev) => {
             const newMap = new Map(prev);
@@ -206,9 +257,17 @@ export function ChatArea({
             let messageToUpdate = newMap.get(data.messageId);
 
             // If message isn't in real-time state, get it from server data
-            messageToUpdate ??= messagesData?.messages?.find(
-              (m) => m.id === data.messageId,
-            );
+            if (!messageToUpdate) {
+              const serverMessage = messagesData?.messages?.find(
+                (m) => m.id === data.messageId,
+              );
+              if (serverMessage) {
+                messageToUpdate = {
+                  ...serverMessage,
+                  addedAt: Date.now(),
+                };
+              }
+            }
 
             if (messageToUpdate) {
               const updatedMessage = {
@@ -221,6 +280,7 @@ export function ChatArea({
                   // Add the new reaction
                   data.reaction!,
                 ],
+                addedAt: messageToUpdate.addedAt, // Preserve the addedAt timestamp
               };
               newMap.set(data.messageId, updatedMessage);
               console.log(
@@ -250,9 +310,17 @@ export function ChatArea({
             let messageToUpdate = newMap.get(data.messageId);
 
             // If message isn't in real-time state, get it from server data
-            messageToUpdate ??= messagesData?.messages?.find(
-              (m) => m.id === data.messageId,
-            );
+            if (!messageToUpdate) {
+              const serverMessage = messagesData?.messages?.find(
+                (m) => m.id === data.messageId,
+              );
+              if (serverMessage) {
+                messageToUpdate = {
+                  ...serverMessage,
+                  addedAt: Date.now(),
+                };
+              }
+            }
 
             if (messageToUpdate) {
               const updatedMessage = {
@@ -260,6 +328,7 @@ export function ChatArea({
                 reactions: messageToUpdate.reactions.filter(
                   (r) => r.userId !== data.userId,
                 ),
+                addedAt: messageToUpdate.addedAt, // Preserve the addedAt timestamp
               };
               newMap.set(data.messageId, updatedMessage);
               console.log(
@@ -300,7 +369,12 @@ export function ChatArea({
       void channel.unsubscribe("message", messageHandler);
       void channel.unsubscribe("reaction", reactionHandler);
     };
-  }, [conversation?.id, client, messagesData?.messages]); // Include messagesData for reaction handling
+  }, [
+    conversation?.id,
+    client,
+    messagesData?.messages,
+    cleanupRealtimeMessages,
+  ]); // Include messagesData for reaction handling
 
   const sendMessageMutation = api.messages.sendMessage.useMutation({
     onSuccess: (sentMessage) => {
@@ -309,8 +383,12 @@ export function ChatArea({
       // Add to real-time messages for immediate display
       setRealtimeMessages((prev) => {
         const newMap = new Map(prev);
-        newMap.set(sentMessage.id, sentMessage);
-        return newMap;
+        newMap.set(sentMessage.id, {
+          ...sentMessage,
+          addedAt: Date.now(),
+        });
+        // Clean up old/excess messages after adding new one
+        return cleanupRealtimeMessages(newMap);
       });
 
       // Maintain focus on the textarea after sending
@@ -320,34 +398,21 @@ export function ChatArea({
     },
   });
 
-  // Add optimistic updates for immediate feedback
   const addReactionMutation = api.messages.addReaction.useMutation({
     onMutate: ({ messageId, emoji }) => {
-      console.log("🔄 [ChatArea] Optimistically adding reaction:", {
-        messageId,
-        emoji,
-      });
+      console.log("🔄 [ChatArea] Adding reaction:", { messageId, emoji });
     },
-    onError: (error, { messageId, emoji }) => {
-      console.error("❌ [ChatArea] Failed to add reaction:", {
-        messageId,
-        emoji,
-        error,
-      });
+    onError: (error) => {
+      showErrorToast(error);
     },
   });
 
   const removeReactionMutation = api.messages.removeReaction.useMutation({
     onMutate: ({ messageId }) => {
-      console.log("🔄 [ChatArea] Optimistically removing reaction:", {
-        messageId,
-      });
+      console.log("🔄 [ChatArea] Removing reaction:", { messageId });
     },
-    onError: (error, { messageId }) => {
-      console.error("❌ [ChatArea] Failed to remove reaction:", {
-        messageId,
-        error,
-      });
+    onError: (error) => {
+      showErrorToast(error);
     },
   });
 
