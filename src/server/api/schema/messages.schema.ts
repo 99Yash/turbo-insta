@@ -29,6 +29,15 @@ export const getConversationMessagesSchema = z.object({
   cursor: z.string().optional(),
 });
 
+export const addMessageReactionSchema = z.object({
+  messageId: z.string().min(1, "Message ID is required"),
+  emoji: z.string().min(1, "Emoji is required").max(15, "Emoji too long"),
+});
+
+export const removeMessageReactionSchema = z.object({
+  messageId: z.string().min(1, "Message ID is required"),
+});
+
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export type GetUserConversationsInput = z.infer<
   typeof getUserConversationsSchema
@@ -38,4 +47,8 @@ export type GetOrCreateConversationInput = z.infer<
 >;
 export type GetConversationMessagesInput = z.infer<
   typeof getConversationMessagesSchema
+>;
+export type AddMessageReactionInput = z.infer<typeof addMessageReactionSchema>;
+export type RemoveMessageReactionInput = z.infer<
+  typeof removeMessageReactionSchema
 >;

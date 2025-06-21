@@ -1,9 +1,10 @@
 import { TRPCError } from "@trpc/server";
-import { z } from "zod";
 import {
+  addMessageReactionSchema,
   getConversationMessagesSchema,
   getOrCreateConversationSchema,
   getUserConversationsSchema,
+  removeMessageReactionSchema,
   sendMessageSchema,
 } from "../schema/messages.schema";
 import {
@@ -59,12 +60,7 @@ export const messagesRouter = createTRPCRouter({
     }),
 
   addReaction: protectedProcedure
-    .input(
-      z.object({
-        messageId: z.string(),
-        emoji: z.string().max(15),
-      }),
-    )
+    .input(addMessageReactionSchema)
     .mutation(async ({ ctx, input }) => {
       try {
         const reaction = await addMessageReaction({
@@ -84,11 +80,7 @@ export const messagesRouter = createTRPCRouter({
     }),
 
   removeReaction: protectedProcedure
-    .input(
-      z.object({
-        messageId: z.string(),
-      }),
-    )
+    .input(removeMessageReactionSchema)
     .mutation(async ({ ctx, input }) => {
       try {
         await removeMessageReaction({

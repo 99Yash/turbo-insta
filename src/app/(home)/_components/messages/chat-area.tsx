@@ -300,7 +300,7 @@ export function ChatArea({
 
   return (
     <div className="flex flex-1 flex-col bg-background">
-      {/* Chat header - Enhanced group chat style */}
+      {/* Chat header */}
       <div className="flex items-center justify-between border-b border-border/40 bg-background/80 p-4 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           {/* Back button for mobile */}
@@ -315,31 +315,19 @@ export function ChatArea({
             </Button>
           )}
 
-          {/* Multiple avatars for group chat feel */}
-          <div className="flex items-center">
-            <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
-              <AvatarImage
-                src={otherParticipant.imageUrl ?? ""}
-                alt={otherParticipant.name}
-              />
-              <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
-                {getInitials(otherParticipant.name)}
-              </AvatarFallback>
-            </Avatar>
-            {/* Add current user avatar for group chat aesthetic */}
-            <Avatar className="-ml-2 h-8 w-8 border-2 border-background shadow-sm">
-              <AvatarImage src={user?.imageUrl ?? ""} alt={user?.name ?? ""} />
-              <AvatarFallback className="bg-gradient-to-br from-red-500 to-pink-600 text-xs text-white">
-                {getInitials(user?.name ?? "")}
-              </AvatarFallback>
-            </Avatar>
-          </div>
+          {/* Single avatar for 1-on-1 conversation */}
+          <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
+            <AvatarImage
+              src={otherParticipant.imageUrl ?? ""}
+              alt={otherParticipant.name}
+            />
+            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+              {getInitials(otherParticipant.name)}
+            </AvatarFallback>
+          </Avatar>
 
           <div>
-            <h3 className="font-semibold">
-              {otherParticipant.username} + 1 more
-            </h3>
-            <p className="text-sm text-muted-foreground">Active now</p>
+            <h3 className="font-semibold">{otherParticipant.username}</h3>
           </div>
         </div>
       </div>
