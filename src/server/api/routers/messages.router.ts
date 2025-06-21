@@ -1,3 +1,5 @@
+import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import {
   getConversationMessagesSchema,
   getOrCreateConversationSchema,
@@ -5,9 +7,11 @@ import {
   sendMessageSchema,
 } from "../schema/messages.schema";
 import {
+  addMessageReaction,
   getConversationMessages,
   getOrCreateConversation,
   getUserConversations,
+  removeMessageReaction,
   sendMessage,
 } from "../services/messages.service";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
@@ -52,5 +56,53 @@ export const messagesRouter = createTRPCRouter({
     .input(sendMessageSchema)
     .mutation(async ({ input, ctx }) => {
       return sendMessage(ctx.userId, input.receiverId, input.text, input.files);
+    }),
+
+  addReaction: protectedProcedure
+    .input(
+      z.object({
+        messageId: z.string(),
+        emoji: z.string().max(15),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const reaction = await addMessageReaction({
+          messageId: input.messageId,
+          userId: ctx.userId,
+          emoji: input.emoji,
+        });
+
+        return reaction;
+      } catch (error) {
+        console.error("❌ [messages.addReaction] Error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to add reaction",
+        });
+      }
+    }),
+
+  removeReaction: protectedProcedure
+    .input(
+      z.object({
+        messageId: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      try {
+        await removeMessageReaction({
+          messageId: input.messageId,
+          userId: ctx.userId,
+        });
+
+        return { success: true };
+      } catch (error) {
+        console.error("❌ [messages.removeReaction] Error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to remove reaction",
+        });
+      }
     }),
 });

@@ -4,12 +4,15 @@ import { ably } from "~/lib/ably";
 import { db } from "~/server/db";
 import {
   conversations,
+  messageReactions,
   messages,
   users,
   type Conversation,
   type Message,
+  type MessageReaction,
   type NewConversation,
   type NewMessage,
+  type NewMessageReaction,
 } from "~/server/db/schema";
 import type { StoredFile } from "~/types";
 
@@ -36,6 +39,16 @@ export type MessageWithSender = Message & {
     readonly name: string;
     readonly imageUrl: string | null;
   };
+  readonly reactions: Array<{
+    readonly id: string;
+    readonly emoji: string;
+    readonly userId: string;
+    readonly user: {
+      readonly id: string;
+      readonly name: string;
+      readonly username: string;
+    };
+  }>;
 };
 
 /**
@@ -318,9 +331,37 @@ export async function getConversationMessages(
           .where(eq(users.id, message.senderId))
           .limit(1);
 
+        const reactions = await db
+          .select()
+          .from(messageReactions)
+          .where(eq(messageReactions.messageId, message.id))
+          .orderBy(desc(messageReactions.createdAt));
+
+        const reactionDetails = await Promise.all(
+          reactions.map(async (reaction) => {
+            const user = await db
+              .select({
+                id: users.id,
+                name: users.name,
+                username: users.username,
+              })
+              .from(users)
+              .where(eq(users.id, reaction.userId))
+              .limit(1);
+
+            return {
+              id: reaction.id,
+              emoji: reaction.emoji,
+              userId: reaction.userId,
+              user: user[0]!,
+            };
+          }),
+        );
+
         return {
           ...message,
           sender: sender[0]!,
+          reactions: reactionDetails,
         };
       }),
     );
@@ -403,6 +444,7 @@ export async function sendMessage(
     const messageWithSender = {
       ...newMessage,
       sender: sender[0]!,
+      reactions: [], // New messages have no reactions initially
     };
 
     // Publish message to Ably channels for real-time updates
@@ -507,6 +549,150 @@ export async function deleteConversationForUser(
       .where(eq(conversations.id, conversationId));
 
     return { success: true };
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+}
+
+/**
+ * Add a reaction to a message
+ */
+export async function addMessageReaction({
+  messageId,
+  userId,
+  emoji,
+}: {
+  readonly messageId: string;
+  readonly userId: string;
+  readonly emoji: string;
+}): Promise<MessageReaction> {
+  try {
+    // Check if user already has a reaction on this message
+    const existingReaction = await db
+      .select()
+      .from(messageReactions)
+      .where(
+        and(
+          eq(messageReactions.messageId, messageId),
+          eq(messageReactions.userId, userId),
+        ),
+      )
+      .limit(1);
+
+    if (existingReaction.length > 0) {
+      // Update existing reaction
+      const [updatedReaction] = await db
+        .update(messageReactions)
+        .set({ emoji })
+        .where(eq(messageReactions.id, existingReaction[0]!.id))
+        .returning();
+
+      return updatedReaction!;
+    } else {
+      // Create new reaction
+      const newReactionData: NewMessageReaction = {
+        messageId,
+        userId,
+        emoji,
+      };
+
+      const [newReaction] = await db
+        .insert(messageReactions)
+        .values(newReactionData)
+        .returning();
+
+      if (!newReaction) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to add reaction",
+        });
+      }
+
+      // Publish real-time update for the reaction
+      try {
+        const message = await db
+          .select()
+          .from(messages)
+          .where(eq(messages.id, messageId))
+          .limit(1);
+
+        if (message.length > 0) {
+          const conversationChannelName = `conversation:${message[0]!.conversationId}`;
+          await ably.channels.get(conversationChannelName).publish("reaction", {
+            type: "reaction_added",
+            messageId,
+            reaction: {
+              id: newReaction.id,
+              emoji: newReaction.emoji,
+              userId: newReaction.userId,
+              user: {
+                id: userId,
+                name: "", // We don't need full user details for this event
+                username: "",
+              },
+            },
+            timestamp: new Date(),
+          });
+        }
+      } catch (error) {
+        console.error("Failed to publish reaction event:", error);
+        // Don't throw - reaction was saved successfully
+      }
+
+      return newReaction;
+    }
+  } catch (e) {
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+}
+
+/**
+ * Remove a user's reaction from a message
+ */
+export async function removeMessageReaction({
+  messageId,
+  userId,
+}: {
+  readonly messageId: string;
+  readonly userId: string;
+}): Promise<void> {
+  try {
+    await db
+      .delete(messageReactions)
+      .where(
+        and(
+          eq(messageReactions.messageId, messageId),
+          eq(messageReactions.userId, userId),
+        ),
+      );
+
+    // Publish real-time update for the removed reaction
+    try {
+      const message = await db
+        .select()
+        .from(messages)
+        .where(eq(messages.id, messageId))
+        .limit(1);
+
+      if (message.length > 0) {
+        const conversationChannelName = `conversation:${message[0]!.conversationId}`;
+        await ably.channels.get(conversationChannelName).publish("reaction", {
+          type: "reaction_removed",
+          messageId,
+          userId,
+          timestamp: new Date(),
+        });
+      }
+    } catch (error) {
+      console.error("Failed to publish reaction removal event:", error);
+      // Don't throw - reaction was removed successfully
+    }
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,
