@@ -193,6 +193,21 @@ export async function getOrCreateConversation(
       unreadCount = unreadMessages.length;
     }
 
+    // Ensure participants exist in database
+    if (participant1.length === 0) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: `Participant 1 with ID ${conversation.participant1Id} not found`,
+      });
+    }
+
+    if (participant2.length === 0) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: `Participant 2 with ID ${conversation.participant2Id} not found`,
+      });
+    }
+
     return {
       ...conversation,
       participant1: participant1[0]!,
@@ -323,6 +338,21 @@ export async function getUserConversations(
           unreadCount = unreadMessages.length;
         }
 
+        // Ensure participants exist in database
+        if (participant1.length === 0) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `Participant 1 with ID ${conversation.participant1Id} not found`,
+          });
+        }
+
+        if (participant2.length === 0) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `Participant 2 with ID ${conversation.participant2Id} not found`,
+          });
+        }
+
         return {
           ...conversation,
           participant1: participant1[0]!,
@@ -440,6 +470,14 @@ export async function getConversationMessages(
               .where(eq(users.id, reaction.userId))
               .limit(1);
 
+            // Ensure user exists for reaction
+            if (user.length === 0) {
+              throw new TRPCError({
+                code: "NOT_FOUND",
+                message: `User with ID ${reaction.userId} not found for reaction`,
+              });
+            }
+
             return {
               id: reaction.id,
               emoji: reaction.emoji,
@@ -448,6 +486,14 @@ export async function getConversationMessages(
             };
           }),
         );
+
+        // Ensure sender exists
+        if (sender.length === 0) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: `Sender with ID ${message.senderId} not found`,
+          });
+        }
 
         return {
           ...message,
@@ -684,7 +730,14 @@ export async function addMessageReaction({
         .where(eq(messageReactions.id, existingReaction[0]!.id))
         .returning();
 
-      reaction = updatedReaction!;
+      if (!updatedReaction) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update reaction",
+        });
+      }
+
+      reaction = updatedReaction;
       isUpdate = true;
       console.log(`🔄 [addMessageReaction] Updated existing reaction:`, {
         messageId,

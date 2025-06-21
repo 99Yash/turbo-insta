@@ -82,6 +82,9 @@ export function ChatArea({
       },
     );
 
+  const markAsReadMutation = api.messages.markConversationAsRead.useMutation();
+  const utils = api.useUtils();
+
   // Derive final messages list combining server data with real-time updates
   const messages = React.useMemo(() => {
     if (!messagesData?.messages?.length && realtimeMessages.size === 0) {
@@ -111,6 +114,40 @@ export function ChatArea({
   React.useEffect(() => {
     setRealtimeMessages(new Map());
   }, [conversation?.id]);
+
+  // Mark conversation as read when opened
+  React.useEffect(() => {
+    if (conversation?.id && conversation.unreadCount > 0) {
+      console.log(
+        `📖 [ChatArea] Marking conversation as read:`,
+        conversation.id,
+      );
+      markAsReadMutation.mutate(
+        { conversationId: conversation.id },
+        {
+          onSuccess: () => {
+            console.log(
+              `✅ [ChatArea] Conversation marked as read:`,
+              conversation.id,
+            );
+            // Invalidate conversations to update unread counts
+            void utils.messages.getConversations.invalidate();
+          },
+          onError: (error) => {
+            console.error(
+              `❌ [ChatArea] Failed to mark conversation as read:`,
+              error,
+            );
+          },
+        },
+      );
+    }
+  }, [
+    conversation?.id,
+    conversation?.unreadCount,
+    markAsReadMutation,
+    utils.messages.getConversations,
+  ]);
 
   // Auto-scroll to bottom when messages change
   React.useEffect(() => {
