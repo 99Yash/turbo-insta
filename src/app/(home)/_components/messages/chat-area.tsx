@@ -534,7 +534,7 @@ export function ChatArea({
                               )}
                             >
                               <div className="flex items-end gap-2">
-                                <span className="leading-relaxed">
+                                <span className="whitespace-pre-wrap leading-relaxed">
                                   {message.text}
                                 </span>
                                 <span
