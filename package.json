@@ -68,6 +68,7 @@
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.44.2",
     "embla-carousel-react": "^8.6.0",
+    "emoji-picker-react": "^4.12.2",
     "framer-motion": "^12.18.1",
     "geist": "^1.4.2",
     "input-otp": "^1.4.2",

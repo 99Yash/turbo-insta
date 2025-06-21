@@ -5,11 +5,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { cn, formatTimeToNow } from "~/lib/utils";
-import type { NotificationWithDetails } from "~/server/api/services/notifications.service";
+import type { RouterOutputs } from "~/trpc/react";
 import type { StoredFile } from "~/types";
 
 interface NotificationItemProps {
-  readonly notification: NotificationWithDetails;
+  readonly notification: RouterOutputs["notifications"]["getAll"]["notifications"][number];
   readonly onMarkAsRead?: (notificationId: string) => void;
 }
 

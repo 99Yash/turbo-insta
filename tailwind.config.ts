@@ -118,6 +118,20 @@ const config = {
           "0%": { transform: "translateY(20px)", opacity: "0" },
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
+        "message-slide-in": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(0.5rem) scale(0.95)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0) scale(1)",
+          },
+        },
+        "online-pulse": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.5" },
+        },
       },
       animation: {
         shine: "shine 3s ease-out infinite",
@@ -130,6 +144,8 @@ const config = {
         "star-movement-top": "star-movement-top linear infinite alternate",
         "fade-in": "fade-in 0.7s ease-out forwards",
         "slide-up": "slide-up 0.8s ease-out forwards",
+        "message-entrance": "message-slide-in 0.2s ease-out",
+        "online-pulse": "online-pulse 2s ease-in-out infinite",
       },
       transitionDelay: {
         "0": "0ms",
