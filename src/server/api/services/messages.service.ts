@@ -582,6 +582,9 @@ export async function addMessageReaction({
       )
       .limit(1);
 
+    let reaction: MessageReaction;
+    let isUpdate = false;
+
     if (existingReaction.length > 0) {
       // Update existing reaction
       const [updatedReaction] = await db
@@ -590,7 +593,14 @@ export async function addMessageReaction({
         .where(eq(messageReactions.id, existingReaction[0]!.id))
         .returning();
 
-      return updatedReaction!;
+      reaction = updatedReaction!;
+      isUpdate = true;
+      console.log(`🔄 [addMessageReaction] Updated existing reaction:`, {
+        messageId,
+        userId,
+        emoji,
+        reactionId: reaction.id,
+      });
     } else {
       // Create new reaction
       const newReactionData: NewMessageReaction = {
@@ -611,43 +621,77 @@ export async function addMessageReaction({
         });
       }
 
-      // Publish real-time update for the reaction
-      try {
-        const [message, user] = await Promise.all([
-          db.select().from(messages).where(eq(messages.id, messageId)).limit(1),
-          db
-            .select({
-              id: users.id,
-              name: users.name,
-              username: users.username,
-            })
-            .from(users)
-            .where(eq(users.id, userId))
-            .limit(1),
-        ]);
-
-        if (message.length > 0 && user.length > 0) {
-          const conversationChannelName = `conversation:${message[0]!.conversationId}`;
-          await ably.channels.get(conversationChannelName).publish("reaction", {
-            type: "reaction_added",
-            messageId,
-            reaction: {
-              id: newReaction.id,
-              emoji: newReaction.emoji,
-              userId: newReaction.userId,
-              user: user[0]!,
-            },
-            timestamp: new Date(),
-          });
-        }
-      } catch (error) {
-        console.error("Failed to publish reaction event:", error);
-        // Don't throw - reaction was saved successfully
-      }
-
-      return newReaction;
+      reaction = newReaction;
+      console.log(`✅ [addMessageReaction] Created new reaction:`, {
+        messageId,
+        userId,
+        emoji,
+        reactionId: reaction.id,
+      });
     }
+
+    // Publish real-time update for both new reactions and updates
+    try {
+      const [message, user] = await Promise.all([
+        db.select().from(messages).where(eq(messages.id, messageId)).limit(1),
+        db
+          .select({
+            id: users.id,
+            name: users.name,
+            username: users.username,
+          })
+          .from(users)
+          .where(eq(users.id, userId))
+          .limit(1),
+      ]);
+
+      if (message.length > 0 && user.length > 0) {
+        const conversationChannelName = `conversation:${message[0]!.conversationId}`;
+        const eventData = {
+          type: "reaction_added" as const,
+          messageId,
+          reaction: {
+            id: reaction.id,
+            emoji: reaction.emoji,
+            userId: reaction.userId,
+            user: user[0]!,
+          },
+          timestamp: new Date(),
+        };
+
+        await ably.channels
+          .get(conversationChannelName)
+          .publish("reaction", eventData);
+
+        console.log(`🚀 [addMessageReaction] Published reaction event:`, {
+          channel: conversationChannelName,
+          type: isUpdate ? "update" : "add",
+          messageId,
+          userId,
+          emoji,
+        });
+      } else {
+        console.error(
+          `❌ [addMessageReaction] Could not find message or user for real-time event:`,
+          {
+            messageId,
+            userId,
+            messageFound: message.length > 0,
+            userFound: user.length > 0,
+          },
+        );
+      }
+    } catch (error) {
+      console.error(
+        "❌ [addMessageReaction] Failed to publish reaction event:",
+        error,
+      );
+      // Don't throw - reaction was saved successfully
+    }
+
+    return reaction;
   } catch (e) {
+    console.error("❌ [addMessageReaction] Database error:", e);
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,
       message: getTRPCErrorFromUnknown(e).message,
@@ -666,14 +710,28 @@ export async function removeMessageReaction({
   readonly userId: string;
 }): Promise<void> {
   try {
-    await db
+    const deletedReactions = await db
       .delete(messageReactions)
       .where(
         and(
           eq(messageReactions.messageId, messageId),
           eq(messageReactions.userId, userId),
         ),
-      );
+      )
+      .returning();
+
+    if (deletedReactions.length > 0) {
+      console.log(`✅ [removeMessageReaction] Removed reaction:`, {
+        messageId,
+        userId,
+        reactionId: deletedReactions[0]!.id,
+      });
+    } else {
+      console.warn(`⚠️ [removeMessageReaction] No reaction found to remove:`, {
+        messageId,
+        userId,
+      });
+    }
 
     // Publish real-time update for the removed reaction
     try {
@@ -685,18 +743,43 @@ export async function removeMessageReaction({
 
       if (message.length > 0) {
         const conversationChannelName = `conversation:${message[0]!.conversationId}`;
-        await ably.channels.get(conversationChannelName).publish("reaction", {
-          type: "reaction_removed",
+        const eventData = {
+          type: "reaction_removed" as const,
           messageId,
           userId,
           timestamp: new Date(),
-        });
+        };
+
+        await ably.channels
+          .get(conversationChannelName)
+          .publish("reaction", eventData);
+
+        console.log(
+          `🚀 [removeMessageReaction] Published reaction removal event:`,
+          {
+            channel: conversationChannelName,
+            messageId,
+            userId,
+          },
+        );
+      } else {
+        console.error(
+          `❌ [removeMessageReaction] Could not find message for real-time event:`,
+          {
+            messageId,
+            userId,
+          },
+        );
       }
     } catch (error) {
-      console.error("Failed to publish reaction removal event:", error);
+      console.error(
+        "❌ [removeMessageReaction] Failed to publish reaction removal event:",
+        error,
+      );
       // Don't throw - reaction was removed successfully
     }
   } catch (e) {
+    console.error("❌ [removeMessageReaction] Database error:", e);
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,
       message: getTRPCErrorFromUnknown(e).message,

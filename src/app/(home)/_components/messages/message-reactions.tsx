@@ -1,3 +1,4 @@
+import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
 import { SmilePlus } from "lucide-react";
 import React from "react";
 import { Button } from "~/components/ui/button";
@@ -25,24 +26,6 @@ interface MessageReactionsProps {
   readonly onRemoveReaction: (messageId: string) => void;
 }
 
-const EMOJI_OPTIONS = [
-  "❤️",
-  "😂",
-  "😮",
-  "😢",
-  "😡",
-  "👍",
-  "👎",
-  "🔥",
-  "💯",
-  "✨",
-  "💪",
-  "🎉",
-  "😍",
-  "🤔",
-  "👏",
-];
-
 export function MessageReactions({
   messageId,
   reactions,
@@ -62,14 +45,31 @@ export function MessageReactions({
     {} as Record<string, typeof reactions>,
   );
 
-  const handleEmojiSelect = (emoji: string) => {
+  const handleEmojiSelect = (emojiData: EmojiClickData) => {
+    const emoji = emojiData.emoji;
     const userReaction = reactions.find(
       (r) => r.userId === user?.id && r.emoji === emoji,
     );
 
+    console.log("🎯 [MessageReactions] Emoji selected:", {
+      messageId,
+      emoji,
+      userReaction: !!userReaction,
+      userId: user?.id,
+      totalReactions: reactions.length,
+    });
+
     if (userReaction) {
+      console.log("🗑️ [MessageReactions] Removing reaction:", {
+        messageId,
+        emoji,
+      });
       onRemoveReaction(messageId);
     } else {
+      console.log("➕ [MessageReactions] Adding reaction:", {
+        messageId,
+        emoji,
+      });
       onAddReaction(messageId, emoji);
     }
     setShowEmojiPicker(false);
@@ -80,9 +80,25 @@ export function MessageReactions({
       (r) => r.userId === user?.id && r.emoji === emoji,
     );
 
+    console.log("👆 [MessageReactions] Reaction clicked:", {
+      messageId,
+      emoji,
+      userReaction: !!userReaction,
+      userId: user?.id,
+      totalReactions: reactions.length,
+    });
+
     if (userReaction) {
+      console.log("🗑️ [MessageReactions] Removing reaction:", {
+        messageId,
+        emoji,
+      });
       onRemoveReaction(messageId);
     } else {
+      console.log("➕ [MessageReactions] Adding reaction:", {
+        messageId,
+        emoji,
+      });
       onAddReaction(messageId, emoji);
     }
   };
@@ -103,23 +119,22 @@ export function MessageReactions({
             </Button>
           </PopoverTrigger>
           <PopoverContent
-            className="w-auto border-border/40 p-3 shadow-lg"
+            className="w-auto border-border/40 p-0 shadow-lg"
             align="start"
             side="top"
           >
-            <div className="grid grid-cols-5 gap-2">
-              {EMOJI_OPTIONS.map((emoji) => (
-                <Button
-                  key={emoji}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleEmojiSelect(emoji)}
-                  className="h-10 w-10 rounded-lg p-0 text-lg transition-all duration-200 hover:scale-110 hover:bg-muted/60"
-                >
-                  {emoji}
-                </Button>
-              ))}
-            </div>
+            <EmojiPicker
+              onEmojiClick={handleEmojiSelect}
+              theme={Theme.AUTO}
+              width={350}
+              height={400}
+              previewConfig={{
+                showPreview: false,
+              }}
+              searchDisabled={false}
+              skinTonesDisabled={false}
+              autoFocusSearch={false}
+            />
           </PopoverContent>
         </Popover>
       </div>
@@ -167,23 +182,22 @@ export function MessageReactions({
           </Button>
         </PopoverTrigger>
         <PopoverContent
-          className="w-auto border-border/40 p-3 shadow-lg"
+          className="w-auto border-border/40 p-0 shadow-lg"
           align="start"
           side="top"
         >
-          <div className="grid grid-cols-5 gap-2">
-            {EMOJI_OPTIONS.map((emoji) => (
-              <Button
-                key={emoji}
-                variant="ghost"
-                size="sm"
-                onClick={() => handleEmojiSelect(emoji)}
-                className="h-10 w-10 rounded-lg p-0 text-lg transition-all duration-200 hover:scale-110 hover:bg-muted/60"
-              >
-                {emoji}
-              </Button>
-            ))}
-          </div>
+          <EmojiPicker
+            onEmojiClick={handleEmojiSelect}
+            theme={Theme.AUTO}
+            width={350}
+            height={400}
+            previewConfig={{
+              showPreview: false,
+            }}
+            searchDisabled={false}
+            skinTonesDisabled={false}
+            autoFocusSearch={false}
+          />
         </PopoverContent>
       </Popover>
     </div>
