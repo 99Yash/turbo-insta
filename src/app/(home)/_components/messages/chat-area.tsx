@@ -589,6 +589,7 @@ export function ChatArea({
           {/* Message input area */}
           <div className="flex flex-1 items-end rounded-2xl border border-border/40 bg-background/50 shadow-sm">
             <textarea
+              autoFocus
               placeholder="Message..."
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}

@@ -1,7 +1,7 @@
 "use client";
 
 import { Search, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { Modal } from "~/components/ui/modal";
@@ -23,9 +23,22 @@ export function NewMessageModal({
 }: NewMessageModalProps) {
   const { user: currentUser } = useUser();
   const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Debounce search query to avoid excessive API calls
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
+
+  // Auto-focus search input when modal opens
+  useEffect(() => {
+    if (open && searchInputRef.current) {
+      // Small delay to ensure modal is fully rendered
+      const timer = setTimeout(() => {
+        searchInputRef.current?.focus();
+      }, 100);
+
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
 
   // Search users based on debounced query
   const { data: searchResults } = api.user.searchUsers.useQuery(
@@ -77,6 +90,7 @@ export function NewMessageModal({
             <div className="flex flex-1 items-center gap-2 rounded-lg border border-border/40 px-3 py-2">
               <Search className="h-4 w-4 text-muted-foreground" />
               <input
+                ref={searchInputRef}
                 type="text"
                 placeholder="Search..."
                 value={searchQuery}
