@@ -29,12 +29,14 @@ export function MessagesPageClient() {
   };
 
   return (
-    <div className="flex h-full min-h-screen">
-      {/* Always show sidebar */}
+    <div className="flex h-screen overflow-hidden">
+      {/* Show sidebar - full width on mobile */}
       <ConversationsSidebar onConversationSelect={handleConversationSelect} />
 
-      {/* Show empty state when no conversation selected */}
-      <ChatArea onUserSelect={handleUserSelect} />
+      {/* Show empty state when no conversation selected - hidden on mobile */}
+      <div className="hidden flex-1 lg:flex">
+        <ChatArea onUserSelect={handleUserSelect} />
+      </div>
     </div>
   );
 }

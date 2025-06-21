@@ -31,6 +31,21 @@ export function ConversationsSidebar({
   const client = useAbly();
   const router = useRouter();
 
+  // Utility function to truncate messages intelligently
+  const truncateMessage = (text: string, maxLength = 50): string => {
+    if (text.length <= maxLength) return text;
+
+    // Find the last space before the max length to avoid cutting words
+    const truncated = text.substring(0, maxLength);
+    const lastSpace = truncated.lastIndexOf(" ");
+
+    if (lastSpace > maxLength * 0.8) {
+      return truncated.substring(0, lastSpace) + "...";
+    }
+
+    return truncated + "...";
+  };
+
   // Real-time conversation updates state
   const [realtimeUpdates, setRealtimeUpdates] = useState<
     Map<string, ConversationWithParticipants>
@@ -153,9 +168,9 @@ export function ConversationsSidebar({
   );
 
   return (
-    <div className="flex h-full w-full max-w-sm flex-col border-r border-border/40 bg-background/95 backdrop-blur-sm">
+    <div className="flex h-screen w-full flex-col border-r border-border/40 bg-background lg:max-w-sm">
       {/* Header - Enhanced styling */}
-      <div className="flex items-center justify-between border-b border-border/40 bg-background/80 p-4 backdrop-blur-sm">
+      <div className="flex shrink-0 items-center justify-between border-b border-border/40 bg-background/80 p-4 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           {/* User avatar */}
           <Avatar className="h-10 w-10 border-2 border-background shadow-md">
@@ -185,14 +200,14 @@ export function ConversationsSidebar({
       {/* Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Primary tab (Messages) */}
-        <div className="border-b border-border/40 bg-muted/30 p-4">
+        <div className="shrink-0 border-b border-border/40 bg-muted/30 p-4">
           <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             Messages
           </h3>
         </div>
 
         {/* Conversations list */}
-        <ScrollArea className="flex-1">
+        <ScrollArea className="scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent flex-1 overflow-y-auto">
           {conversations.length === 0 ? (
             <div className="flex flex-col items-center justify-center p-8 text-center">
               <div className="mb-6 rounded-full bg-gradient-to-br from-muted to-muted/50 p-6 shadow-inner">
@@ -211,7 +226,7 @@ export function ConversationsSidebar({
               </Button>
             </div>
           ) : (
-            <div className="space-y-1 p-2">
+            <div className="space-y-1 p-2 pb-4">
               {conversations.map((conversation) => {
                 const otherParticipant = getOtherParticipant(conversation);
                 const isSelected = selectedConversationId === conversation.id;
@@ -246,11 +261,11 @@ export function ConversationsSidebar({
                       </Avatar>
 
                       {/* Online status indicator */}
-                      <div className="animate-online-pulse absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-background bg-green-500 shadow-sm"></div>
+                      <div className="absolute -bottom-1 -right-1 h-4 w-4 animate-online-pulse rounded-full border-2 border-background bg-green-500 shadow-sm"></div>
                     </div>
 
                     <div className="flex-1 overflow-hidden">
-                      <div className="mb-1 flex items-center justify-between">
+                      <div className="mb-1 flex items-center justify-between gap-2">
                         <h4
                           className={cn(
                             "truncate font-semibold transition-colors",
@@ -266,7 +281,7 @@ export function ConversationsSidebar({
                         {conversation.lastMessage && (
                           <span
                             className={cn(
-                              "text-xs font-medium transition-colors",
+                              "shrink-0 text-xs font-medium transition-colors",
                               isSelected
                                 ? "text-red-600 dark:text-red-400"
                                 : "text-muted-foreground group-hover:text-foreground",
@@ -280,27 +295,28 @@ export function ConversationsSidebar({
                       </div>
 
                       {/* Last message with better styling */}
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between gap-2">
                         {conversation.lastMessage ? (
                           <p
                             className={cn(
-                              "truncate text-sm transition-colors",
+                              "flex-1 text-sm transition-colors",
                               isSelected
                                 ? "text-red-600 dark:text-red-400"
                                 : "text-muted-foreground group-hover:text-foreground",
                             )}
+                            title={conversation.lastMessage.text}
                           >
-                            {conversation.lastMessage.text}
+                            {truncateMessage(conversation.lastMessage.text)}
                           </p>
                         ) : (
-                          <p className="text-sm italic text-muted-foreground">
+                          <p className="flex-1 text-sm italic text-muted-foreground">
                             Start a conversation
                           </p>
                         )}
 
                         {/* Unread indicator */}
                         {conversation.lastMessage && !isSelected && (
-                          <div className="ml-2 flex-shrink-0">
+                          <div className="shrink-0">
                             <div className="h-2 w-2 rounded-full bg-red-500 shadow-sm"></div>
                           </div>
                         )}

@@ -54,19 +54,23 @@ export function ConversationPageClient({
   };
 
   return (
-    <div className="flex h-full min-h-screen">
-      {/* Always show sidebar */}
-      <ConversationsSidebar
-        onConversationSelect={handleConversationSelect}
-        selectedConversationId={conversationId}
-      />
+    <div className="flex h-screen overflow-hidden">
+      {/* Hide sidebar on mobile when viewing conversation */}
+      <div className="hidden lg:block">
+        <ConversationsSidebar
+          onConversationSelect={handleConversationSelect}
+          selectedConversationId={conversationId}
+        />
+      </div>
 
-      {/* Show chat area for selected conversation */}
-      <ChatArea
-        conversation={selectedConversation}
-        onUserSelect={handleUserSelect}
-        onBack={handleBack}
-      />
+      {/* Show chat area for selected conversation - full width on mobile */}
+      <div className="flex-1">
+        <ChatArea
+          conversation={selectedConversation}
+          onUserSelect={handleUserSelect}
+          onBack={handleBack}
+        />
+      </div>
     </div>
   );
 }

@@ -401,7 +401,7 @@ export function ChatArea({
   const otherParticipant = getOtherParticipant(conversation);
 
   return (
-    <div className="flex flex-1 flex-col bg-background">
+    <div className="flex h-screen flex-1 flex-col bg-background">
       {/* Chat header */}
       <div className="flex items-center justify-between border-b border-border/40 bg-background/80 p-4 backdrop-blur-sm">
         <div className="flex items-center gap-3">

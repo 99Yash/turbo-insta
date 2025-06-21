@@ -51,25 +51,9 @@ export function MessageReactions({
       (r) => r.userId === user?.id && r.emoji === emoji,
     );
 
-    console.log("🎯 [MessageReactions] Emoji selected:", {
-      messageId,
-      emoji,
-      userReaction: !!userReaction,
-      userId: user?.id,
-      totalReactions: reactions.length,
-    });
-
     if (userReaction) {
-      console.log("🗑️ [MessageReactions] Removing reaction:", {
-        messageId,
-        emoji,
-      });
       onRemoveReaction(messageId);
     } else {
-      console.log("➕ [MessageReactions] Adding reaction:", {
-        messageId,
-        emoji,
-      });
       onAddReaction(messageId, emoji);
     }
     setShowEmojiPicker(false);
@@ -80,25 +64,9 @@ export function MessageReactions({
       (r) => r.userId === user?.id && r.emoji === emoji,
     );
 
-    console.log("👆 [MessageReactions] Reaction clicked:", {
-      messageId,
-      emoji,
-      userReaction: !!userReaction,
-      userId: user?.id,
-      totalReactions: reactions.length,
-    });
-
     if (userReaction) {
-      console.log("🗑️ [MessageReactions] Removing reaction:", {
-        messageId,
-        emoji,
-      });
       onRemoveReaction(messageId);
     } else {
-      console.log("➕ [MessageReactions] Adding reaction:", {
-        messageId,
-        emoji,
-      });
       onAddReaction(messageId, emoji);
     }
   };
@@ -160,7 +128,18 @@ export function MessageReactions({
                 ? "border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-900/50"
                 : "border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-700/50",
             )}
-            title={`${reactionList.map((r) => r.user.name).join(", ")} reacted with ${emoji}`}
+            title={
+              userHasReacted
+                ? reactionList.length === 1
+                  ? `You reacted with ${emoji}. Click to remove your reaction.`
+                  : `You and ${reactionList
+                      .filter((r) => r.userId !== user?.id)
+                      .map((r) => r.user.name)
+                      .join(
+                        ", ",
+                      )} reacted with ${emoji}. Click to remove your reaction.`
+                : `${reactionList.map((r) => r.user.name).join(", ")} reacted with ${emoji}. Click to add your reaction.`
+            }
           >
             <span className="text-sm">{emoji}</span>
             {count > 1 && (
