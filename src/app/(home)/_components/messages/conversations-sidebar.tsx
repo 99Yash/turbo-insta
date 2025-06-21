@@ -9,7 +9,7 @@ import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import { useUser } from "~/contexts/user-context";
+import { useAuthenticatedUser } from "~/contexts/user-context";
 import { cn, formatTimeToNow, getInitials } from "~/lib/utils";
 import type { ConversationWithParticipants } from "~/server/api/services/messages.service";
 import { api } from "~/trpc/react";
@@ -26,7 +26,7 @@ export function ConversationsSidebar({
   onConversationSelect,
   selectedConversationId,
 }: ConversationsSidebarProps) {
-  const { user } = useUser();
+  const user = useAuthenticatedUser();
   const [showNewMessageModal, setShowNewMessageModal] = useState(false);
   const client = useAbly();
   const router = useRouter();
@@ -160,9 +160,7 @@ export function ConversationsSidebar({
           {/* User avatar */}
           <Avatar className="h-10 w-10 border-2 border-background shadow-md">
             <AvatarImage src={user?.imageUrl ?? ""} alt={user?.name ?? ""} />
-            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 font-semibold text-white">
-              {getInitials(user?.name ?? "")}
-            </AvatarFallback>
+            <AvatarFallback>{getInitials(user?.name ?? "")}</AvatarFallback>
           </Avatar>
 
           <div className="flex items-center gap-2">
@@ -242,7 +240,7 @@ export function ConversationsSidebar({
                           src={otherParticipant.imageUrl ?? ""}
                           alt={otherParticipant.name}
                         />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 font-semibold text-white">
+                        <AvatarFallback>
                           {getInitials(otherParticipant.name)}
                         </AvatarFallback>
                       </Avatar>
