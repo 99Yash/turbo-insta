@@ -31,21 +31,6 @@ export function ConversationsSidebar({
   const client = useAbly();
   const router = useRouter();
 
-  // Utility function to truncate messages intelligently
-  const truncateMessage = (text: string, maxLength = 50): string => {
-    if (text.length <= maxLength) return text;
-
-    // Find the last space before the max length to avoid cutting words
-    const truncated = text.substring(0, maxLength);
-    const lastSpace = truncated.lastIndexOf(" ");
-
-    if (lastSpace > maxLength * 0.8) {
-      return truncated.substring(0, lastSpace) + "...";
-    }
-
-    return truncated + "...";
-  };
-
   // Real-time conversation updates state
   const [realtimeUpdates, setRealtimeUpdates] = useState<
     Map<string, ConversationWithParticipants>
@@ -299,14 +284,14 @@ export function ConversationsSidebar({
                         {conversation.lastMessage ? (
                           <p
                             className={cn(
-                              "flex-1 text-sm transition-colors",
+                              "line-clamp-1 flex-1 text-xs transition-colors",
                               isSelected
                                 ? "text-red-600 dark:text-red-400"
                                 : "text-muted-foreground group-hover:text-foreground",
                             )}
                             title={conversation.lastMessage.text}
                           >
-                            {truncateMessage(conversation.lastMessage.text)}
+                            {conversation.lastMessage.text}
                           </p>
                         ) : (
                           <p className="flex-1 text-sm italic text-muted-foreground">
