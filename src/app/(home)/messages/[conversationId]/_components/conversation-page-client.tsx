@@ -53,6 +53,31 @@ export function ConversationPageClient({
     router.push("/messages");
   };
 
+  // Show loading state while conversations are being fetched
+  if (isLoading || !conversations) {
+    return (
+      <div className="flex h-screen overflow-hidden">
+        {/* Hide sidebar on mobile when viewing conversation */}
+        <div className="hidden lg:block">
+          <ConversationsSidebar
+            onConversationSelect={handleConversationSelect}
+            selectedConversationId={conversationId}
+          />
+        </div>
+
+        {/* Show loading state for chat area */}
+        <div className="flex flex-1 items-center justify-center bg-background">
+          <div className="text-center">
+            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
+            <p className="text-sm text-muted-foreground">
+              Loading conversation...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen overflow-hidden">
       {/* Hide sidebar on mobile when viewing conversation */}

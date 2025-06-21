@@ -70,15 +70,16 @@ export function ChatArea({
     Map<string, MessageWithSender>
   >(new Map());
 
-  const { data: messagesData } = api.messages.getConversationMessages.useQuery(
-    {
-      conversationId: conversation?.id ?? "",
-      limit: 50,
-    },
-    {
-      enabled: !!conversation?.id,
-    },
-  );
+  const { data: messagesData, isLoading: isLoadingMessages } =
+    api.messages.getConversationMessages.useQuery(
+      {
+        conversationId: conversation?.id ?? "",
+        limit: 50,
+      },
+      {
+        enabled: !!conversation?.id,
+      },
+    );
 
   // Derive final messages list combining server data with real-time updates
   const messages = React.useMemo(() => {
@@ -442,7 +443,14 @@ export function ChatArea({
         ref={scrollAreaRef}
       >
         <div className="flex flex-col gap-2 p-4">
-          {messages.length === 0 ? (
+          {isLoadingMessages ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
+              <p className="text-sm text-muted-foreground">
+                Loading messages...
+              </p>
+            </div>
+          ) : messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Avatar className="mb-4 h-16 w-16">
                 <AvatarImage
