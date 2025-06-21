@@ -3,7 +3,7 @@
 import type * as Ably from "ably";
 import { useAbly } from "ably/react";
 import { ArrowLeft, Plus, Send } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
@@ -51,14 +51,14 @@ export function ChatArea({
   onBack,
 }: ChatAreaProps) {
   const user = useAuthenticatedUser();
-  const [showNewMessageModal, setShowNewMessageModal] = useState(false);
-  const [messageText, setMessageText] = useState("");
+  const [showNewMessageModal, setShowNewMessageModal] = React.useState(false);
+  const [messageText, setMessageText] = React.useState("");
   const client = useAbly();
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollAreaRef = React.useRef<HTMLDivElement>(null);
+  const messagesEndRef = React.useRef<HTMLDivElement>(null);
 
   // Real-time message updates state
-  const [realtimeMessages, setRealtimeMessages] = useState<
+  const [realtimeMessages, setRealtimeMessages] = React.useState<
     Map<string, MessageWithSender>
   >(new Map());
 
@@ -73,7 +73,7 @@ export function ChatArea({
   );
 
   // Derive final messages list combining server data with real-time updates
-  const messages = useMemo(() => {
+  const messages = React.useMemo(() => {
     if (!messagesData?.messages?.length && realtimeMessages.size === 0) {
       return [];
     }
@@ -96,19 +96,19 @@ export function ChatArea({
   }, [messagesData?.messages, realtimeMessages]);
 
   // Clear real-time messages when conversation changes
-  useEffect(() => {
+  React.useEffect(() => {
     setRealtimeMessages(new Map());
   }, [conversation?.id]);
 
   // Auto-scroll to bottom when messages change
-  useEffect(() => {
+  React.useEffect(() => {
     if (messagesEndRef.current && messages.length > 0) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages.length]);
 
   // Subscribe to real-time messages for this conversation
-  useEffect(() => {
+  React.useEffect(() => {
     if (!conversation?.id || !client) return;
 
     const conversationChannelName = `conversation:${conversation.id}`;
@@ -305,21 +305,21 @@ export function ChatArea({
     },
   });
 
-  const handleAddReaction = useCallback(
+  const handleAddReaction = React.useCallback(
     (messageId: string, emoji: string) => {
       addReactionMutation.mutate({ messageId, emoji });
     },
     [addReactionMutation],
   );
 
-  const handleRemoveReaction = useCallback(
+  const handleRemoveReaction = React.useCallback(
     (messageId: string) => {
       removeReactionMutation.mutate({ messageId });
     },
     [removeReactionMutation],
   );
 
-  const handleUserSelect = useCallback(
+  const handleUserSelect = React.useCallback(
     (userId: string) => {
       onUserSelect?.(userId);
     },
@@ -329,7 +329,7 @@ export function ChatArea({
   /**
    * Get the participant who is NOT the current user
    */
-  const getOtherParticipant = useCallback(
+  const getOtherParticipant = React.useCallback(
     (conversation: ConversationWithParticipants) => {
       return conversation.participant1.id === user?.id
         ? conversation.participant2
@@ -338,7 +338,7 @@ export function ChatArea({
     [user?.id],
   );
 
-  const handleSendMessage = useCallback(() => {
+  const handleSendMessage = React.useCallback(() => {
     if (!messageText.trim() || !conversation) return;
 
     const otherParticipant = getOtherParticipant(conversation);
@@ -349,7 +349,7 @@ export function ChatArea({
   }, [messageText, conversation, getOtherParticipant, sendMessageMutation]);
 
   // Group consecutive messages by the same sender
-  const groupedMessages = useMemo(() => {
+  const groupedMessages = React.useMemo(() => {
     return messages.reduce((groups, message, index) => {
       const isFirstMessage = index === 0;
       const prevMessage = messages[index - 1];
@@ -468,15 +468,14 @@ export function ChatArea({
                 <div
                   key={`group-${groupIndex}`}
                   className={cn(
-                    "group flex gap-3",
+                    "mb-6 flex gap-3",
                     isOwnGroup ? "justify-end" : "justify-start",
-                    "mb-4",
                   )}
                 >
                   {/* Avatar for incoming message groups */}
                   {!isOwnGroup && (
                     <div className="flex-shrink-0">
-                      <Avatar className="h-8 w-8 border border-border/30">
+                      <Avatar className="h-10 w-10 border border-border/30">
                         <AvatarImage
                           src={sender.imageUrl ?? ""}
                           alt={sender.name}
@@ -490,73 +489,82 @@ export function ChatArea({
 
                   <div
                     className={cn(
-                      "flex max-w-[75%] flex-col gap-1",
+                      "flex max-w-[75%] flex-col",
                       isOwnGroup ? "items-end" : "items-start",
                     )}
                   >
-                    {/* Sender name for incoming messages */}
+                    {/* Sender name for incoming messages - ABOVE the first bubble */}
                     {!isOwnGroup && (
-                      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                        {sender.username}
-                      </span>
+                      <div className="mb-1 text-sm font-semibold text-purple-600 dark:text-purple-400">
+                        {sender.username.toUpperCase()}
+                      </div>
                     )}
 
                     {/* Message bubbles */}
-                    {messageGroup.map((message, messageIndex) => (
-                      <div
-                        key={message.id}
-                        className={cn(
-                          "animate-message-entrance group/message relative",
-                          isOwnGroup ? "items-end" : "items-start",
-                        )}
-                      >
-                        {/* Message bubble with enhanced styling */}
-                        <div
-                          className={cn(
-                            "break-words rounded-2xl px-4 py-3 text-sm shadow-sm transition-all",
-                            isOwnGroup
-                              ? cn(
-                                  "bg-gradient-to-r from-red-500 to-red-600 text-white",
-                                  messageIndex === 0 && "rounded-tr-md",
-                                  messageIndex === messageGroup.length - 1 &&
-                                    "rounded-br-md",
-                                )
-                              : cn(
-                                  "border border-border/20 bg-muted/80 text-foreground",
-                                  messageIndex === 0 && "rounded-tl-md",
-                                  messageIndex === messageGroup.length - 1 &&
-                                    "rounded-bl-md",
-                                ),
-                          )}
-                        >
-                          {message.text}
-                        </div>
+                    <div className="flex flex-col gap-1">
+                      {messageGroup.map((message, messageIndex) => {
+                        const isLastInGroup =
+                          messageIndex === messageGroup.length - 1;
 
-                        {/* Message reactions */}
-                        <MessageReactions
-                          messageId={message.id}
-                          reactions={message.reactions}
-                          onAddReaction={handleAddReaction}
-                          onRemoveReaction={handleRemoveReaction}
-                        />
-
-                        {/* Timestamp for last message in group */}
-                        {messageIndex === messageGroup.length - 1 && (
-                          <span
+                        return (
+                          <div
+                            key={message.id}
                             className={cn(
-                              "mt-1 text-xs text-muted-foreground",
-                              isOwnGroup ? "text-right" : "text-left",
+                              "group/message relative",
+                              isOwnGroup
+                                ? "flex flex-col items-end"
+                                : "flex flex-col items-start",
                             )}
                           >
-                            {formatTimeToNow(new Date(message.createdAt))}
-                          </span>
-                        )}
-                      </div>
-                    ))}
+                            {/* Message bubble */}
+                            <div
+                              className={cn(
+                                "max-w-full break-words px-4 py-2 text-sm shadow-sm transition-all",
+                                isOwnGroup
+                                  ? cn(
+                                      "rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white",
+                                      messageIndex === 0 && "rounded-tr-lg",
+                                      isLastInGroup && "rounded-br-lg",
+                                    )
+                                  : cn(
+                                      "rounded-2xl border border-border/20 bg-muted/60 text-foreground",
+                                      messageIndex === 0 && "rounded-tl-lg",
+                                      isLastInGroup && "rounded-bl-lg",
+                                    ),
+                              )}
+                            >
+                              <div className="flex items-end gap-2">
+                                <span className="leading-relaxed">
+                                  {message.text}
+                                </span>
+                                <span
+                                  className={cn(
+                                    "mt-1 flex-shrink-0 text-xs",
+                                    isOwnGroup
+                                      ? "text-white/80"
+                                      : "text-muted-foreground",
+                                  )}
+                                >
+                                  {formatTimeToNow(new Date(message.createdAt))}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Message reactions */}
+                            <MessageReactions
+                              messageId={message.id}
+                              reactions={message.reactions}
+                              onAddReaction={handleAddReaction}
+                              onRemoveReaction={handleRemoveReaction}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
 
-                  {/* Spacer for outgoing messages */}
-                  {isOwnGroup && <div className="h-8 w-8 flex-shrink-0" />}
+                  {/* Spacer for outgoing messages to maintain alignment */}
+                  {isOwnGroup && <div className="h-10 w-10 flex-shrink-0" />}
                 </div>
               );
             })

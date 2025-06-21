@@ -1,5 +1,5 @@
 import { SmilePlus } from "lucide-react";
-import { useState } from "react";
+import React from "react";
 import { Button } from "~/components/ui/button";
 import {
   Popover,
@@ -36,6 +36,11 @@ const EMOJI_OPTIONS = [
   "🔥",
   "💯",
   "✨",
+  "💪",
+  "🎉",
+  "😍",
+  "🤔",
+  "👏",
 ];
 
 export function MessageReactions({
@@ -45,7 +50,7 @@ export function MessageReactions({
   onRemoveReaction,
 }: MessageReactionsProps) {
   const { user } = useUser();
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = React.useState(false);
 
   // Group reactions by emoji
   const groupedReactions = reactions.reduce(
@@ -63,10 +68,8 @@ export function MessageReactions({
     );
 
     if (userReaction) {
-      // If user already has this specific emoji reaction, remove it (toggle off)
       onRemoveReaction(messageId);
     } else {
-      // Add new reaction (this will replace any existing reaction due to unique constraint)
       onAddReaction(messageId, emoji);
     }
     setShowEmojiPicker(false);
@@ -86,9 +89,46 @@ export function MessageReactions({
 
   const hasReactions = Object.keys(groupedReactions).length > 0;
 
+  if (!hasReactions) {
+    return (
+      <div className="group/reactions mt-1 flex items-center justify-start">
+        <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-7 rounded-full p-0 opacity-0 transition-all duration-200 hover:scale-105 hover:bg-muted/80 hover:opacity-100 group-hover/message:opacity-60"
+            >
+              <SmilePlus className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            className="w-auto border-border/40 p-3 shadow-lg"
+            align="start"
+            side="top"
+          >
+            <div className="grid grid-cols-5 gap-2">
+              {EMOJI_OPTIONS.map((emoji) => (
+                <Button
+                  key={emoji}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleEmojiSelect(emoji)}
+                  className="h-10 w-10 rounded-lg p-0 text-lg transition-all duration-200 hover:scale-110 hover:bg-muted/60"
+                >
+                  {emoji}
+                </Button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+    );
+  }
+
   return (
-    <div className="mt-1 flex items-center gap-1">
-      {/* Existing reactions */}
+    <div className="group/reactions mt-2 flex items-center gap-1">
+      {/* Existing reactions with enhanced styling */}
       {Object.entries(groupedReactions).map(([emoji, reactionList]) => {
         const userHasReacted = reactionList.some((r) => r.userId === user?.id);
         const count = reactionList.length;
@@ -100,15 +140,17 @@ export function MessageReactions({
             size="sm"
             onClick={() => handleReactionClick(emoji)}
             className={cn(
-              "h-6 min-w-[2rem] rounded-full border px-2 py-0 text-xs transition-all hover:scale-105",
+              "h-7 min-w-[2.5rem] rounded-full px-2.5 py-0 text-xs font-medium shadow-sm transition-all duration-200 hover:scale-105",
               userHasReacted
-                ? "border-red-200 bg-red-50 text-red-600 hover:bg-red-100 dark:border-red-800 dark:bg-red-950 dark:text-red-400 dark:hover:bg-red-900"
-                : "border-border/40 bg-muted/50 text-muted-foreground hover:bg-muted",
+                ? "border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 dark:border-blue-800 dark:bg-blue-950/50 dark:text-blue-300 dark:hover:bg-blue-900/50"
+                : "border border-gray-200 bg-gray-50 text-gray-600 hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800/50 dark:text-gray-300 dark:hover:bg-gray-700/50",
             )}
-            title={reactionList.map((r) => r.user.name).join(", ")}
+            title={`${reactionList.map((r) => r.user.name).join(", ")} reacted with ${emoji}`}
           >
-            <span className="mr-1">{emoji}</span>
-            <span className="text-[10px]">{count}</span>
+            <span className="text-sm">{emoji}</span>
+            {count > 1 && (
+              <span className="ml-1 text-[11px] font-semibold">{count}</span>
+            )}
           </Button>
         );
       })}
@@ -119,24 +161,24 @@ export function MessageReactions({
           <Button
             variant="ghost"
             size="sm"
-            className={cn(
-              "h-6 w-6 rounded-full border border-dashed p-0 transition-all hover:scale-105",
-              hasReactions ? "opacity-0 group-hover:opacity-100" : "",
-              "border-muted-foreground/30 text-muted-foreground hover:border-muted-foreground hover:bg-muted/50",
-            )}
+            className="h-7 w-7 rounded-full border border-dashed border-muted-foreground/30 p-0 opacity-60 transition-all duration-200 hover:scale-105 hover:bg-muted/80 hover:opacity-100"
           >
-            <SmilePlus className="h-3 w-3" />
+            <SmilePlus className="h-3.5 w-3.5 text-muted-foreground" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-2" align="start" side="top">
-          <div className="grid grid-cols-5 gap-1">
+        <PopoverContent
+          className="w-auto border-border/40 p-3 shadow-lg"
+          align="start"
+          side="top"
+        >
+          <div className="grid grid-cols-5 gap-2">
             {EMOJI_OPTIONS.map((emoji) => (
               <Button
                 key={emoji}
                 variant="ghost"
                 size="sm"
                 onClick={() => handleEmojiSelect(emoji)}
-                className="h-8 w-8 p-0 text-lg transition-all hover:scale-110 hover:bg-muted"
+                className="h-10 w-10 rounded-lg p-0 text-lg transition-all duration-200 hover:scale-110 hover:bg-muted/60"
               >
                 {emoji}
               </Button>
