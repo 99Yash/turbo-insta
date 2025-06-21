@@ -1,16 +1,20 @@
 import {
   addMessageReactionSchema,
+  deleteConversationSchema,
   getConversationMessagesSchema,
   getOrCreateConversationSchema,
   getUserConversationsSchema,
+  markConversationAsReadSchema,
   removeMessageReactionSchema,
   sendMessageSchema,
 } from "../schema/messages.schema";
 import {
   addMessageReaction,
+  deleteConversationForUser,
   getConversationMessages,
   getOrCreateConversation,
   getUserConversations,
+  markConversationAsRead,
   removeMessageReaction,
   sendMessage,
 } from "../services/messages.service";
@@ -77,5 +81,20 @@ export const messagesRouter = createTRPCRouter({
         messageId: input.messageId,
         userId: ctx.userId,
       });
+    }),
+
+  /**
+   * Delete a conversation for the current user
+   */
+  deleteConversation: protectedProcedure
+    .input(deleteConversationSchema)
+    .mutation(async ({ ctx, input }) => {
+      return deleteConversationForUser(ctx.userId, input.conversationId);
+    }),
+
+  markConversationAsRead: protectedProcedure
+    .input(markConversationAsReadSchema)
+    .mutation(async ({ ctx, input }) => {
+      return markConversationAsRead(ctx.userId, input.conversationId);
     }),
 });

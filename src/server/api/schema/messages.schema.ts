@@ -38,6 +38,14 @@ export const removeMessageReactionSchema = z.object({
   messageId: z.string().min(1, "Message ID is required"),
 });
 
+export const deleteConversationSchema = z.object({
+  conversationId: z.string().min(1, "Conversation ID is required"),
+});
+
+export const markConversationAsReadSchema = z.object({
+  conversationId: z.string().min(1, "Conversation ID is required"),
+});
+
 export type SendMessageInput = z.infer<typeof sendMessageSchema>;
 export type GetUserConversationsInput = z.infer<
   typeof getUserConversationsSchema
@@ -51,4 +59,8 @@ export type GetConversationMessagesInput = z.infer<
 export type AddMessageReactionInput = z.infer<typeof addMessageReactionSchema>;
 export type RemoveMessageReactionInput = z.infer<
   typeof removeMessageReactionSchema
+>;
+export type DeleteConversationInput = z.infer<typeof deleteConversationSchema>;
+export type MarkConversationAsReadInput = z.infer<
+  typeof markConversationAsReadSchema
 >;

@@ -30,6 +30,7 @@ export type ConversationWithParticipants = Conversation & {
     readonly imageUrl: string | null;
   };
   readonly lastMessage?: Message | null;
+  readonly unreadCount: number;
 };
 
 export type MessageWithSender = Message & {
@@ -148,11 +149,56 @@ export async function getOrCreateConversation(
       filteredLastMessage = null;
     }
 
+    // Calculate unread count - count messages from other participant after user's last seen time
+    const userLastSeenAt = isParticipant1
+      ? conversation.participant1LastSeenAt
+      : conversation.participant2LastSeenAt;
+
+    const otherParticipantId = isParticipant1
+      ? conversation.participant2Id
+      : conversation.participant1Id;
+
+    let unreadCount = 0;
+    if (userLastSeenAt) {
+      const whereConditions = [
+        eq(messages.conversationId, conversation.id),
+        eq(messages.senderId, otherParticipantId),
+        gt(messages.createdAt, userLastSeenAt),
+      ];
+
+      if (userDeletedAt) {
+        whereConditions.push(gt(messages.createdAt, userDeletedAt));
+      }
+
+      const unreadMessages = await db
+        .select({ id: messages.id })
+        .from(messages)
+        .where(and(...whereConditions));
+      unreadCount = unreadMessages.length;
+    } else {
+      // If user has never seen messages, count all messages from other participant
+      const whereConditions = [
+        eq(messages.conversationId, conversation.id),
+        eq(messages.senderId, otherParticipantId),
+      ];
+
+      if (userDeletedAt) {
+        whereConditions.push(gt(messages.createdAt, userDeletedAt));
+      }
+
+      const unreadMessages = await db
+        .select({ id: messages.id })
+        .from(messages)
+        .where(and(...whereConditions));
+      unreadCount = unreadMessages.length;
+    }
+
     return {
       ...conversation,
       participant1: participant1[0]!,
       participant2: participant2[0]!,
       lastMessage: filteredLastMessage,
+      unreadCount,
     };
   } catch (e) {
     throw new TRPCError({
@@ -233,11 +279,56 @@ export async function getUserConversations(
           filteredLastMessage = null;
         }
 
+        // Calculate unread count - count messages from other participant after user's last seen time
+        const userLastSeenAt = isParticipant1
+          ? conversation.participant1LastSeenAt
+          : conversation.participant2LastSeenAt;
+
+        const otherParticipantId = isParticipant1
+          ? conversation.participant2Id
+          : conversation.participant1Id;
+
+        let unreadCount = 0;
+        if (userLastSeenAt) {
+          const whereConditions = [
+            eq(messages.conversationId, conversation.id),
+            eq(messages.senderId, otherParticipantId),
+            gt(messages.createdAt, userLastSeenAt),
+          ];
+
+          if (userDeletedAt) {
+            whereConditions.push(gt(messages.createdAt, userDeletedAt));
+          }
+
+          const unreadMessages = await db
+            .select({ id: messages.id })
+            .from(messages)
+            .where(and(...whereConditions));
+          unreadCount = unreadMessages.length;
+        } else {
+          // If user has never seen messages, count all messages from other participant
+          const whereConditions = [
+            eq(messages.conversationId, conversation.id),
+            eq(messages.senderId, otherParticipantId),
+          ];
+
+          if (userDeletedAt) {
+            whereConditions.push(gt(messages.createdAt, userDeletedAt));
+          }
+
+          const unreadMessages = await db
+            .select({ id: messages.id })
+            .from(messages)
+            .where(and(...whereConditions));
+          unreadCount = unreadMessages.length;
+        }
+
         return {
           ...conversation,
           participant1: participant1[0]!,
           participant2: participant2[0]!,
           lastMessage: filteredLastMessage,
+          unreadCount,
         };
       }),
     );
@@ -780,6 +871,70 @@ export async function removeMessageReaction({
     }
   } catch (e) {
     console.error("❌ [removeMessageReaction] Database error:", e);
+    throw new TRPCError({
+      code: getTRPCErrorFromUnknown(e).code,
+      message: getTRPCErrorFromUnknown(e).message,
+    });
+  }
+}
+
+/**
+ * Mark a conversation as read by updating the user's lastSeenAt timestamp
+ */
+export async function markConversationAsRead(
+  userId: string,
+  conversationId: string,
+): Promise<{ success: boolean }> {
+  try {
+    // Verify user is part of conversation
+    const conversation = await db
+      .select()
+      .from(conversations)
+      .where(
+        and(
+          eq(conversations.id, conversationId),
+          or(
+            eq(conversations.participant1Id, userId),
+            eq(conversations.participant2Id, userId),
+          ),
+        ),
+      )
+      .limit(1);
+
+    if (conversation.length === 0) {
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: "You are not authorized to access this conversation",
+      });
+    }
+
+    const conv = conversation[0]!;
+    const isParticipant1 = conv.participant1Id === userId;
+    const now = new Date();
+
+    // Update the appropriate lastSeenAt timestamp
+    await db
+      .update(conversations)
+      .set({
+        participant1LastSeenAt: isParticipant1
+          ? now
+          : conv.participant1LastSeenAt,
+        participant2LastSeenAt: !isParticipant1
+          ? now
+          : conv.participant2LastSeenAt,
+      })
+      .where(eq(conversations.id, conversationId));
+
+    console.log(`✅ [markConversationAsRead] Marked conversation as read:`, {
+      conversationId,
+      userId,
+      isParticipant1,
+      timestamp: now,
+    });
+
+    return { success: true };
+  } catch (e) {
+    console.error("❌ [markConversationAsRead] Database error:", e);
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,
       message: getTRPCErrorFromUnknown(e).message,

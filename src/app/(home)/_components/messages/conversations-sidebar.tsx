@@ -9,6 +9,7 @@ import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
+import { Skeleton } from "~/components/ui/skeleton";
 import { useAuthenticatedUser } from "~/contexts/user-context";
 import { cn, formatTimeToNow, getInitials } from "~/lib/utils";
 import type { ConversationWithParticipants } from "~/server/api/services/messages.service";
@@ -37,12 +38,13 @@ export function ConversationsSidebar({
     Map<string, ConversationWithParticipants>
   >(new Map());
 
-  const { data: conversationsData } = api.messages.getConversations.useQuery(
-    { limit: 20 },
-    {
-      enabled: !!user,
-    },
-  );
+  const { data: conversationsData, isLoading: isLoadingConversations } =
+    api.messages.getConversations.useQuery(
+      { limit: 20 },
+      {
+        enabled: !!user,
+      },
+    );
 
   // Derive final conversations list combining server data with real-time updates
   const conversations = useMemo(() => {
@@ -184,7 +186,7 @@ export function ConversationsSidebar({
   );
 
   return (
-    <div className="flex h-screen w-full flex-col border-r border-border/40 bg-background lg:max-w-sm">
+    <div className="flex h-screen w-full flex-col border-r border-border/40 bg-background sm:w-80 lg:w-96">
       {/* Header - Enhanced styling */}
       <div className="flex shrink-0 items-center justify-between border-b border-border/40 bg-background/80 p-4 backdrop-blur-sm">
         <div className="flex items-center gap-3">
@@ -223,7 +225,32 @@ export function ConversationsSidebar({
 
         {/* Conversations list */}
         <ScrollArea className="scrollbar-thin scrollbar-thumb-muted scrollbar-track-transparent flex-1 overflow-y-auto">
-          {conversations.length === 0 ? (
+          {isLoadingConversations ? (
+            // Loading state with skeleton items
+            <div className="space-y-1 p-2 pb-4">
+              {Array.from({ length: 6 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="flex w-full items-center gap-4 rounded-xl p-3"
+                >
+                  <div className="relative">
+                    <Skeleton className="h-14 w-14 rounded-full" />
+                    <div className="absolute -bottom-1 -right-1 h-4 w-4 rounded-full border-2 border-background">
+                      <Skeleton className="h-full w-full rounded-full" />
+                    </div>
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-3 w-12" />
+                    </div>
+                    <Skeleton className="h-3 w-full max-w-40" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : conversations.length === 0 ? (
+            // Empty state
             <div className="flex flex-col items-center justify-center p-8 text-center">
               <div className="mb-6 rounded-full bg-gradient-to-br from-muted to-muted/50 p-6 shadow-inner">
                 <Icons.message className="h-8 w-8 text-muted-foreground" />
@@ -241,6 +268,7 @@ export function ConversationsSidebar({
               </Button>
             </div>
           ) : (
+            // Conversations list
             <div className="space-y-1 p-2 pb-4">
               {conversations.map((conversation) => {
                 const otherParticipant = getOtherParticipant(conversation);
@@ -330,9 +358,19 @@ export function ConversationsSidebar({
                         )}
 
                         {/* Unread indicator */}
-                        {conversation.lastMessage && !isSelected && (
+                        {conversation.unreadCount > 0 && !isSelected && (
                           <div className="shrink-0">
-                            <div className="h-2 w-2 rounded-full bg-red-500 shadow-sm"></div>
+                            {conversation.unreadCount > 9 ? (
+                              <div className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-medium text-white shadow-sm">
+                                9+
+                              </div>
+                            ) : conversation.unreadCount > 1 ? (
+                              <div className="flex h-5 min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 text-xs font-medium text-white shadow-sm">
+                                {conversation.unreadCount}
+                              </div>
+                            ) : (
+                              <div className="h-2 w-2 rounded-full bg-red-500 shadow-sm"></div>
+                            )}
                           </div>
                         )}
                       </div>
