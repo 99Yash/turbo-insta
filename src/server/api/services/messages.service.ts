@@ -613,13 +613,20 @@ export async function addMessageReaction({
 
       // Publish real-time update for the reaction
       try {
-        const message = await db
-          .select()
-          .from(messages)
-          .where(eq(messages.id, messageId))
-          .limit(1);
+        const [message, user] = await Promise.all([
+          db.select().from(messages).where(eq(messages.id, messageId)).limit(1),
+          db
+            .select({
+              id: users.id,
+              name: users.name,
+              username: users.username,
+            })
+            .from(users)
+            .where(eq(users.id, userId))
+            .limit(1),
+        ]);
 
-        if (message.length > 0) {
+        if (message.length > 0 && user.length > 0) {
           const conversationChannelName = `conversation:${message[0]!.conversationId}`;
           await ably.channels.get(conversationChannelName).publish("reaction", {
             type: "reaction_added",
@@ -628,11 +635,7 @@ export async function addMessageReaction({
               id: newReaction.id,
               emoji: newReaction.emoji,
               userId: newReaction.userId,
-              user: {
-                id: userId,
-                name: "", // We don't need full user details for this event
-                username: "",
-              },
+              user: user[0]!,
             },
             timestamp: new Date(),
           });

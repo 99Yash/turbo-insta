@@ -7,12 +7,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
-import { useUser } from "~/contexts/user-context";
+import { useAuthenticatedUser } from "~/contexts/user-context";
 import { cn, formatTimeToNow, getInitials } from "~/lib/utils";
 import type {
   ConversationWithParticipants,
   MessageWithSender,
 } from "~/server/api/services/messages.service";
+import type { RouterOutputs } from "~/trpc/react";
 import { api } from "~/trpc/react";
 import { MessageReactions } from "./message-reactions";
 import { NewMessageModal } from "./new-message-modal";
@@ -23,12 +24,33 @@ interface ChatAreaProps {
   readonly onBack?: () => void;
 }
 
+type MessageEventData = {
+  readonly type: "new_message";
+  readonly message: RouterOutputs["messages"]["sendMessage"];
+  readonly conversationId: string;
+  readonly timestamp: string;
+};
+
+type ReactionEventData = {
+  readonly type: "reaction_added" | "reaction_removed";
+  readonly messageId: string;
+  readonly reaction?: RouterOutputs["messages"]["addReaction"] & {
+    readonly user: {
+      readonly id: string;
+      readonly name: string;
+      readonly username: string;
+    };
+  };
+  readonly userId?: string;
+  readonly timestamp: string;
+};
+
 export function ChatArea({
   conversation,
   onUserSelect,
   onBack,
 }: ChatAreaProps) {
-  const { user } = useUser();
+  const user = useAuthenticatedUser();
   const [showNewMessageModal, setShowNewMessageModal] = useState(false);
   const [messageText, setMessageText] = useState("");
   const client = useAbly();
@@ -92,13 +114,8 @@ export function ChatArea({
     const conversationChannelName = `conversation:${conversation.id}`;
     const channel = client.channels.get(conversationChannelName);
 
-    const handler = (message: Ably.Message) => {
-      const data = message.data as {
-        type?: string;
-        message?: MessageWithSender;
-        conversationId?: string;
-        timestamp?: string;
-      };
+    const messageHandler = (message: Ably.Message) => {
+      const data = message.data as MessageEventData;
 
       if (
         data?.type === "new_message" &&
@@ -118,13 +135,97 @@ export function ChatArea({
 
         setRealtimeMessages((prev) => {
           const newMap = new Map(prev);
-          newMap.set(data.message!.id, normalizedMessage);
+          newMap.set(data.message.id, normalizedMessage);
           return newMap;
         });
       }
     };
 
-    void channel.subscribe("message", handler);
+    const reactionHandler = (message: Ably.Message) => {
+      const data = message.data as ReactionEventData;
+
+      if (data?.messageId) {
+        console.log("🔔 [ChatArea] Received reaction event:", data);
+
+        if (data.type === "reaction_added" && data.reaction) {
+          // Add reaction to the message
+          setRealtimeMessages((prev) => {
+            const newMap = new Map(prev);
+
+            // Check if we have this message in real-time state
+            const existingMessage = newMap.get(data.messageId);
+            if (existingMessage) {
+              const updatedMessage = {
+                ...existingMessage,
+                reactions: [
+                  ...existingMessage.reactions.filter(
+                    (r) => !(r.userId === data.reaction!.userId),
+                  ),
+                  data.reaction!,
+                ],
+              };
+              newMap.set(data.messageId, updatedMessage);
+            } else {
+              // If message isn't in real-time state, we need to get it from server data
+              // This handles cases where the message was loaded from server but reaction was added later
+              const serverMessage = messagesData?.messages?.find(
+                (m) => m.id === data.messageId,
+              );
+              if (serverMessage) {
+                const updatedMessage = {
+                  ...serverMessage,
+                  reactions: [
+                    ...serverMessage.reactions.filter(
+                      (r) => !(r.userId === data.reaction!.userId),
+                    ),
+                    data.reaction!,
+                  ],
+                };
+                newMap.set(data.messageId, updatedMessage);
+              }
+            }
+
+            return newMap;
+          });
+        } else if (data.type === "reaction_removed" && data.userId) {
+          // Remove user's reaction from the message
+          setRealtimeMessages((prev) => {
+            const newMap = new Map(prev);
+
+            // Check if we have this message in real-time state
+            const existingMessage = newMap.get(data.messageId);
+            if (existingMessage) {
+              const updatedMessage = {
+                ...existingMessage,
+                reactions: existingMessage.reactions.filter(
+                  (r) => r.userId !== data.userId,
+                ),
+              };
+              newMap.set(data.messageId, updatedMessage);
+            } else {
+              // If message isn't in real-time state, get it from server data
+              const serverMessage = messagesData?.messages?.find(
+                (m) => m.id === data.messageId,
+              );
+              if (serverMessage) {
+                const updatedMessage = {
+                  ...serverMessage,
+                  reactions: serverMessage.reactions.filter(
+                    (r) => r.userId !== data.userId,
+                  ),
+                };
+                newMap.set(data.messageId, updatedMessage);
+              }
+            }
+
+            return newMap;
+          });
+        }
+      }
+    };
+
+    void channel.subscribe("message", messageHandler);
+    void channel.subscribe("reaction", reactionHandler);
     console.log(
       "✅ [ChatArea] Subscribed to conversation channel:",
       conversationChannelName,
@@ -132,9 +233,10 @@ export function ChatArea({
 
     return () => {
       console.log("🔇 [ChatArea] Unsubscribing from conversation channel");
-      void channel.unsubscribe("message", handler);
+      void channel.unsubscribe("message", messageHandler);
+      void channel.unsubscribe("reaction", reactionHandler);
     };
-  }, [conversation?.id, client]);
+  }, [conversation?.id, client, messagesData?.messages]);
 
   const sendMessageMutation = api.messages.sendMessage.useMutation({
     onSuccess: (sentMessage) => {
