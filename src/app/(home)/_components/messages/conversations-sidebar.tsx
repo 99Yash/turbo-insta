@@ -30,6 +30,7 @@ export function ConversationsSidebar({
   const [showNewMessageModal, setShowNewMessageModal] = useState(false);
   const client = useAbly();
   const router = useRouter();
+  const utils = api.useUtils();
 
   // Real-time conversation updates state
   const [realtimeUpdates, setRealtimeUpdates] = useState<
@@ -126,13 +127,32 @@ export function ConversationsSidebar({
   const createConversationMutation =
     api.messages.getOrCreateConversation.useMutation({
       onSuccess: (conversation) => {
+        console.log("🚀 [ConversationsSidebar] Conversation created/found:", {
+          conversationId: conversation.id,
+          participant1: conversation.participant1,
+          participant2: conversation.participant2,
+        });
+
+        // Invalidate and refetch conversations to ensure the new conversation appears
+        void utils.messages.getConversations.invalidate();
+
         router.push(`/messages/${conversation.id}`);
         setShowNewMessageModal(false);
+      },
+      onError: (error) => {
+        console.error(
+          "❌ [ConversationsSidebar] Failed to create conversation:",
+          error,
+        );
       },
     });
 
   const handleUserSelect = useCallback(
     (userId: string) => {
+      console.log(
+        "📞 [ConversationsSidebar] Creating conversation with user:",
+        userId,
+      );
       createConversationMutation.mutate({
         otherUserId: userId,
       });
@@ -145,9 +165,20 @@ export function ConversationsSidebar({
    */
   const getOtherParticipant = useCallback(
     (conversation: ConversationWithParticipants) => {
-      return conversation.participant1.id === user?.id
-        ? conversation.participant2
-        : conversation.participant1;
+      const otherParticipant =
+        conversation.participant1.id === user?.id
+          ? conversation.participant2
+          : conversation.participant1;
+
+      console.log("👤 [ConversationsSidebar] Other participant:", {
+        conversationId: conversation.id,
+        currentUserId: user?.id,
+        participant1: conversation.participant1,
+        participant2: conversation.participant2,
+        selectedOtherParticipant: otherParticipant,
+      });
+
+      return otherParticipant;
     },
     [user?.id],
   );
@@ -159,7 +190,7 @@ export function ConversationsSidebar({
         <div className="flex items-center gap-3">
           {/* User avatar */}
           <Avatar className="h-10 w-10 border-2 border-background shadow-md">
-            <AvatarImage src={user.imageUrl ?? ""} alt={user.name} />
+            <AvatarImage src={user.imageUrl ?? undefined} alt={user.name} />
             <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
           </Avatar>
 
@@ -236,7 +267,7 @@ export function ConversationsSidebar({
                         )}
                       >
                         <AvatarImage
-                          src={otherParticipant.imageUrl ?? ""}
+                          src={otherParticipant.imageUrl ?? undefined}
                           alt={otherParticipant.name}
                         />
                         <AvatarFallback>

@@ -14,6 +14,12 @@ export function ConversationPageClient({
   conversationId,
 }: ConversationPageClientProps) {
   const router = useRouter();
+  const utils = api.useUtils();
+
+  console.log(
+    "🔍 [ConversationPageClient] Loading conversation:",
+    conversationId,
+  );
 
   // Get the specific conversation
   const { data: conversations, isLoading } =
@@ -25,14 +31,30 @@ export function ConversationPageClient({
     (conv) => conv.id === conversationId,
   );
 
+  console.log("📊 [ConversationPageClient] Conversation lookup:", {
+    conversationId,
+    isLoading,
+    totalConversations: conversations?.length ?? 0,
+    foundConversation: !!selectedConversation,
+    conversations: conversations?.map((conv) => ({
+      id: conv.id,
+      participants: [conv.participant1.username, conv.participant2.username],
+    })),
+  });
+
   // If not loading and conversation not found, show 404
   if (!isLoading && conversations && !selectedConversation) {
+    console.log(
+      "❌ [ConversationPageClient] Conversation not found, showing 404",
+    );
     notFound();
   }
 
   const createConversationMutation =
     api.messages.getOrCreateConversation.useMutation({
       onSuccess: (conversation) => {
+        // Invalidate and refetch conversations to ensure the new conversation appears
+        void utils.messages.getConversations.invalidate();
         router.push(`/messages/${conversation.id}`);
       },
     });

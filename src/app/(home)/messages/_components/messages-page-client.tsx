@@ -8,10 +8,13 @@ import { ConversationsSidebar } from "../../_components/messages/conversations-s
 
 export function MessagesPageClient() {
   const router = useRouter();
+  const utils = api.useUtils();
 
   const createConversationMutation =
     api.messages.getOrCreateConversation.useMutation({
       onSuccess: (conversation) => {
+        // Invalidate and refetch conversations to ensure the new conversation appears
+        void utils.messages.getConversations.invalidate();
         router.push(`/messages/${conversation.id}`);
       },
     });

@@ -429,10 +429,10 @@ export function ChatArea({
           {/* Single avatar for 1-on-1 conversation */}
           <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
             <AvatarImage
-              src={otherParticipant.imageUrl ?? ""}
+              src={otherParticipant.imageUrl ?? undefined}
               alt={otherParticipant.name}
             />
-            <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white">
+            <AvatarFallback>
               {getInitials(otherParticipant.name)}
             </AvatarFallback>
           </Avatar>
@@ -460,10 +460,10 @@ export function ChatArea({
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <Avatar className="mb-4 h-16 w-16">
                 <AvatarImage
-                  src={otherParticipant.imageUrl ?? ""}
+                  src={otherParticipant.imageUrl ?? undefined}
                   alt={otherParticipant.name}
                 />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-lg text-white">
+                <AvatarFallback>
                   {getInitials(otherParticipant.name)}
                 </AvatarFallback>
               </Avatar>
@@ -493,10 +493,10 @@ export function ChatArea({
                     <div className="flex-shrink-0">
                       <Avatar className="h-10 w-10 border border-border/30">
                         <AvatarImage
-                          src={sender.imageUrl ?? ""}
+                          src={sender.imageUrl ?? undefined}
                           alt={sender.name}
                         />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-xs text-white">
+                        <AvatarFallback>
                           {getInitials(sender.name)}
                         </AvatarFallback>
                       </Avatar>
