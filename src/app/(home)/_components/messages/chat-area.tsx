@@ -64,6 +64,7 @@ export function ChatArea({
   const client = useAbly();
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
+  const textareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   // Real-time message updates state
   const [realtimeMessages, setRealtimeMessages] = React.useState<
@@ -274,6 +275,11 @@ export function ChatArea({
         newMap.set(sentMessage.id, sentMessage);
         return newMap;
       });
+
+      // Maintain focus on the textarea after sending
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 0);
     },
   });
 
@@ -588,6 +594,7 @@ export function ChatArea({
           {/* Message input area */}
           <div className="flex flex-1 items-end rounded-2xl border border-border/40 bg-background/50 shadow-sm">
             <textarea
+              ref={textareaRef}
               autoFocus
               placeholder="Message..."
               value={messageText}

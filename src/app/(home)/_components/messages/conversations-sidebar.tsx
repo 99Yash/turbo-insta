@@ -2,7 +2,7 @@
 
 import type * as Ably from "ably";
 import { useAbly } from "ably/react";
-import { ChevronDown, Pen } from "lucide-react";
+import { Pen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Icons } from "~/components/icons";
@@ -72,12 +72,12 @@ export function ConversationsSidebar({
 
     const handler = (message: Ably.Message) => {
       const data = message.data as {
-        type?: string;
-        conversation?: ConversationWithParticipants;
-        timestamp?: string;
+        type: string;
+        conversation: ConversationWithParticipants;
+        timestamp: string;
       };
 
-      if (data?.type === "conversation_updated" && data.conversation) {
+      if (data.type === "conversation_updated" && data.conversation) {
         console.log(
           "🔔 [ConversationsSidebar] Conversation updated:",
           data.conversation,
@@ -103,7 +103,7 @@ export function ConversationsSidebar({
 
         setRealtimeUpdates((prev) => {
           const newMap = new Map(prev);
-          newMap.set(data.conversation!.id, normalizedConversation);
+          newMap.set(data.conversation.id, normalizedConversation);
           return newMap;
         });
       }
@@ -159,15 +159,14 @@ export function ConversationsSidebar({
         <div className="flex items-center gap-3">
           {/* User avatar */}
           <Avatar className="h-10 w-10 border-2 border-background shadow-md">
-            <AvatarImage src={user?.imageUrl ?? ""} alt={user?.name ?? ""} />
-            <AvatarFallback>{getInitials(user?.name ?? "")}</AvatarFallback>
+            <AvatarImage src={user.imageUrl ?? ""} alt={user.name} />
+            <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
           </Avatar>
 
           <div className="flex items-center gap-2">
             <h2 className="bg-gradient-to-r from-foreground to-muted-foreground bg-clip-text text-xl font-semibold">
-              {user?.username}
+              {user.username}
             </h2>
-            <ChevronDown className="h-4 w-4 text-muted-foreground" />
           </div>
         </div>
 
