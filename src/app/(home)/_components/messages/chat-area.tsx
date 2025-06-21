@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useAuthenticatedUser } from "~/contexts/user-context";
-import { cn, formatTimeToNow, getInitials } from "~/lib/utils";
+import { cn, getInitials } from "~/lib/utils";
 import type { RouterOutputs } from "~/trpc/react";
 import { api } from "~/trpc/react";
 import { MessageReactions } from "./message-reactions";
@@ -535,21 +535,9 @@ export function ChatArea({
                                     ),
                               )}
                             >
-                              <div className="flex items-end gap-2">
-                                <span className="whitespace-pre-wrap leading-relaxed">
-                                  {message.text}
-                                </span>
-                                <span
-                                  className={cn(
-                                    "mt-1 flex-shrink-0 text-xs",
-                                    isOwnGroup
-                                      ? "text-white/80"
-                                      : "text-muted-foreground",
-                                  )}
-                                >
-                                  {formatTimeToNow(new Date(message.createdAt))}
-                                </span>
-                              </div>
+                              <span className="whitespace-pre-wrap leading-relaxed">
+                                {message.text}
+                              </span>
                             </div>
 
                             {/* Message reactions */}
