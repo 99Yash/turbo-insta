@@ -2,7 +2,7 @@
 
 import type * as Ably from "ably";
 import { useAbly } from "ably/react";
-import { ArrowLeft, Plus, Send } from "lucide-react";
+import { ArrowLeft, Send } from "lucide-react";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
@@ -81,7 +81,7 @@ export function ChatArea({
   >(new Map());
 
   // Constants for memory management
-  const MAX_REALTIME_MESSAGES = 100; // Maximum number of messages to keep in memory
+  const MAX_REALTIME_MESSAGES = 10; // Maximum number of messages to keep in memory
   const MAX_MESSAGE_AGE_MS = 5 * 60 * 1000; // 5 minutes - messages older than this will be removed
 
   /**
@@ -105,13 +105,6 @@ export function ChatArea({
 
       // Return a new map with cleaned entries
       const cleanedMap = new Map(limitedEntries);
-
-      // Log cleanup stats if any cleanup occurred
-      if (currentMap.size !== cleanedMap.size) {
-        console.log(
-          `🧹 [ChatArea] Cleaned up realtime messages: ${currentMap.size} → ${cleanedMap.size}`,
-        );
-      }
 
       return cleanedMap;
     },
@@ -188,18 +181,10 @@ export function ChatArea({
   // Mark conversation as read when opened
   React.useEffect(() => {
     if (conversation?.id && conversation.unreadCount > 0) {
-      console.log(
-        `📖 [ChatArea] Marking conversation as read:`,
-        conversation.id,
-      );
       markAsReadMutation.mutate(
         { conversationId: conversation.id },
         {
           onSuccess: () => {
-            console.log(
-              `✅ [ChatArea] Conversation marked as read:`,
-              conversation.id,
-            );
             // Invalidate conversations to update unread counts
             void utils.messages.getConversations.invalidate();
           },
@@ -233,7 +218,6 @@ export function ChatArea({
 
       // If scrolled to top and we have more messages to load
       if (scrollTop === 0 && hasNextPage && !isFetchingNextPage) {
-        console.log("🔄 [ChatArea] Loading more messages...");
         void fetchNextPage();
       }
     },
@@ -285,23 +269,10 @@ export function ChatArea({
           setRealtimeMessages((prev) => {
             const newMap = new Map(prev);
 
-            // Find the message to update (from either real-time state or server data)
-            let messageToUpdate = newMap.get(data.messageId);
-
-            // If message isn't in real-time state, get it from server data
-            if (!messageToUpdate) {
-              const allServerMessages =
-                messagesData?.pages?.flatMap((page) => page.messages) ?? [];
-              const serverMessage = allServerMessages.find(
-                (m) => m.id === data.messageId,
-              );
-              if (serverMessage) {
-                messageToUpdate = {
-                  ...serverMessage,
-                  addedAt: Date.now(),
-                };
-              }
-            }
+            // Find the message to update (from real-time state only)
+            // If the message isn't in real-time state, the server will handle the reaction
+            // and it will be included in future fetches
+            const messageToUpdate = newMap.get(data.messageId);
 
             if (messageToUpdate) {
               const updatedMessage = {
@@ -317,48 +288,17 @@ export function ChatArea({
                 addedAt: messageToUpdate.addedAt, // Preserve the addedAt timestamp
               };
               newMap.set(data.messageId, updatedMessage);
-              console.log(
-                "✅ [ChatArea] Reaction added successfully to message:",
-                data.messageId,
-              );
-            } else {
-              const allServerMessages =
-                messagesData?.pages?.flatMap((page) => page.messages) ?? [];
-              console.warn("⚠️ [ChatArea] Message not found for reaction:", {
-                messageId: data.messageId,
-                hasRealtimeMessages: newMap.size > 0,
-                hasServerMessages: allServerMessages.length > 0,
-              });
             }
 
             return newMap;
           });
         } else if (data.type === "reaction_removed") {
-          console.log("🗑️ [ChatArea] Removing reaction:", {
-            messageId: data.messageId,
-            userId: data.userId,
-          });
           // Remove user's reaction from the message
           setRealtimeMessages((prev) => {
             const newMap = new Map(prev);
 
-            // Find the message to update (from either real-time state or server data)
-            let messageToUpdate = newMap.get(data.messageId);
-
-            // If message isn't in real-time state, get it from server data
-            if (!messageToUpdate) {
-              const allServerMessages =
-                messagesData?.pages?.flatMap((page) => page.messages) ?? [];
-              const serverMessage = allServerMessages.find(
-                (m) => m.id === data.messageId,
-              );
-              if (serverMessage) {
-                messageToUpdate = {
-                  ...serverMessage,
-                  addedAt: Date.now(),
-                };
-              }
-            }
+            // Find the message to update (from real-time state only)
+            const messageToUpdate = newMap.get(data.messageId);
 
             if (messageToUpdate) {
               const updatedMessage = {
@@ -369,21 +309,6 @@ export function ChatArea({
                 addedAt: messageToUpdate.addedAt, // Preserve the addedAt timestamp
               };
               newMap.set(data.messageId, updatedMessage);
-              console.log(
-                "✅ [ChatArea] Reaction removed successfully from message:",
-                data.messageId,
-              );
-            } else {
-              const allServerMessages =
-                messagesData?.pages?.flatMap((page) => page.messages) ?? [];
-              console.warn(
-                "⚠️ [ChatArea] Message not found for reaction removal:",
-                {
-                  messageId: data.messageId,
-                  hasRealtimeMessages: newMap.size > 0,
-                  hasServerMessages: allServerMessages.length > 0,
-                },
-              );
             }
 
             return newMap;
@@ -401,15 +326,11 @@ export function ChatArea({
       console.error("❌ Failed to subscribe to reaction events:", error);
     });
 
-    console.log(
-      `✅ [ChatArea] Subscribed to channel: ${conversationChannelName}`,
-    );
-
     return () => {
       void channel.unsubscribe("message", messageHandler);
       void channel.unsubscribe("reaction", reactionHandler);
     };
-  }, [conversation?.id, client, messagesData?.pages, cleanupRealtimeMessages]); // Include messagesData for reaction handling
+  }, [conversation?.id, client, cleanupRealtimeMessages]);
 
   const sendMessageMutation = api.messages.sendMessage.useMutation({
     onSuccess: (sentMessage) => {
@@ -434,18 +355,12 @@ export function ChatArea({
   });
 
   const addReactionMutation = api.messages.addReaction.useMutation({
-    onMutate: ({ messageId, emoji }) => {
-      console.log("🔄 [ChatArea] Adding reaction:", { messageId, emoji });
-    },
     onError: (error) => {
       showErrorToast(error);
     },
   });
 
   const removeReactionMutation = api.messages.removeReaction.useMutation({
-    onMutate: ({ messageId }) => {
-      console.log("🔄 [ChatArea] Removing reaction:", { messageId });
-    },
     onError: (error) => {
       showErrorToast(error);
     },
@@ -506,7 +421,10 @@ export function ChatArea({
       if (isNewGroup) {
         groups.push([message]);
       } else {
-        groups[groups.length - 1]!.push(message);
+        const lastGroup = groups[groups.length - 1];
+        if (lastGroup) {
+          lastGroup.push(message);
+        }
       }
 
       return groups;
@@ -731,15 +649,6 @@ export function ChatArea({
       {/* Message input - Enhanced styling */}
       <div className="border-t border-border/40 bg-background/80 p-4 backdrop-blur-sm">
         <div className="flex items-end gap-3">
-          {/* Attachment button */}
-          <Button
-            size="sm"
-            variant="ghost"
-            className="h-10 w-10 flex-shrink-0 rounded-full p-0 text-muted-foreground transition-all duration-200 hover:scale-105 hover:bg-muted hover:text-foreground active:scale-95"
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
-
           {/* Message input area */}
           <div className="flex flex-1 items-center rounded-2xl border border-border/40 bg-background/50 shadow-sm">
             <textarea
@@ -755,8 +664,13 @@ export function ChatArea({
                 }
               }}
               rows={1}
+              aria-label="Type your message"
+              aria-describedby="message-help"
               className="max-h-32 min-h-[2.5rem] w-full resize-none rounded-2xl bg-transparent px-4 py-3 text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/20"
             />
+            <div id="message-help" className="sr-only">
+              Press Enter to send, Shift+Enter for new line
+            </div>
 
             {/* Send button */}
             {messageText.trim() && (
@@ -764,6 +678,7 @@ export function ChatArea({
                 size="sm"
                 onClick={handleSendMessage}
                 disabled={sendMessageMutation.isPending}
+                aria-label="Send message"
                 className="mr-3 h-8 w-8 flex-shrink-0 rounded-full bg-red-500 p-0 text-white shadow-md transition-all duration-200 hover:scale-105 hover:bg-red-600 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
               >
                 <Send className="h-4 w-4" />

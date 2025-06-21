@@ -1,5 +1,5 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
-import { and, desc, eq, gt, lt, or } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, lt, or } from "drizzle-orm";
 import { ably } from "~/lib/ably";
 import { db } from "~/server/db";
 import {
@@ -244,124 +244,156 @@ export async function getUserConversations(
       .orderBy(desc(conversations.updatedAt))
       .limit(limit);
 
-    // Get participant details and last messages for each conversation
-    const conversationsWithDetails = await Promise.all(
-      userConversations.map(async (conversation) => {
-        // Get participant details
-        const [participant1, participant2] = await Promise.all([
-          db
-            .select({
-              id: users.id,
-              username: users.username,
-              name: users.name,
-              imageUrl: users.imageUrl,
-            })
-            .from(users)
-            .where(eq(users.id, conversation.participant1Id))
-            .limit(1),
-          db
-            .select({
-              id: users.id,
-              username: users.username,
-              name: users.name,
-              imageUrl: users.imageUrl,
-            })
-            .from(users)
-            .where(eq(users.id, conversation.participant2Id))
-            .limit(1),
-        ]);
+    if (userConversations.length === 0) {
+      return [];
+    }
 
-        // Get last message
-        const lastMessage = await db
-          .select()
-          .from(messages)
-          .where(eq(messages.conversationId, conversation.id))
-          .orderBy(desc(messages.createdAt))
-          .limit(1);
+    // ===== BATCH QUERIES TO ELIMINATE N+1 PROBLEMS =====
 
-        const isParticipant1 = conversation.participant1Id === userId;
-        const userDeletedAt = isParticipant1
-          ? conversation.participant1DeletedAt
-          : conversation.participant2DeletedAt;
-
-        // If user deleted conversation and last message is before deletion, hide last message
-        let filteredLastMessage = lastMessage[0] ?? null;
-        if (
-          userDeletedAt &&
-          filteredLastMessage &&
-          filteredLastMessage.createdAt <= userDeletedAt
-        ) {
-          filteredLastMessage = null;
-        }
-
-        // Calculate unread count - count messages from other participant after user's last seen time
-        const userLastSeenAt = isParticipant1
-          ? conversation.participant1LastSeenAt
-          : conversation.participant2LastSeenAt;
-
-        const otherParticipantId = isParticipant1
-          ? conversation.participant2Id
-          : conversation.participant1Id;
-
-        let unreadCount = 0;
-        if (userLastSeenAt) {
-          const whereConditions = [
-            eq(messages.conversationId, conversation.id),
-            eq(messages.senderId, otherParticipantId),
-            gt(messages.createdAt, userLastSeenAt),
-          ];
-
-          if (userDeletedAt) {
-            whereConditions.push(gt(messages.createdAt, userDeletedAt));
-          }
-
-          const unreadMessages = await db
-            .select({ id: messages.id })
-            .from(messages)
-            .where(and(...whereConditions));
-          unreadCount = unreadMessages.length;
-        } else {
-          // If user has never seen messages, count all messages from other participant
-          const whereConditions = [
-            eq(messages.conversationId, conversation.id),
-            eq(messages.senderId, otherParticipantId),
-          ];
-
-          if (userDeletedAt) {
-            whereConditions.push(gt(messages.createdAt, userDeletedAt));
-          }
-
-          const unreadMessages = await db
-            .select({ id: messages.id })
-            .from(messages)
-            .where(and(...whereConditions));
-          unreadCount = unreadMessages.length;
-        }
-
-        // Ensure participants exist in database
-        if (participant1.length === 0) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: `Participant 1 with ID ${conversation.participant1Id} not found`,
-          });
-        }
-
-        if (participant2.length === 0) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: `Participant 2 with ID ${conversation.participant2Id} not found`,
-          });
-        }
-
-        return {
-          ...conversation,
-          participant1: participant1[0]!,
-          participant2: participant2[0]!,
-          lastMessage: filteredLastMessage,
-          unreadCount,
-        };
-      }),
+    // 1. Batch fetch all unique participant IDs
+    const uniqueParticipantIds = Array.from(
+      new Set([
+        ...userConversations.map((conv) => conv.participant1Id),
+        ...userConversations.map((conv) => conv.participant2Id),
+      ]),
     );
+
+    const allParticipants = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        name: users.name,
+        imageUrl: users.imageUrl,
+      })
+      .from(users)
+      .where(inArray(users.id, uniqueParticipantIds));
+
+    const participantsMap = new Map(
+      allParticipants.map((participant) => [participant.id, participant]),
+    );
+
+    // 2. Batch fetch last messages for all conversations
+    const conversationIds = userConversations.map((conv) => conv.id);
+    const allLastMessages = await db
+      .select()
+      .from(messages)
+      .where(inArray(messages.conversationId, conversationIds))
+      .orderBy(desc(messages.createdAt));
+
+    // Group messages by conversation ID to get the latest message for each
+    const lastMessagesByConversationId = new Map<string, Message>();
+    allLastMessages.forEach((message) => {
+      const existingMessage = lastMessagesByConversationId.get(
+        message.conversationId,
+      );
+      if (!existingMessage || message.createdAt > existingMessage.createdAt) {
+        lastMessagesByConversationId.set(message.conversationId, message);
+      }
+    });
+
+    // 3. Batch fetch all messages for unread count calculation
+    const allMessagesForUnread = await db
+      .select({
+        id: messages.id,
+        conversationId: messages.conversationId,
+        senderId: messages.senderId,
+        createdAt: messages.createdAt,
+      })
+      .from(messages)
+      .where(inArray(messages.conversationId, conversationIds))
+      .orderBy(desc(messages.createdAt));
+
+    // Calculate unread counts for each conversation
+    const unreadCountsMap = new Map<string, number>();
+    userConversations.forEach((conversation) => {
+      const isParticipant1 = conversation.participant1Id === userId;
+      const userLastSeenAt = isParticipant1
+        ? conversation.participant1LastSeenAt
+        : conversation.participant2LastSeenAt;
+      const userDeletedAt = isParticipant1
+        ? conversation.participant1DeletedAt
+        : conversation.participant2DeletedAt;
+      const otherParticipantId = isParticipant1
+        ? conversation.participant2Id
+        : conversation.participant1Id;
+
+      const conversationMessages = allMessagesForUnread.filter(
+        (msg) => msg.conversationId === conversation.id,
+      );
+
+      let unreadCount = 0;
+      if (userLastSeenAt) {
+        unreadCount = conversationMessages.filter((msg) => {
+          const isFromOtherParticipant = msg.senderId === otherParticipantId;
+          const isAfterLastSeen = msg.createdAt > userLastSeenAt;
+          const isAfterDeletion = userDeletedAt
+            ? msg.createdAt > userDeletedAt
+            : true;
+
+          return isFromOtherParticipant && isAfterLastSeen && isAfterDeletion;
+        }).length;
+      } else {
+        // If user has never seen messages, count all messages from other participant
+        unreadCount = conversationMessages.filter((msg) => {
+          const isFromOtherParticipant = msg.senderId === otherParticipantId;
+          const isAfterDeletion = userDeletedAt
+            ? msg.createdAt > userDeletedAt
+            : true;
+
+          return isFromOtherParticipant && isAfterDeletion;
+        }).length;
+      }
+
+      unreadCountsMap.set(conversation.id, unreadCount);
+    });
+
+    // 4. Combine all data
+    const conversationsWithDetails = userConversations.map((conversation) => {
+      const participant1 = participantsMap.get(conversation.participant1Id);
+      const participant2 = participantsMap.get(conversation.participant2Id);
+
+      // Ensure participants exist in database
+      if (!participant1) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Participant 1 with ID ${conversation.participant1Id} not found`,
+        });
+      }
+
+      if (!participant2) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Participant 2 with ID ${conversation.participant2Id} not found`,
+        });
+      }
+
+      const lastMessage =
+        lastMessagesByConversationId.get(conversation.id) ?? null;
+      const isParticipant1 = conversation.participant1Id === userId;
+      const userDeletedAt = isParticipant1
+        ? conversation.participant1DeletedAt
+        : conversation.participant2DeletedAt;
+
+      // If user deleted conversation and last message is before deletion, hide last message
+      let filteredLastMessage = lastMessage;
+      if (
+        userDeletedAt &&
+        filteredLastMessage &&
+        filteredLastMessage.createdAt <= userDeletedAt
+      ) {
+        filteredLastMessage = null;
+      }
+
+      const unreadCount = unreadCountsMap.get(conversation.id) ?? 0;
+
+      return {
+        ...conversation,
+        participant1,
+        participant2,
+        lastMessage: filteredLastMessage,
+        unreadCount,
+      };
+    });
 
     return conversationsWithDetails;
   } catch (e) {
@@ -438,70 +470,114 @@ export async function getConversationMessages(
       ? messagesData.slice(0, -1)
       : messagesData;
 
-    // Get sender details for each message
-    const messagesWithSender = await Promise.all(
-      messagesSlice.map(async (message) => {
-        const sender = await db
-          .select({
-            id: users.id,
-            username: users.username,
-            name: users.name,
-            imageUrl: users.imageUrl,
-          })
-          .from(users)
-          .where(eq(users.id, message.senderId))
-          .limit(1);
+    if (messagesSlice.length === 0) {
+      return {
+        messages: [],
+        nextCursor: undefined,
+      };
+    }
 
-        const reactions = await db
-          .select()
-          .from(messageReactions)
-          .where(eq(messageReactions.messageId, message.id))
-          .orderBy(desc(messageReactions.createdAt));
+    // ===== BATCH QUERIES TO ELIMINATE N+1 PROBLEMS =====
 
-        const reactionDetails = await Promise.all(
-          reactions.map(async (reaction) => {
-            const user = await db
-              .select({
-                id: users.id,
-                name: users.name,
-                username: users.username,
-              })
-              .from(users)
-              .where(eq(users.id, reaction.userId))
-              .limit(1);
-
-            // Ensure user exists for reaction
-            if (user.length === 0) {
-              throw new TRPCError({
-                code: "NOT_FOUND",
-                message: `User with ID ${reaction.userId} not found for reaction`,
-              });
-            }
-
-            return {
-              id: reaction.id,
-              emoji: reaction.emoji,
-              userId: reaction.userId,
-              user: user[0]!,
-            };
-          }),
-        );
-
-        // Ensure sender exists
-        if (sender.length === 0) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: `Sender with ID ${message.senderId} not found`,
-          });
-        }
-
-        return {
-          ...message,
-          sender: sender[0]!,
-          reactions: reactionDetails,
-        };
-      }),
+    // 1. Batch fetch all unique senders
+    const uniqueSenderIds = Array.from(
+      new Set(messagesSlice.map((msg) => msg.senderId)),
     );
+
+    const senders = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        name: users.name,
+        imageUrl: users.imageUrl,
+      })
+      .from(users)
+      .where(inArray(users.id, uniqueSenderIds));
+
+    const sendersMap = new Map(senders.map((sender) => [sender.id, sender]));
+
+    // 2. Batch fetch all reactions for all messages
+    const messageIds = messagesSlice.map((msg) => msg.id);
+    const allReactions = await db
+      .select()
+      .from(messageReactions)
+      .where(inArray(messageReactions.messageId, messageIds))
+      .orderBy(desc(messageReactions.createdAt));
+
+    // 3. Batch fetch all users who reacted
+    const uniqueReactionUserIds = Array.from(
+      new Set(allReactions.map((reaction) => reaction.userId)),
+    );
+
+    const reactionUsers =
+      uniqueReactionUserIds.length > 0
+        ? await db
+            .select({
+              id: users.id,
+              name: users.name,
+              username: users.username,
+            })
+            .from(users)
+            .where(inArray(users.id, uniqueReactionUserIds))
+        : [];
+
+    const reactionUsersMap = new Map(
+      reactionUsers.map((user) => [user.id, user]),
+    );
+
+    // 4. Group reactions by message ID
+    const reactionsByMessageId = new Map<
+      string,
+      Array<{
+        readonly id: string;
+        readonly emoji: string;
+        readonly userId: string;
+        readonly user: {
+          readonly id: string;
+          readonly name: string;
+          readonly username: string;
+        };
+      }>
+    >();
+
+    allReactions.forEach((reaction) => {
+      const user = reactionUsersMap.get(reaction.userId);
+      if (!user) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `User with ID ${reaction.userId} not found for reaction`,
+        });
+      }
+
+      const messageReactions =
+        reactionsByMessageId.get(reaction.messageId) ?? [];
+      messageReactions.push({
+        id: reaction.id,
+        emoji: reaction.emoji,
+        userId: reaction.userId,
+        user,
+      });
+      reactionsByMessageId.set(reaction.messageId, messageReactions);
+    });
+
+    // 5. Combine all data
+    const messagesWithSender = messagesSlice.map((message) => {
+      const sender = sendersMap.get(message.senderId);
+      if (!sender) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: `Sender with ID ${message.senderId} not found`,
+        });
+      }
+
+      const reactions = reactionsByMessageId.get(message.id) ?? [];
+
+      return {
+        ...message,
+        sender,
+        reactions,
+      };
+    });
 
     const nextCursor = hasNextPage
       ? messagesSlice[messagesSlice.length - 1]?.createdAt.toISOString()
