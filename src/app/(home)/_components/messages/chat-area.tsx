@@ -26,6 +26,7 @@ interface ChatAreaProps {
   readonly onBack?: () => void;
 }
 
+// Derive event types from RouterOutputs - preferred approach for client-side types
 type MessageEventData = {
   readonly type: "new_message";
   readonly message: RouterOutputs["messages"]["sendMessage"];
@@ -33,25 +34,33 @@ type MessageEventData = {
   readonly timestamp: string;
 };
 
-type ReactionEventData = {
-  readonly type: "reaction_added" | "reaction_removed";
+// Derive reaction event data structure based on what's actually published in the service
+// The reaction field structure matches what's created in the service's event publishing
+type ReactionAddedEventData = {
+  readonly type: "reaction_added";
   readonly messageId: string;
-  readonly reaction?: {
+  readonly reaction: {
     readonly id: string;
     readonly emoji: string;
     readonly userId: string;
-    readonly messageId?: string;
-    readonly createdAt?: Date;
-    readonly updatedAt?: Date | null;
     readonly user: {
       readonly id: string;
       readonly name: string;
       readonly username: string;
     };
   };
-  readonly userId?: string;
   readonly timestamp: Date;
 };
+
+type ReactionRemovedEventData = {
+  readonly type: "reaction_removed";
+  readonly messageId: string;
+  readonly userId: string;
+  readonly timestamp: Date;
+};
+
+// Use discriminated union for better type safety
+type ReactionEventData = ReactionAddedEventData | ReactionRemovedEventData;
 
 export function ChatArea({
   conversation,
@@ -109,30 +118,39 @@ export function ChatArea({
     [MAX_REALTIME_MESSAGES, MAX_MESSAGE_AGE_MS],
   );
 
-  const { data: messagesData, isLoading: isLoadingMessages } =
-    api.messages.getConversationMessages.useQuery(
-      {
-        conversationId: conversation?.id ?? "",
-        limit: 50,
-      },
-      {
-        enabled: !!conversation?.id,
-      },
-    );
+  const {
+    data: messagesData,
+    isLoading: isLoadingMessages,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = api.messages.getConversationMessages.useInfiniteQuery(
+    {
+      conversationId: conversation?.id ?? "",
+      limit: 50,
+    },
+    {
+      enabled: !!conversation?.id,
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    },
+  );
 
   const markAsReadMutation = api.messages.markConversationAsRead.useMutation();
   const utils = api.useUtils();
 
   // Derive final messages list combining server data with real-time updates
   const messages = React.useMemo(() => {
-    if (!messagesData?.messages?.length && realtimeMessages.size === 0) {
+    const allServerMessages =
+      messagesData?.pages?.flatMap((page) => page.messages) ?? [];
+
+    if (allServerMessages.length === 0 && realtimeMessages.size === 0) {
       return [];
     }
 
     const messagesMap = new Map<string, MessageWithSender>();
 
     // Add server messages
-    messagesData?.messages?.forEach((msg) => {
+    allServerMessages.forEach((msg) => {
       messagesMap.set(msg.id, msg);
     });
 
@@ -147,7 +165,7 @@ export function ChatArea({
     });
 
     return finalMessages;
-  }, [messagesData?.messages, realtimeMessages]);
+  }, [messagesData?.pages, realtimeMessages]);
 
   // Clear real-time messages when conversation changes
   React.useEffect(() => {
@@ -201,12 +219,26 @@ export function ChatArea({
     utils.messages.getConversations,
   ]);
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom when messages change (but not when loading more)
   React.useEffect(() => {
-    if (messagesEndRef.current && messages.length > 0) {
+    if (messagesEndRef.current && messages.length > 0 && !isFetchingNextPage) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [messages.length]);
+  }, [messages.length, isFetchingNextPage]);
+
+  // Handle scroll to top for loading more messages
+  const handleScroll = React.useCallback(
+    (event: React.UIEvent<HTMLDivElement>) => {
+      const { scrollTop } = event.currentTarget;
+
+      // If scrolled to top and we have more messages to load
+      if (scrollTop === 0 && hasNextPage && !isFetchingNextPage) {
+        console.log("🔄 [ChatArea] Loading more messages...");
+        void fetchNextPage();
+      }
+    },
+    [hasNextPage, isFetchingNextPage, fetchNextPage],
+  );
 
   // Subscribe to real-time messages for this conversation
   React.useEffect(() => {
@@ -247,8 +279,8 @@ export function ChatArea({
     const reactionHandler = (message: Ably.Message) => {
       const data = message.data as ReactionEventData;
 
-      if (data?.messageId) {
-        if (data.type === "reaction_added" && data.reaction) {
+      if (data.messageId) {
+        if (data.type === "reaction_added") {
           // Add reaction to the message
           setRealtimeMessages((prev) => {
             const newMap = new Map(prev);
@@ -258,7 +290,9 @@ export function ChatArea({
 
             // If message isn't in real-time state, get it from server data
             if (!messageToUpdate) {
-              const serverMessage = messagesData?.messages?.find(
+              const allServerMessages =
+                messagesData?.pages?.flatMap((page) => page.messages) ?? [];
+              const serverMessage = allServerMessages.find(
                 (m) => m.id === data.messageId,
               );
               if (serverMessage) {
@@ -275,10 +309,10 @@ export function ChatArea({
                 reactions: [
                   // Remove any existing reaction from this user first
                   ...messageToUpdate.reactions.filter(
-                    (r) => r.userId !== data.reaction!.userId,
+                    (r) => r.userId !== data.reaction.userId,
                   ),
                   // Add the new reaction
-                  data.reaction!,
+                  data.reaction,
                 ],
                 addedAt: messageToUpdate.addedAt, // Preserve the addedAt timestamp
               };
@@ -288,16 +322,18 @@ export function ChatArea({
                 data.messageId,
               );
             } else {
+              const allServerMessages =
+                messagesData?.pages?.flatMap((page) => page.messages) ?? [];
               console.warn("⚠️ [ChatArea] Message not found for reaction:", {
                 messageId: data.messageId,
                 hasRealtimeMessages: newMap.size > 0,
-                hasServerMessages: (messagesData?.messages?.length ?? 0) > 0,
+                hasServerMessages: allServerMessages.length > 0,
               });
             }
 
             return newMap;
           });
-        } else if (data.type === "reaction_removed" && data.userId) {
+        } else if (data.type === "reaction_removed") {
           console.log("🗑️ [ChatArea] Removing reaction:", {
             messageId: data.messageId,
             userId: data.userId,
@@ -311,7 +347,9 @@ export function ChatArea({
 
             // If message isn't in real-time state, get it from server data
             if (!messageToUpdate) {
-              const serverMessage = messagesData?.messages?.find(
+              const allServerMessages =
+                messagesData?.pages?.flatMap((page) => page.messages) ?? [];
+              const serverMessage = allServerMessages.find(
                 (m) => m.id === data.messageId,
               );
               if (serverMessage) {
@@ -336,12 +374,14 @@ export function ChatArea({
                 data.messageId,
               );
             } else {
+              const allServerMessages =
+                messagesData?.pages?.flatMap((page) => page.messages) ?? [];
               console.warn(
                 "⚠️ [ChatArea] Message not found for reaction removal:",
                 {
                   messageId: data.messageId,
                   hasRealtimeMessages: newMap.size > 0,
-                  hasServerMessages: (messagesData?.messages?.length ?? 0) > 0,
+                  hasServerMessages: allServerMessages.length > 0,
                 },
               );
             }
@@ -369,12 +409,7 @@ export function ChatArea({
       void channel.unsubscribe("message", messageHandler);
       void channel.unsubscribe("reaction", reactionHandler);
     };
-  }, [
-    conversation?.id,
-    client,
-    messagesData?.messages,
-    cleanupRealtimeMessages,
-  ]); // Include messagesData for reaction handling
+  }, [conversation?.id, client, messagesData?.pages, cleanupRealtimeMessages]); // Include messagesData for reaction handling
 
   const sendMessageMutation = api.messages.sendMessage.useMutation({
     onSuccess: (sentMessage) => {
@@ -391,10 +426,10 @@ export function ChatArea({
         return cleanupRealtimeMessages(newMap);
       });
 
-      // Maintain focus on the textarea after sending
-      setTimeout(() => {
+      // Maintain focus on the textarea after sending - use requestAnimationFrame for better timing
+      requestAnimationFrame(() => {
         textareaRef.current?.focus();
-      }, 0);
+      });
     },
   });
 
@@ -450,7 +485,8 @@ export function ChatArea({
   );
 
   const handleSendMessage = React.useCallback(() => {
-    if (!messageText.trim() || !conversation) return;
+    if (!messageText.trim() || !conversation || sendMessageMutation.isPending)
+      return;
 
     const otherParticipant = getOtherParticipant(conversation);
     sendMessageMutation.mutate({
@@ -549,8 +585,19 @@ export function ChatArea({
       <ScrollArea
         className="flex-1 bg-gradient-to-b from-background to-muted/20"
         ref={scrollAreaRef}
+        onScrollCapture={handleScroll}
       >
         <div className="flex flex-col gap-2 p-4">
+          {/* Load more indicator */}
+          {isFetchingNextPage && (
+            <div className="flex justify-center py-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
+                Loading more messages...
+              </div>
+            </div>
+          )}
+
           {isLoadingMessages ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
@@ -694,7 +741,7 @@ export function ChatArea({
           </Button>
 
           {/* Message input area */}
-          <div className="flex flex-1 items-end rounded-2xl border border-border/40 bg-background/50 shadow-sm">
+          <div className="flex flex-1 items-center rounded-2xl border border-border/40 bg-background/50 shadow-sm">
             <textarea
               ref={textareaRef}
               autoFocus
@@ -707,7 +754,6 @@ export function ChatArea({
                   handleSendMessage();
                 }
               }}
-              disabled={sendMessageMutation.isPending}
               rows={1}
               className="max-h-32 min-h-[2.5rem] w-full resize-none rounded-2xl bg-transparent px-4 py-3 text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-red-500/20"
             />
@@ -718,7 +764,7 @@ export function ChatArea({
                 size="sm"
                 onClick={handleSendMessage}
                 disabled={sendMessageMutation.isPending}
-                className="mr-2 h-8 w-8 flex-shrink-0 rounded-full bg-red-500 p-0 text-white shadow-md transition-all duration-200 hover:scale-105 hover:bg-red-600 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+                className="mr-3 h-8 w-8 flex-shrink-0 rounded-full bg-red-500 p-0 text-white shadow-md transition-all duration-200 hover:scale-105 hover:bg-red-600 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
               >
                 <Send className="h-4 w-4" />
               </Button>
