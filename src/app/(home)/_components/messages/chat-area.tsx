@@ -217,10 +217,27 @@ export function ChatArea({
     utils.messages.getConversations,
   ]);
 
-  // Auto-scroll to bottom when messages change (but not when loading more)
+  // Auto-scroll to bottom when messages change, but only if user is near the bottom
   React.useEffect(() => {
     if (messagesEndRef.current && messages.length > 0 && !isFetchingNextPage) {
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      const scrollContainer = scrollAreaRef.current?.querySelector(
+        "[data-radix-scroll-area-viewport]",
+      ) as HTMLElement | null;
+
+      if (scrollContainer) {
+        const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
+        const scrollThreshold = 100; // pixels from bottom to consider "near bottom"
+        const isNearBottom =
+          scrollTop + clientHeight >= scrollHeight - scrollThreshold;
+
+        // Only auto-scroll if user is near the bottom
+        if (isNearBottom) {
+          messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+      } else {
+        // Fallback: if we can't get scroll position, auto-scroll (initial load case)
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }
     }
   }, [messages.length, isFetchingNextPage]);
 
@@ -343,7 +360,8 @@ export function ChatArea({
       void channel.unsubscribe("message", messageHandler);
       void channel.unsubscribe("reaction", reactionHandler);
     };
-  }, [conversation?.id, client, cleanupRealtimeMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversation?.id, client]);
 
   const sendMessageMutation = api.messages.sendMessage.useMutation({
     onSuccess: (sentMessage) => {
@@ -364,6 +382,10 @@ export function ChatArea({
       requestAnimationFrame(() => {
         textareaRef.current?.focus();
       });
+    },
+    onError: (error) => {
+      showErrorToast(error);
+      console.error("❌ [ChatArea] Failed to send message:", error);
     },
   });
 
