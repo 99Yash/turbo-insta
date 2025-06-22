@@ -29,6 +29,7 @@ export function usePresence() {
 
   // Enhanced presence data with activity tracking
   const getPresenceData = useCallback(() => {
+    console.log("🔧 [usePresence] getPresenceData function recreated");
     return {
       userId: user?.id,
       username: user?.username,
@@ -42,6 +43,7 @@ export function usePresence() {
 
   // Update presence data immediately when needed
   const updatePresence = useCallback(async () => {
+    console.log("🔧 [usePresence] updatePresence function recreated");
     if (!client || !user || !isEntered) return;
 
     try {
@@ -55,6 +57,7 @@ export function usePresence() {
 
   // Enter presence channel and set up real-time event handlers
   useEffect(() => {
+    console.log("🔧 [usePresence] Main presence effect re-running");
     if (!client || !user || isEntered) return;
 
     const presenceChannel = client.channels.get("global-presence");
@@ -157,7 +160,7 @@ export function usePresence() {
           });
       }
     };
-  }, [client, user, isEntered, getPresenceData, updatePresence]);
+  }, [client, user, isEntered, updatePresence]);
 
   // Subscribe to presence events for real-time updates
   useEffect(() => {
