@@ -27,9 +27,15 @@ export function ChatHeader({
 
   /**
    * Get the participant who is NOT the current user
+   * Returns null if participants are missing to prevent runtime errors
    */
   const getOtherParticipant = React.useCallback(
     (conversation: ConversationWithParticipants) => {
+      // Check if both participants exist
+      if (!conversation.participant1 || !conversation.participant2) {
+        return null;
+      }
+
       return conversation.participant1.id === currentUserId
         ? conversation.participant2
         : conversation.participant1;
@@ -38,6 +44,12 @@ export function ChatHeader({
   );
 
   const otherParticipant = getOtherParticipant(conversation);
+
+  // If we can't find the other participant, don't render the header
+  if (!otherParticipant) {
+    return null;
+  }
+
   const isOtherUserOnline = isUserOnline(otherParticipant.id);
 
   return (
