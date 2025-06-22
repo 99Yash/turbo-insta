@@ -1,6 +1,6 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import * as React from "react";
-import TailwindIndicator from "~/components/tailwind-indicator";
+import { TailwindIndicator } from "~/components/tailwind-indicator";
 import { getCachedUser } from "~/lib/queries/user";
 import { ClientProviders } from "./client-providers";
 

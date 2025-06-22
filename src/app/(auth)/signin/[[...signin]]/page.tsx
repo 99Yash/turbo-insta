@@ -24,7 +24,7 @@ export default function SignInPage() {
       <Card>
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl">Sign in</CardTitle>
-          <CardDescription>Sign in with your Google account</CardDescription>
+          <CardDescription>Sign in with your account</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <OAuthSignIn />

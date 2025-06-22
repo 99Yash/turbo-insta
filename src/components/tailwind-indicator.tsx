@@ -1,6 +1,6 @@
 import { env } from "~/env";
 
-const TailwindIndicator = () => {
+export function TailwindIndicator() {
   if (env.NODE_ENV === "production") return null;
 
   return (
@@ -15,6 +15,4 @@ const TailwindIndicator = () => {
       <div className="hidden 2xl:block">2xl</div>
     </div>
   );
-};
-
-export default TailwindIndicator;
+}

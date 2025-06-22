@@ -3,14 +3,13 @@
 import { useSignIn } from "@clerk/nextjs";
 import { type OAuthStrategy } from "@clerk/types";
 import * as React from "react";
-import { toast } from "sonner";
-
 import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
-import { getErrorMessage } from "~/lib/utils";
+import { showErrorToast } from "~/lib/utils";
 
 const oauthProviders = [
   { name: "Google", strategy: "oauth_google", icon: "google" },
+  { name: "GitHub", strategy: "oauth_github", icon: "gitHub" },
 ] satisfies {
   name: string;
   icon: keyof typeof Icons;
@@ -33,7 +32,7 @@ export function OAuthSignIn() {
       });
     } catch (err) {
       setLoading(null);
-      toast.error(getErrorMessage(err));
+      showErrorToast(err);
     }
   }
 
