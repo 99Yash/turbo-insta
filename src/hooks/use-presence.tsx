@@ -51,7 +51,8 @@ export function usePresence() {
     } catch (error) {
       console.error("❌ [usePresence] Failed to update presence:", error);
     }
-  }, [client, user, isEntered, getPresenceData]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [client, user, isEntered]);
 
   // Enter presence channel and set up real-time event handlers
   useEffect(() => {
