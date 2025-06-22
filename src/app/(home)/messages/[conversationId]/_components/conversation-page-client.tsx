@@ -1,6 +1,7 @@
 "use client";
 
 import { notFound, useRouter } from "next/navigation";
+import { MAX_REALTIME_MESSAGES } from "~/hooks/use-chat-messages";
 import type { ConversationWithParticipants } from "~/server/api/services/messages.service";
 import { api } from "~/trpc/react";
 import { ChatArea } from "../../../_components/messages/chat-area";
@@ -24,7 +25,7 @@ export function ConversationPageClient({
   // Get the specific conversation
   const { data: conversations, isLoading } =
     api.messages.getConversations.useQuery({
-      limit: 50,
+      limit: MAX_REALTIME_MESSAGES,
     });
 
   const selectedConversation = conversations?.find(

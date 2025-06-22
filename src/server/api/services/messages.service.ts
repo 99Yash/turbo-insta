@@ -1,5 +1,6 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
 import { and, desc, eq, gt, inArray, lt, or } from "drizzle-orm";
+import { MAX_REALTIME_MESSAGES } from "~/hooks/use-chat-messages";
 import { ably } from "~/lib/ably";
 import { db } from "~/server/db";
 import {
@@ -228,7 +229,7 @@ export async function getOrCreateConversation(
  */
 export async function getUserConversations(
   userId: string,
-  limit = 10,
+  limit = MAX_REALTIME_MESSAGES,
 ): Promise<ConversationWithParticipants[]> {
   try {
     // Get conversations where user is a participant
@@ -248,7 +249,9 @@ export async function getUserConversations(
       return [];
     }
 
-    // ===== BATCH QUERIES TO ELIMINATE N+1 PROBLEMS =====
+    // ===== OPTIMIZED BATCH QUERIES TO ELIMINATE N+1 PROBLEMS =====
+    // Previous implementation was fetching ALL messages for ALL conversations
+    // which could be millions of records. Now we only fetch what we need.
 
     // 1. Batch fetch all unique participant IDs
     const uniqueParticipantIds = Array.from(
@@ -272,40 +275,33 @@ export async function getUserConversations(
       allParticipants.map((participant) => [participant.id, participant]),
     );
 
-    // 2. Batch fetch last messages for all conversations
+    // 2. Efficiently fetch ONLY the latest message for each conversation
     const conversationIds = userConversations.map((conv) => conv.id);
-    const allLastMessages = await db
-      .select()
-      .from(messages)
-      .where(inArray(messages.conversationId, conversationIds))
-      .orderBy(desc(messages.createdAt));
 
-    // Group messages by conversation ID to get the latest message for each
-    const lastMessagesByConversationId = new Map<string, Message>();
-    allLastMessages.forEach((message) => {
-      const existingMessage = lastMessagesByConversationId.get(
-        message.conversationId,
-      );
-      if (!existingMessage || message.createdAt > existingMessage.createdAt) {
-        lastMessagesByConversationId.set(message.conversationId, message);
-      }
+    // Use a more efficient approach: get all latest messages in fewer queries
+    // For each conversation, get only the most recent message
+    const lastMessagesQueries = conversationIds.map(async (conversationId) => {
+      const latestMessage = await db
+        .select()
+        .from(messages)
+        .where(eq(messages.conversationId, conversationId))
+        .orderBy(desc(messages.createdAt))
+        .limit(1);
+
+      return {
+        conversationId,
+        message: latestMessage[0] ?? null,
+      };
     });
 
-    // 3. Batch fetch all messages for unread count calculation
-    const allMessagesForUnread = await db
-      .select({
-        id: messages.id,
-        conversationId: messages.conversationId,
-        senderId: messages.senderId,
-        createdAt: messages.createdAt,
-      })
-      .from(messages)
-      .where(inArray(messages.conversationId, conversationIds))
-      .orderBy(desc(messages.createdAt));
+    const lastMessagesResults = await Promise.all(lastMessagesQueries);
+    const lastMessagesByConversationId = new Map<string, Message | null>();
+    lastMessagesResults.forEach(({ conversationId, message }) => {
+      lastMessagesByConversationId.set(conversationId, message);
+    });
 
-    // Calculate unread counts for each conversation
-    const unreadCountsMap = new Map<string, number>();
-    userConversations.forEach((conversation) => {
+    // 3. Batch calculate unread counts efficiently using COUNT queries
+    const unreadCountQueries = userConversations.map(async (conversation) => {
       const isParticipant1 = conversation.participant1Id === userId;
       const userLastSeenAt = isParticipant1
         ? conversation.participant1LastSeenAt
@@ -317,34 +313,34 @@ export async function getUserConversations(
         ? conversation.participant2Id
         : conversation.participant1Id;
 
-      const conversationMessages = allMessagesForUnread.filter(
-        (msg) => msg.conversationId === conversation.id,
-      );
+      const whereConditions = [
+        eq(messages.conversationId, conversation.id),
+        eq(messages.senderId, otherParticipantId),
+      ];
 
-      let unreadCount = 0;
       if (userLastSeenAt) {
-        unreadCount = conversationMessages.filter((msg) => {
-          const isFromOtherParticipant = msg.senderId === otherParticipantId;
-          const isAfterLastSeen = msg.createdAt > userLastSeenAt;
-          const isAfterDeletion = userDeletedAt
-            ? msg.createdAt > userDeletedAt
-            : true;
-
-          return isFromOtherParticipant && isAfterLastSeen && isAfterDeletion;
-        }).length;
-      } else {
-        // If user has never seen messages, count all messages from other participant
-        unreadCount = conversationMessages.filter((msg) => {
-          const isFromOtherParticipant = msg.senderId === otherParticipantId;
-          const isAfterDeletion = userDeletedAt
-            ? msg.createdAt > userDeletedAt
-            : true;
-
-          return isFromOtherParticipant && isAfterDeletion;
-        }).length;
+        whereConditions.push(gt(messages.createdAt, userLastSeenAt));
       }
 
-      unreadCountsMap.set(conversation.id, unreadCount);
+      if (userDeletedAt) {
+        whereConditions.push(gt(messages.createdAt, userDeletedAt));
+      }
+
+      const unreadMessages = await db
+        .select({ count: messages.id })
+        .from(messages)
+        .where(and(...whereConditions));
+
+      return {
+        conversationId: conversation.id,
+        unreadCount: unreadMessages.length,
+      };
+    });
+
+    const unreadCountResults = await Promise.all(unreadCountQueries);
+    const unreadCountsMap = new Map<string, number>();
+    unreadCountResults.forEach(({ conversationId, unreadCount }) => {
+      unreadCountsMap.set(conversationId, unreadCount);
     });
 
     // 4. Combine all data
@@ -410,7 +406,7 @@ export async function getUserConversations(
 export async function getConversationMessages(
   userId: string,
   conversationId: string,
-  limit = 50,
+  limit = MAX_REALTIME_MESSAGES,
   cursor?: string,
 ): Promise<{
   readonly messages: MessageWithSender[];

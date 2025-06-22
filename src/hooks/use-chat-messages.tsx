@@ -27,21 +27,20 @@ interface UseChatMessagesReturn {
   readonly isSendingMessage: boolean;
 }
 
+export const MAX_REALTIME_MESSAGES = 10;
+export const MAX_MESSAGE_AGE_MS = 5 * 60 * 1000;
+
 /**
  * Custom hook that encapsulates message state management and real-time updates
  */
 export function useChatMessages({
   conversationId,
-  limit = 50,
+  limit = MAX_REALTIME_MESSAGES,
 }: UseChatMessagesProps): UseChatMessagesReturn {
   // Real-time message updates state with metadata for cleanup
   const [realtimeMessages, setRealtimeMessages] = React.useState<
     Map<string, MessageWithSender & { addedAt: number }>
   >(new Map());
-
-  // Constants for memory management
-  const MAX_REALTIME_MESSAGES = 10; // Maximum number of messages to keep in memory
-  const MAX_MESSAGE_AGE_MS = 5 * 60 * 1000; // 5 minutes - messages older than this will be removed
 
   /**
    * Cleans up old and excess messages from the realtime messages map
@@ -67,7 +66,7 @@ export function useChatMessages({
 
       return cleanedMap;
     },
-    [MAX_REALTIME_MESSAGES, MAX_MESSAGE_AGE_MS],
+    [],
   );
 
   // Server data fetching

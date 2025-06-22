@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_REALTIME_MESSAGES } from "~/hooks/use-chat-messages";
 
 export const sendMessageSchema = z.object({
   receiverId: z.string().min(1, "Receiver ID is required"),
@@ -16,7 +17,7 @@ export const sendMessageSchema = z.object({
 });
 
 export const getUserConversationsSchema = z.object({
-  limit: z.number().min(1).max(50).default(10),
+  limit: z.number().min(1).max(MAX_REALTIME_MESSAGES),
 });
 
 export const getOrCreateConversationSchema = z.object({
