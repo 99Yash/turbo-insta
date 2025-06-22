@@ -161,6 +161,7 @@ export function ChatArea({
 
     // Apply real-time updates (strip addedAt metadata when deriving final messages)
     realtimeMessages.forEach((updateWithMeta, id) => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { addedAt, ...update } = updateWithMeta;
       messagesMap.set(id, update as MessageWithSender);
     });
@@ -424,7 +425,7 @@ export function ChatArea({
 
   // Group consecutive messages by the same sender
   const groupedMessages = React.useMemo(() => {
-    return messages.reduce((groups, message, index) => {
+    const groups = messages.reduce((groups, message, index) => {
       const isFirstMessage = index === 0;
       const prevMessage = messages[index - 1];
       const isNewGroup =
@@ -436,11 +437,17 @@ export function ChatArea({
         const lastGroup = groups[groups.length - 1];
         if (lastGroup) {
           lastGroup.push(message);
+        } else {
+          // Defensive fallback: create a new group if lastGroup is undefined
+          groups.push([message]);
         }
       }
 
       return groups;
     }, [] as MessageWithSender[][]);
+
+    // Filter out any empty groups as a defensive measure
+    return groups.filter((group) => group.length > 0);
   }, [messages]);
 
   const handleEmojiSelect = React.useCallback(
@@ -476,14 +483,11 @@ export function ChatArea({
    * Check if a message contains only emojis (and optional whitespace)
    */
   const isEmojiOnlyMessage = React.useCallback((text: string): boolean => {
-    // Remove all whitespace and check if remaining characters are only emojis
     const trimmedText = text.trim();
     if (!trimmedText) return false;
 
-    // Regex to match emoji characters (including skin tone modifiers, ZWJ sequences, etc.)
     const emojiRegex = /^[\p{Emoji}\p{Emoji_Modifier}\p{Emoji_Component}\s]*$/u;
 
-    // Additional check to ensure there's at least one actual emoji character
     const hasEmoji = /\p{Emoji}/u.test(trimmedText);
 
     return emojiRegex.test(trimmedText) && hasEmoji;
@@ -610,7 +614,12 @@ export function ChatArea({
             </div>
           ) : (
             groupedMessages.map((messageGroup, groupIndex) => {
-              const firstMessage = messageGroup[0]!;
+              // Defensive guard: skip empty groups (shouldn't happen with our logic, but safety first)
+              if (messageGroup.length === 0) {
+                return null;
+              }
+
+              const firstMessage = messageGroup[0]!; // Safe after length check
               const isOwnGroup = firstMessage.senderId === user?.id;
               const sender = firstMessage.sender;
 
