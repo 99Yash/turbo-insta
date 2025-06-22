@@ -13,7 +13,6 @@ import {
   type MessageReaction,
   type NewConversation,
   type NewMessage,
-  type NewMessageReaction,
 } from "~/server/db/schema";
 import type { StoredFile } from "~/types";
 
@@ -844,72 +843,36 @@ export async function addMessageReaction({
   readonly emoji: string;
 }): Promise<MessageReaction> {
   try {
-    // Check if user already has a reaction on this message
-    const existingReaction = await db
-      .select()
-      .from(messageReactions)
-      .where(
-        and(
-          eq(messageReactions.messageId, messageId),
-          eq(messageReactions.userId, userId),
-        ),
-      )
-      .limit(1);
-
-    let reaction: MessageReaction;
-    let isUpdate = false;
-
-    if (existingReaction.length > 0) {
-      // Update existing reaction
-      const [updatedReaction] = await db
-        .update(messageReactions)
-        .set({ emoji })
-        .where(eq(messageReactions.id, existingReaction[0]!.id))
-        .returning();
-
-      if (!updatedReaction) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to update reaction",
-        });
-      }
-
-      reaction = updatedReaction;
-      isUpdate = true;
-      console.log(`🔄 [addMessageReaction] Updated existing reaction:`, {
+    // Use upsert pattern to eliminate race conditions
+    const [reaction] = await db
+      .insert(messageReactions)
+      .values({
         messageId,
         userId,
         emoji,
-        reactionId: reaction.id,
-      });
-    } else {
-      // Create new reaction
-      const newReactionData: NewMessageReaction = {
-        messageId,
-        userId,
-        emoji,
-      };
+      })
+      .onConflictDoUpdate({
+        target: [messageReactions.messageId, messageReactions.userId],
+        set: {
+          emoji,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
 
-      const [newReaction] = await db
-        .insert(messageReactions)
-        .values(newReactionData)
-        .returning();
-
-      if (!newReaction) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to add reaction",
-        });
-      }
-
-      reaction = newReaction;
-      console.log(`✅ [addMessageReaction] Created new reaction:`, {
-        messageId,
-        userId,
-        emoji,
-        reactionId: reaction.id,
+    if (!reaction) {
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to add or update reaction",
       });
     }
+
+    console.log(`✅ [addMessageReaction] Upserted reaction:`, {
+      messageId,
+      userId,
+      emoji,
+      reactionId: reaction.id,
+    });
 
     // Publish real-time update for both new reactions and updates
     try {
@@ -946,7 +909,7 @@ export async function addMessageReaction({
 
         console.log(`🚀 [addMessageReaction] Published reaction event:`, {
           channel: conversationChannelName,
-          type: isUpdate ? "update" : "add",
+          type: "upsert",
           messageId,
           userId,
           emoji,
