@@ -417,16 +417,29 @@ export function ChatArea({
       const textarea = textareaRef.current;
 
       if (textarea) {
-        const start = textarea.selectionStart;
-        const end = textarea.selectionEnd;
+        // Get selection values and validate them with bounds checking
+        const rawStart = textarea.selectionStart;
+        const rawEnd = textarea.selectionEnd;
+
+        // Ensure values are not null and clamp them to valid range
+        const maxLength = messageText.length;
+        const start = Math.max(0, Math.min(rawStart ?? 0, maxLength));
+        const end = Math.max(0, Math.min(rawEnd ?? maxLength, maxLength));
+
+        // Ensure start is not greater than end
+        const validStart = Math.min(start, end);
+        const validEnd = Math.max(start, end);
+
         const newText =
-          messageText.slice(0, start) + emoji + messageText.slice(end);
+          messageText.slice(0, validStart) +
+          emoji +
+          messageText.slice(validEnd);
 
         setMessageText(newText);
 
         // Set cursor position after the emoji
         setTimeout(() => {
-          const newCursorPosition = start + emoji.length;
+          const newCursorPosition = validStart + emoji.length;
           textarea.setSelectionRange(newCursorPosition, newCursorPosition);
           textarea.focus();
         }, 0);
