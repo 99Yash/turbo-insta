@@ -1,5 +1,5 @@
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
-import { and, count, desc, eq, gt, inArray, lt, or } from "drizzle-orm";
+import { and, count, desc, eq, inArray, lt, or } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { generateAltText } from "~/lib/queries/ai";
 import { db } from "~/server/db";
@@ -234,10 +234,10 @@ export async function getPostsByUserId(input: GetPostsByUserIdInput) {
           ? and(
               eq(posts.userId, userId),
               or(
-                gt(posts.createdAt, cursor.createdAt),
+                lt(posts.createdAt, cursor.createdAt),
                 and(
                   eq(posts.createdAt, cursor.createdAt),
-                  gt(posts.id, cursor.id),
+                  lt(posts.id, cursor.id),
                 ),
               ),
             )
@@ -481,10 +481,10 @@ export async function getUserBookmarks(
           ? and(
               eq(bookmarks.userId, userId),
               or(
-                gt(bookmarks.createdAt, cursor.createdAt),
+                lt(bookmarks.createdAt, cursor.createdAt),
                 and(
                   eq(bookmarks.createdAt, cursor.createdAt),
-                  gt(bookmarks.id, cursor.id),
+                  lt(bookmarks.id, cursor.id),
                 ),
               ),
             )

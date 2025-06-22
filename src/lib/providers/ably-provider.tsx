@@ -19,8 +19,14 @@ const ablyClient = (userId: string) =>
      * @see https://github.com/ably/ably-js/issues/1742
      */
     autoConnect: typeof window !== "undefined",
-    closeOnUnload: false,
+    closeOnUnload: true, // immediate disconnect on page unload
     clientId: userId,
+    transportParams: {
+      heartbeatInterval: 15000, // 15 seconds instead of default 30s for faster disconnect detection
+      remainPresentFor: 5000, // 5 seconds before removing from presence set after disconnect
+    },
+    disconnectedRetryTimeout: 1000, // Retry connection faster
+    suspendedRetryTimeout: 2000, // Retry when suspended faster
   });
 
 export const AblyContextProvider = ({

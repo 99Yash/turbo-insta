@@ -423,8 +423,11 @@ export async function getAblyToken(userId: string) {
   try {
     const token = await ably.auth.createTokenRequest({
       clientId: userId,
+      capability: {
+        "*": ["publish", "subscribe", "presence"],
+      },
     });
-    console.log(">>>>>>>TOKEN", token);
+
     return token;
   } catch (e) {
     throw new TRPCError({

@@ -3,8 +3,6 @@
 import { Search, User, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
-import { useDebounce } from "~/hooks/use-debounce";
-import { api } from "~/trpc/react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -12,8 +10,10 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "./command";
-import { useSidebar } from "./sidebar";
+} from "~/components/ui/command";
+import { useSidebar } from "~/components/ui/sidebar";
+import { useDebounce } from "~/hooks/use-debounce";
+import { api } from "~/trpc/react";
 
 export interface UserOption {
   readonly id: string;
