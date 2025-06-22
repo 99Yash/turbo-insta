@@ -157,7 +157,7 @@ export function usePresence() {
           });
       }
     };
-  }, [client, user, isEntered, updatePresence]);
+  }, [client, user, isEntered, updatePresence, getPresenceData]);
 
   // Subscribe to presence events for real-time updates
   useEffect(() => {
