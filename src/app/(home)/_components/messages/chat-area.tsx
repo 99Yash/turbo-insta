@@ -2,10 +2,16 @@
 
 import type * as Ably from "ably";
 import { useAbly } from "ably/react";
-import { ArrowLeft, Send } from "lucide-react";
+import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
+import { ArrowLeft, Send, Smile } from "lucide-react";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
 import { PresenceIndicator } from "~/components/ui/presence-indicator";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useAuthenticatedUser } from "~/contexts/user-context";
@@ -72,6 +78,7 @@ export function ChatArea({
   const user = useAuthenticatedUser();
   const [showNewMessageModal, setShowNewMessageModal] = React.useState(false);
   const [messageText, setMessageText] = React.useState("");
+  const [showEmojiPicker, setShowEmojiPicker] = React.useState(false);
   const client = useAbly();
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
@@ -436,6 +443,52 @@ export function ChatArea({
     }, [] as MessageWithSender[][]);
   }, [messages]);
 
+  const handleEmojiSelect = React.useCallback(
+    (emojiData: EmojiClickData) => {
+      const emoji = emojiData.emoji;
+      const textarea = textareaRef.current;
+
+      if (textarea) {
+        const start = textarea.selectionStart;
+        const end = textarea.selectionEnd;
+        const newText =
+          messageText.slice(0, start) + emoji + messageText.slice(end);
+
+        setMessageText(newText);
+
+        // Set cursor position after the emoji
+        setTimeout(() => {
+          const newCursorPosition = start + emoji.length;
+          textarea.setSelectionRange(newCursorPosition, newCursorPosition);
+          textarea.focus();
+        }, 0);
+      } else {
+        // Fallback: append emoji to the end
+        setMessageText((prev) => prev + emoji);
+      }
+
+      setShowEmojiPicker(false);
+    },
+    [messageText],
+  );
+
+  /**
+   * Check if a message contains only emojis (and optional whitespace)
+   */
+  const isEmojiOnlyMessage = React.useCallback((text: string): boolean => {
+    // Remove all whitespace and check if remaining characters are only emojis
+    const trimmedText = text.trim();
+    if (!trimmedText) return false;
+
+    // Regex to match emoji characters (including skin tone modifiers, ZWJ sequences, etc.)
+    const emojiRegex = /^[\p{Emoji}\p{Emoji_Modifier}\p{Emoji_Component}\s]*$/u;
+
+    // Additional check to ensure there's at least one actual emoji character
+    const hasEmoji = /\p{Emoji}/u.test(trimmedText);
+
+    return emojiRegex.test(trimmedText) && hasEmoji;
+  }, []);
+
   // Empty state when no conversation is selected
   if (!conversation) {
     return (
@@ -602,6 +655,7 @@ export function ChatArea({
                       {messageGroup.map((message, messageIndex) => {
                         const isLastInGroup =
                           messageIndex === messageGroup.length - 1;
+                        const isEmojiOnly = isEmojiOnlyMessage(message.text);
 
                         return (
                           <div
@@ -616,21 +670,34 @@ export function ChatArea({
                             {/* Message bubble */}
                             <div
                               className={cn(
-                                "max-w-full break-words px-4 py-2 text-sm shadow-sm transition-all",
-                                isOwnGroup
-                                  ? cn(
-                                      "rounded-2xl bg-primary text-primary-foreground",
-                                      messageIndex === 0 && "rounded-tr-lg",
-                                      isLastInGroup && "rounded-br-lg",
-                                    )
+                                "max-w-full break-words text-sm transition-all",
+                                isEmojiOnly
+                                  ? "px-1 py-1 text-3xl leading-none" // Large emoji display without background
                                   : cn(
-                                      "rounded-2xl border border-border/20 bg-muted/60 text-foreground",
-                                      messageIndex === 0 && "rounded-tl-lg",
-                                      isLastInGroup && "rounded-bl-lg",
+                                      "px-4 py-2 shadow-sm",
+                                      isOwnGroup
+                                        ? cn(
+                                            "rounded-2xl bg-primary text-primary-foreground",
+                                            messageIndex === 0 &&
+                                              "rounded-tr-lg",
+                                            isLastInGroup && "rounded-br-lg",
+                                          )
+                                        : cn(
+                                            "rounded-2xl border border-border/20 bg-muted/60 text-foreground",
+                                            messageIndex === 0 &&
+                                              "rounded-tl-lg",
+                                            isLastInGroup && "rounded-bl-lg",
+                                          ),
                                     ),
                               )}
                             >
-                              <span className="whitespace-pre-wrap leading-relaxed">
+                              <span
+                                className={cn(
+                                  isEmojiOnly
+                                    ? "block"
+                                    : "whitespace-pre-wrap leading-relaxed",
+                                )}
+                              >
                                 {message.text}
                               </span>
                             </div>
@@ -660,11 +727,42 @@ export function ChatArea({
         </div>
       </ScrollArea>
 
-      {/* Message input - Enhanced styling */}
+      {/* Message input - Instagram-style layout */}
       <div className="border-t border-border/40 bg-background/80 p-4 backdrop-blur-sm">
         <div className="flex items-end gap-3">
-          {/* Message input area */}
-          <div className="flex flex-1 items-center rounded-2xl border border-border/40 bg-background/50 shadow-sm">
+          {/* Message input area with embedded buttons */}
+          <div className="flex flex-1 items-center rounded-2xl border border-border/20 bg-muted/50 transition-colors focus-within:border-border/40">
+            {/* Emoji picker button */}
+            <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="ml-2 h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                >
+                  <Smile className="h-5 w-5" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-auto border-border/40 p-0 shadow-lg"
+                align="start"
+                side="top"
+              >
+                <EmojiPicker
+                  onEmojiClick={handleEmojiSelect}
+                  theme={Theme.AUTO}
+                  width={350}
+                  height={400}
+                  previewConfig={{
+                    showPreview: false,
+                  }}
+                  searchDisabled={false}
+                  skinTonesDisabled={false}
+                  autoFocusSearch={false}
+                />
+              </PopoverContent>
+            </Popover>
+
             <textarea
               ref={textareaRef}
               autoFocus
@@ -680,24 +778,23 @@ export function ChatArea({
               rows={1}
               aria-label="Type your message"
               aria-describedby="message-help"
-              className="max-h-32 min-h-[2.5rem] w-full resize-none rounded-2xl bg-transparent px-4 py-3 text-sm transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring"
+              className="max-h-32 min-h-[2.75rem] flex-1 resize-none bg-transparent px-3 py-3 text-sm placeholder:text-muted-foreground focus:outline-none"
             />
             <div id="message-help" className="sr-only">
               Press Enter to send, Shift+Enter for new line
             </div>
 
-            {/* Send button */}
-            {messageText.trim() && (
-              <Button
-                size="sm"
-                onClick={handleSendMessage}
-                disabled={sendMessageMutation.isPending}
-                aria-label="Send message"
-                className="mr-3 h-8 w-8 flex-shrink-0 rounded-full bg-primary p-0 text-primary-foreground shadow-md transition-all duration-200 hover:scale-105 hover:bg-primary/90 hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            )}
+            {/* Send text button - Instagram style */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSendMessage}
+              disabled={!messageText.trim() || sendMessageMutation.isPending}
+              aria-label="Send message"
+              className="mr-2 h-8 px-3 text-sm font-semibold text-primary hover:text-primary/80 disabled:text-muted-foreground disabled:hover:text-muted-foreground"
+            >
+              Send
+            </Button>
           </div>
         </div>
       </div>
