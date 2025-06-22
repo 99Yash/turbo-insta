@@ -1,8 +1,6 @@
 "use client";
 
-import type * as Ably from "ably";
-import { useAbly } from "ably/react";
-import EmojiPicker, { type EmojiClickData, Theme } from "emoji-picker-react";
+import EmojiPicker, { Theme, type EmojiClickData } from "emoji-picker-react";
 import { ArrowLeft, Send, Smile } from "lucide-react";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
@@ -15,6 +13,10 @@ import {
 import { PresenceIndicator } from "~/components/ui/presence-indicator";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useAuthenticatedUser } from "~/contexts/user-context";
+import {
+  useConversationSubscription,
+  type ReactionEventData,
+} from "~/hooks/use-conversation-subscription";
 import { usePresence } from "~/hooks/use-presence";
 import { cn, getInitials, showErrorToast } from "~/lib/utils";
 import type { RouterOutputs } from "~/trpc/react";
@@ -34,42 +36,6 @@ interface ChatAreaProps {
   readonly onBack?: () => void;
 }
 
-// Derive event types from RouterOutputs - preferred approach for client-side types
-type MessageEventData = {
-  readonly type: "new_message";
-  readonly message: RouterOutputs["messages"]["sendMessage"];
-  readonly conversationId: string;
-  readonly timestamp: string;
-};
-
-// Derive reaction event data structure based on what's actually published in the service
-// The reaction field structure matches what's created in the service's event publishing
-type ReactionAddedEventData = {
-  readonly type: "reaction_added";
-  readonly messageId: string;
-  readonly reaction: {
-    readonly id: string;
-    readonly emoji: string;
-    readonly userId: string;
-    readonly user: {
-      readonly id: string;
-      readonly name: string;
-      readonly username: string;
-    };
-  };
-  readonly timestamp: Date;
-};
-
-type ReactionRemovedEventData = {
-  readonly type: "reaction_removed";
-  readonly messageId: string;
-  readonly userId: string;
-  readonly timestamp: Date;
-};
-
-// Use discriminated union for better type safety
-type ReactionEventData = ReactionAddedEventData | ReactionRemovedEventData;
-
 export function ChatArea({
   conversation,
   onUserSelect,
@@ -79,7 +45,6 @@ export function ChatArea({
   const [showNewMessageModal, setShowNewMessageModal] = React.useState(false);
   const [messageText, setMessageText] = React.useState("");
   const [showEmojiPicker, setShowEmojiPicker] = React.useState(false);
-  const client = useAbly();
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
@@ -254,47 +219,28 @@ export function ChatArea({
     [hasNextPage, isFetchingNextPage, fetchNextPage],
   );
 
-  // Subscribe to real-time messages for this conversation
-  React.useEffect(() => {
-    if (!conversation?.id || !client) {
-      return;
-    }
+  // Handle real-time message updates using custom hook
+  const handleMessageReceived = React.useCallback(
+    (message: MessageWithSender) => {
+      const messageWithTimestamp = {
+        ...message,
+        addedAt: Date.now(),
+      };
 
-    const conversationChannelName = `conversation:${conversation.id}`;
-    const channel = client.channels.get(conversationChannelName);
+      setRealtimeMessages((prev) => {
+        const newMap = new Map(prev);
+        newMap.set(message.id, messageWithTimestamp);
+        // Clean up old/excess messages after adding new one
+        return cleanupRealtimeMessages(newMap);
+      });
+    },
+    [cleanupRealtimeMessages],
+  );
 
-    const messageHandler = (message: Ably.Message) => {
-      const data = message.data as MessageEventData;
-
-      if (
-        data?.type === "new_message" &&
-        data?.conversationId === conversation.id &&
-        data.message
-      ) {
-        // Normalize the message to ensure dates are Date objects and add timestamp
-        const normalizedMessage = {
-          ...data.message,
-          createdAt: new Date(data.message.createdAt),
-          updatedAt: data.message.updatedAt
-            ? new Date(data.message.updatedAt)
-            : null,
-          addedAt: Date.now(),
-        };
-
-        setRealtimeMessages((prev) => {
-          const newMap = new Map(prev);
-          newMap.set(data.message.id, normalizedMessage);
-          // Clean up old/excess messages after adding new one
-          return cleanupRealtimeMessages(newMap);
-        });
-      }
-    };
-
-    const reactionHandler = (message: Ably.Message) => {
-      const data = message.data as ReactionEventData;
-
-      if (data.messageId) {
-        if (data.type === "reaction_added") {
+  const handleReactionUpdated = React.useCallback(
+    (reactionData: ReactionEventData) => {
+      if (reactionData.messageId) {
+        if (reactionData.type === "reaction_added") {
           // Add reaction to the message
           setRealtimeMessages((prev) => {
             const newMap = new Map(prev);
@@ -302,7 +248,7 @@ export function ChatArea({
             // Find the message to update (from real-time state only)
             // If the message isn't in real-time state, the server will handle the reaction
             // and it will be included in future fetches
-            const messageToUpdate = newMap.get(data.messageId);
+            const messageToUpdate = newMap.get(reactionData.messageId);
 
             if (messageToUpdate) {
               const updatedMessage = {
@@ -310,58 +256,51 @@ export function ChatArea({
                 reactions: [
                   // Remove any existing reaction from this user first
                   ...messageToUpdate.reactions.filter(
-                    (r) => r.userId !== data.reaction.userId,
+                    (r) => r.userId !== reactionData.reaction.userId,
                   ),
                   // Add the new reaction
-                  data.reaction,
+                  reactionData.reaction,
                 ],
                 addedAt: messageToUpdate.addedAt, // Preserve the addedAt timestamp
               };
-              newMap.set(data.messageId, updatedMessage);
+              newMap.set(reactionData.messageId, updatedMessage);
             }
 
             return newMap;
           });
-        } else if (data.type === "reaction_removed") {
+        } else if (reactionData.type === "reaction_removed") {
           // Remove user's reaction from the message
           setRealtimeMessages((prev) => {
             const newMap = new Map(prev);
 
             // Find the message to update (from real-time state only)
-            const messageToUpdate = newMap.get(data.messageId);
+            const messageToUpdate = newMap.get(reactionData.messageId);
 
             if (messageToUpdate) {
               const updatedMessage = {
                 ...messageToUpdate,
                 reactions: messageToUpdate.reactions.filter(
-                  (r) => r.userId !== data.userId,
+                  (r) => r.userId !== reactionData.userId,
                 ),
                 addedAt: messageToUpdate.addedAt, // Preserve the addedAt timestamp
               };
-              newMap.set(data.messageId, updatedMessage);
+              newMap.set(reactionData.messageId, updatedMessage);
             }
 
             return newMap;
           });
         }
       }
-    };
+    },
+    [],
+  );
 
-    // Subscribe with error handling
-    channel.subscribe("message", messageHandler).catch((error) => {
-      console.error("❌ Failed to subscribe to message events:", error);
-    });
-
-    channel.subscribe("reaction", reactionHandler).catch((error) => {
-      console.error("❌ Failed to subscribe to reaction events:", error);
-    });
-
-    return () => {
-      void channel.unsubscribe("message", messageHandler);
-      void channel.unsubscribe("reaction", reactionHandler);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversation?.id, client]);
+  // Use custom hook for real-time subscription
+  useConversationSubscription({
+    conversationId: conversation?.id,
+    onMessageReceived: handleMessageReceived,
+    onReactionUpdated: handleReactionUpdated,
+  });
 
   const sendMessageMutation = api.messages.sendMessage.useMutation({
     onSuccess: (sentMessage) => {
