@@ -118,16 +118,6 @@ export default function HomeLayout({
   const pathname = usePathname();
   const [showSkeleton, setShowSkeleton] = React.useState(true);
 
-  // Debug logging for production
-  console.log("HomeLayout Debug:", {
-    isLoaded,
-    isSignedIn,
-    hasUser: !!user,
-    userId: user?.id,
-    pathname,
-    showSkeleton,
-  });
-
   // Show skeleton for maximum 3 seconds, then always show content
   React.useEffect(() => {
     const timer = setTimeout(() => {
