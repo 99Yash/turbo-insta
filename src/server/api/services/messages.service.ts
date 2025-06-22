@@ -1,5 +1,5 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
-import { and, desc, eq, gt, inArray, lt, or } from "drizzle-orm";
+import { and, desc, eq, gt, inArray, lt, or, sql } from "drizzle-orm";
 import { MAX_REALTIME_MESSAGES } from "~/hooks/use-chat-messages";
 import { ably } from "~/lib/ably";
 import { db } from "~/server/db";
@@ -232,6 +232,10 @@ export async function getUserConversations(
   limit = MAX_REALTIME_MESSAGES,
 ): Promise<ConversationWithParticipants[]> {
   try {
+    console.log(
+      `🔍 [getUserConversations] Starting optimization for user ${userId}`,
+    );
+
     // Get conversations where user is a participant
     const userConversations = await db
       .select()
@@ -249,9 +253,11 @@ export async function getUserConversations(
       return [];
     }
 
+    console.log(
+      `📊 [getUserConversations] Found ${userConversations.length} conversations`,
+    );
+
     // ===== OPTIMIZED BATCH QUERIES TO ELIMINATE N+1 PROBLEMS =====
-    // Previous implementation was fetching ALL messages for ALL conversations
-    // which could be millions of records. Now we only fetch what we need.
 
     // 1. Batch fetch all unique participant IDs
     const uniqueParticipantIds = Array.from(
@@ -259,6 +265,10 @@ export async function getUserConversations(
         ...userConversations.map((conv) => conv.participant1Id),
         ...userConversations.map((conv) => conv.participant2Id),
       ]),
+    );
+
+    console.log(
+      `👥 [getUserConversations] Fetching ${uniqueParticipantIds.length} unique participants in 1 query`,
     );
 
     const allParticipants = await db
@@ -275,73 +285,125 @@ export async function getUserConversations(
       allParticipants.map((participant) => [participant.id, participant]),
     );
 
-    // 2. Efficiently fetch ONLY the latest message for each conversation
+    // 2. Get ALL latest messages for ALL conversations in a SINGLE query using window functions
     const conversationIds = userConversations.map((conv) => conv.id);
 
-    // Use a more efficient approach: get all latest messages in fewer queries
-    // For each conversation, get only the most recent message
-    const lastMessagesQueries = conversationIds.map(async (conversationId) => {
-      const latestMessage = await db
-        .select()
-        .from(messages)
-        .where(eq(messages.conversationId, conversationId))
-        .orderBy(desc(messages.createdAt))
-        .limit(1);
+    console.log(
+      `💬 [getUserConversations] Fetching latest messages for ${conversationIds.length} conversations in 1 query using window functions`,
+    );
 
-      return {
-        conversationId,
-        message: latestMessage[0] ?? null,
-      };
-    });
+    const latestMessagesQuery = db
+      .select({
+        conversationId: messages.conversationId,
+        id: messages.id,
+        text: messages.text,
+        files: messages.files,
+        senderId: messages.senderId,
+        receiverId: messages.receiverId,
+        createdAt: messages.createdAt,
+        updatedAt: messages.updatedAt,
+        rowNumber:
+          sql<number>`row_number() over (partition by ${messages.conversationId} order by ${messages.createdAt} desc)`.as(
+            "rn",
+          ),
+      })
+      .from(messages)
+      .where(inArray(messages.conversationId, conversationIds));
 
-    const lastMessagesResults = await Promise.all(lastMessagesQueries);
+    // Execute the window function query and filter to get only the latest message per conversation
+    const allMessagesWithRowNumbers = await latestMessagesQuery;
+    const latestMessages = allMessagesWithRowNumbers.filter(
+      (msg) => msg.rowNumber === 1,
+    );
+
+    console.log(
+      `✅ [getUserConversations] Found latest messages for ${latestMessages.length} conversations`,
+    );
+
     const lastMessagesByConversationId = new Map<string, Message | null>();
-    lastMessagesResults.forEach(({ conversationId, message }) => {
-      lastMessagesByConversationId.set(conversationId, message);
+    latestMessages.forEach((msg) => {
+      // Remove the rowNumber field to match Message type
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { rowNumber, ...messageData } = msg;
+      lastMessagesByConversationId.set(
+        msg.conversationId,
+        messageData as Message,
+      );
     });
 
-    // 3. Batch calculate unread counts efficiently using COUNT queries
-    const unreadCountQueries = userConversations.map(async (conversation) => {
-      const isParticipant1 = conversation.participant1Id === userId;
-      const userLastSeenAt = isParticipant1
-        ? conversation.participant1LastSeenAt
-        : conversation.participant2LastSeenAt;
-      const userDeletedAt = isParticipant1
-        ? conversation.participant1DeletedAt
-        : conversation.participant2DeletedAt;
-      const otherParticipantId = isParticipant1
-        ? conversation.participant2Id
-        : conversation.participant1Id;
+    // 3. Calculate unread counts for ALL conversations in a SINGLE aggregated query
+    // Use conditional aggregation to count unread messages for each conversation in one query
+    console.log(
+      `🔢 [getUserConversations] Calculating unread counts for ${conversationIds.length} conversations in 1 aggregated query`,
+    );
 
-      const whereConditions = [
-        eq(messages.conversationId, conversation.id),
-        eq(messages.senderId, otherParticipantId),
-      ];
+    const unreadCountsQuery = db
+      .select({
+        conversationId: messages.conversationId,
+        unreadCount: sql<number>`count(*)`.mapWith(Number),
+      })
+      .from(messages)
+      .where(
+        and(
+          inArray(messages.conversationId, conversationIds),
+          // Complex condition to handle different user roles and timestamps for each conversation
+          sql`(
+            ${sql.join(
+              userConversations.map((conversation) => {
+                const isParticipant1 = conversation.participant1Id === userId;
+                const userLastSeenAt = isParticipant1
+                  ? conversation.participant1LastSeenAt
+                  : conversation.participant2LastSeenAt;
+                const userDeletedAt = isParticipant1
+                  ? conversation.participant1DeletedAt
+                  : conversation.participant2DeletedAt;
+                const otherParticipantId = isParticipant1
+                  ? conversation.participant2Id
+                  : conversation.participant1Id;
 
-      if (userLastSeenAt) {
-        whereConditions.push(gt(messages.createdAt, userLastSeenAt));
-      }
+                const conditions = [
+                  sql`${messages.conversationId} = ${conversation.id}`,
+                  sql`${messages.senderId} = ${otherParticipantId}`,
+                ];
 
-      if (userDeletedAt) {
-        whereConditions.push(gt(messages.createdAt, userDeletedAt));
-      }
+                if (userLastSeenAt) {
+                  conditions.push(
+                    sql`${messages.createdAt} > ${userLastSeenAt}`,
+                  );
+                }
 
-      const unreadMessages = await db
-        .select({ count: messages.id })
-        .from(messages)
-        .where(and(...whereConditions));
+                if (userDeletedAt) {
+                  conditions.push(
+                    sql`${messages.createdAt} > ${userDeletedAt}`,
+                  );
+                }
 
-      return {
-        conversationId: conversation.id,
-        unreadCount: unreadMessages.length,
-      };
-    });
+                return sql`(${sql.join(conditions, sql` AND `)})`;
+              }),
+              sql` OR `,
+            )}
+          )`,
+        ),
+      )
+      .groupBy(messages.conversationId);
 
-    const unreadCountResults = await Promise.all(unreadCountQueries);
+    const unreadCountResults = await unreadCountsQuery;
     const unreadCountsMap = new Map<string, number>();
-    unreadCountResults.forEach(({ conversationId, unreadCount }) => {
-      unreadCountsMap.set(conversationId, unreadCount);
+
+    unreadCountResults.forEach((result) => {
+      unreadCountsMap.set(result.conversationId, result.unreadCount);
     });
+
+    // Fill in zero counts for conversations with no unread messages
+    userConversations.forEach((conv) => {
+      if (!unreadCountsMap.has(conv.id)) {
+        unreadCountsMap.set(conv.id, 0);
+      }
+    });
+
+    console.log(
+      `🎯 [getUserConversations] OPTIMIZATION COMPLETE - Used only 4 total queries instead of ${2 + userConversations.length * 2} queries (eliminated ${userConversations.length * 2} N+1 queries)`,
+    );
 
     // 4. Combine all data
     const conversationsWithDetails = userConversations.map((conversation) => {
