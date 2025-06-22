@@ -12,6 +12,7 @@ import { PresenceIndicator } from "~/components/ui/presence-indicator";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useAuthenticatedUser } from "~/contexts/user-context";
+import { MAX_REALTIME_MESSAGES } from "~/hooks/use-chat-messages";
 import { usePresence } from "~/hooks/use-presence";
 import { cn, formatTimeToNow, getInitials } from "~/lib/utils";
 import type { ConversationWithParticipants } from "~/server/api/services/messages.service";
@@ -45,7 +46,9 @@ export function ConversationsSidebar({
 
   const { data: conversationsData, isLoading: isLoadingConversations } =
     api.messages.getConversations.useQuery(
-      { limit: 20 },
+      {
+        limit: MAX_REALTIME_MESSAGES,
+      },
       {
         enabled: !!user,
       },

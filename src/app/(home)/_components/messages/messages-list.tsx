@@ -18,6 +18,7 @@ interface MessagesListProps {
   readonly messages: MessageWithSender[];
   readonly isLoadingMessages: boolean;
   readonly isFetchingNextPage: boolean;
+  readonly hasNextPage: boolean;
   readonly onScroll: (event: React.UIEvent<HTMLDivElement>) => void;
   readonly onAddReaction: (messageId: string, emoji: string) => void;
   readonly onRemoveReaction: (messageId: string) => void;
@@ -31,6 +32,7 @@ export function MessagesList({
   messages,
   isLoadingMessages,
   isFetchingNextPage,
+  hasNextPage,
   onScroll,
   onAddReaction,
   onRemoveReaction,
@@ -85,13 +87,21 @@ export function MessagesList({
       onScrollCapture={onScroll}
     >
       <div className="flex flex-col gap-2 p-4">
-        {/* Load more indicator */}
-        {isFetchingNextPage && (
-          <div className="flex justify-center py-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
-              Loading more messages...
-            </div>
+        {/* Load more indicator - always show at top when there are more messages */}
+        {hasNextPage && !isLoadingMessages && (
+          <div className="flex justify-center py-2">
+            {isFetchingNextPage ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                Loading more messages...
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
+                <div className="h-1 w-1 rounded-full bg-muted-foreground/50"></div>
+                Scroll up to load more messages
+                <div className="h-1 w-1 rounded-full bg-muted-foreground/50"></div>
+              </div>
+            )}
           </div>
         )}
 

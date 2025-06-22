@@ -45,7 +45,7 @@ export function ChatArea({
     isSendingMessage,
   } = useChatMessages({
     conversationId: conversation?.id,
-    limit: 50,
+    limit: 30, // Reasonable page size for smooth scrolling
   });
 
   const markAsReadMutation = api.messages.markConversationAsRead.useMutation();
@@ -77,9 +77,13 @@ export function ChatArea({
     utils.messages.getConversations,
   ]);
 
-  // Auto-scroll to bottom when messages change, but only if user is near the bottom
+  // Track if this is the initial load
+  const [isInitialLoad, setIsInitialLoad] = React.useState(true);
+  const [shouldAutoScroll, setShouldAutoScroll] = React.useState(true);
+
+  // Auto-scroll to bottom when messages change
   React.useEffect(() => {
-    if (messagesEndRef.current && messages.length > 0 && !isFetchingNextPage) {
+    if (messagesEndRef.current && messages.length > 0) {
       const scrollContainer = scrollAreaRef.current?.querySelector(
         "[data-radix-scroll-area-viewport]",
       ) as HTMLElement | null;
@@ -90,28 +94,102 @@ export function ChatArea({
         const isNearBottom =
           scrollTop + clientHeight >= scrollHeight - scrollThreshold;
 
-        // Only auto-scroll if user is near the bottom
-        if (isNearBottom) {
-          messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        // Auto-scroll on initial load or if user is near the bottom
+        if (isInitialLoad || (shouldAutoScroll && isNearBottom)) {
+          messagesEndRef.current.scrollIntoView({
+            behavior: isInitialLoad ? "instant" : "smooth",
+          });
+
+          if (isInitialLoad) {
+            setIsInitialLoad(false);
+          }
         }
       } else {
         // Fallback: if we can't get scroll position, auto-scroll (initial load case)
-        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        messagesEndRef.current.scrollIntoView({
+          behavior: isInitialLoad ? "instant" : "smooth",
+        });
+
+        if (isInitialLoad) {
+          setIsInitialLoad(false);
+        }
       }
     }
-  }, [messages.length, isFetchingNextPage]);
+  }, [messages.length, isInitialLoad, shouldAutoScroll]);
 
-  // Handle scroll to top for loading more messages
+  // Reset initial load state when conversation changes
+  React.useEffect(() => {
+    setIsInitialLoad(true);
+    setShouldAutoScroll(true);
+  }, [conversation?.id]);
+
+  // Store scroll position for maintaining position during pagination
+  const [scrollPositionBeforeLoad, setScrollPositionBeforeLoad] =
+    React.useState<{
+      scrollTop: number;
+      scrollHeight: number;
+    } | null>(null);
+
+  // Maintain scroll position after loading older messages
+  React.useLayoutEffect(() => {
+    if (scrollPositionBeforeLoad && !isFetchingNextPage) {
+      const scrollContainer = scrollAreaRef.current?.querySelector(
+        "[data-radix-scroll-area-viewport]",
+      ) as HTMLElement | null;
+
+      if (scrollContainer) {
+        const { scrollTop, scrollHeight } = scrollPositionBeforeLoad;
+        const newScrollHeight = scrollContainer.scrollHeight;
+        const heightDifference = newScrollHeight - scrollHeight;
+
+        if (heightDifference > 0) {
+          scrollContainer.scrollTop = scrollTop + heightDifference;
+        }
+      }
+
+      setScrollPositionBeforeLoad(null);
+    }
+  }, [isFetchingNextPage, scrollPositionBeforeLoad]);
+
+  // Handle scroll for loading more messages and auto-scroll behavior
   const handleScroll = React.useCallback(
     (event: React.UIEvent<HTMLDivElement>) => {
-      const { scrollTop } = event.currentTarget;
+      const { scrollTop, scrollHeight, clientHeight } = event.currentTarget;
 
-      // If scrolled to top and we have more messages to load
-      if (scrollTop === 0 && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
+      // Load more threshold - trigger when user is within 200px of the top
+      const loadMoreThreshold = 200;
+
+      // Auto-scroll threshold - consider user "near bottom" if within 100px
+      const autoScrollThreshold = 100;
+
+      // Check if user is near the bottom for auto-scroll behavior
+      const isNearBottom =
+        scrollTop + clientHeight >= scrollHeight - autoScrollThreshold;
+      setShouldAutoScroll(isNearBottom);
+
+      // If scrolled near the top and we have more messages to load
+      if (
+        scrollTop <= loadMoreThreshold &&
+        hasNextPage &&
+        !isFetchingNextPage &&
+        !scrollPositionBeforeLoad
+      ) {
+        // Store current scroll position before loading
+        setScrollPositionBeforeLoad({
+          scrollTop,
+          scrollHeight,
+        });
+
+        void fetchNextPage();
       }
     },
-    [hasNextPage, isFetchingNextPage, fetchNextPage],
+    [
+      hasNextPage,
+      isFetchingNextPage,
+      fetchNextPage,
+      setShouldAutoScroll,
+      scrollPositionBeforeLoad,
+    ],
   );
 
   const handleUserSelect = React.useCallback(
@@ -181,6 +259,7 @@ export function ChatArea({
         messages={messages}
         isLoadingMessages={isLoadingMessages}
         isFetchingNextPage={isFetchingNextPage}
+        hasNextPage={hasNextPage}
         onScroll={handleScroll}
         onAddReaction={addReaction}
         onRemoveReaction={removeReaction}
