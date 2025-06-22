@@ -67,11 +67,15 @@ export function ConversationsSidebar({
       conversationsMap.set(id, update);
     });
 
-    return Array.from(conversationsMap.values()).sort((a, b) => {
-      const aTime = a.lastMessage?.createdAt ?? a.createdAt;
-      const bTime = b.lastMessage?.createdAt ?? b.createdAt;
-      return new Date(bTime).getTime() - new Date(aTime).getTime();
-    });
+    const finalConversations = Array.from(conversationsMap.values()).sort(
+      (a, b) => {
+        const aTime = a.lastMessage?.createdAt ?? a.createdAt;
+        const bTime = b.lastMessage?.createdAt ?? b.createdAt;
+        return new Date(bTime).getTime() - new Date(aTime).getTime();
+      },
+    );
+
+    return finalConversations;
   }, [conversationsData, realtimeUpdates]);
 
   // Subscribe to real-time conversation updates
@@ -89,11 +93,6 @@ export function ConversationsSidebar({
       };
 
       if (data.type === "conversation_updated" && data.conversation) {
-        console.log(
-          "🔔 [ConversationsSidebar] Conversation updated:",
-          data.conversation,
-        );
-
         // Normalize the conversation to ensure dates are Date objects
         const normalizedConversation = {
           ...data.conversation,
@@ -121,15 +120,8 @@ export function ConversationsSidebar({
     };
 
     void channel.subscribe("conversation_update", handler);
-    console.log(
-      "✅ [ConversationsSidebar] Subscribed to messages channel:",
-      messagesChannelName,
-    );
 
     return () => {
-      console.log(
-        "🔇 [ConversationsSidebar] Unsubscribing from messages channel",
-      );
       void channel.unsubscribe("conversation_update", handler);
     };
   }, [user, client, conversationsData?.length]);
@@ -137,12 +129,6 @@ export function ConversationsSidebar({
   const createConversationMutation =
     api.messages.getOrCreateConversation.useMutation({
       onSuccess: (conversation) => {
-        console.log("🚀 [ConversationsSidebar] Conversation created/found:", {
-          conversationId: conversation.id,
-          participant1: conversation.participant1,
-          participant2: conversation.participant2,
-        });
-
         // Invalidate and refetch conversations to ensure the new conversation appears
         void utils.messages.getConversations.invalidate();
 
@@ -159,10 +145,6 @@ export function ConversationsSidebar({
 
   const handleUserSelect = useCallback(
     (userId: string) => {
-      console.log(
-        "📞 [ConversationsSidebar] Creating conversation with user:",
-        userId,
-      );
       createConversationMutation.mutate({
         otherUserId: userId,
       });
@@ -179,14 +161,6 @@ export function ConversationsSidebar({
         conversation.participant1.id === user?.id
           ? conversation.participant2
           : conversation.participant1;
-
-      console.log("👤 [ConversationsSidebar] Other participant:", {
-        conversationId: conversation.id,
-        currentUserId: user?.id,
-        participant1: conversation.participant1,
-        participant2: conversation.participant2,
-        selectedOtherParticipant: otherParticipant,
-      });
 
       return otherParticipant;
     },

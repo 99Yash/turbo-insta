@@ -55,6 +55,7 @@ export type MessageWithSender = Message & {
 
 /**
  * Get or create a conversation between two users
+ *
  */
 export async function getOrCreateConversation(
   userId: string,
@@ -103,8 +104,9 @@ export async function getOrCreateConversation(
       conversation = newConversation;
     }
 
-    // Get participant details
-    const [participant1, participant2] = await Promise.all([
+    // Get participant details and last message in parallel optimized queries
+    const [allParticipants, lastMessage] = await Promise.all([
+      // Batch fetch both participants in a single query
       db
         .select({
           id: users.id,
@@ -113,35 +115,51 @@ export async function getOrCreateConversation(
           imageUrl: users.imageUrl,
         })
         .from(users)
-        .where(eq(users.id, conversation.participant1Id))
-        .limit(1),
+        .where(
+          inArray(users.id, [
+            conversation.participant1Id,
+            conversation.participant2Id,
+          ]),
+        ),
+      // Get last message
       db
-        .select({
-          id: users.id,
-          username: users.username,
-          name: users.name,
-          imageUrl: users.imageUrl,
-        })
-        .from(users)
-        .where(eq(users.id, conversation.participant2Id))
+        .select()
+        .from(messages)
+        .where(eq(messages.conversationId, conversation.id))
+        .orderBy(desc(messages.createdAt))
         .limit(1),
     ]);
 
-    // Get last message
-    const lastMessage = await db
-      .select()
-      .from(messages)
-      .where(eq(messages.conversationId, conversation.id))
-      .orderBy(desc(messages.createdAt))
-      .limit(1);
+    // Create participant map for easy lookup
+    const participantsMap = new Map(
+      allParticipants.map((participant) => [participant.id, participant]),
+    );
 
+    const participant1 = participantsMap.get(conversation.participant1Id);
+    const participant2 = participantsMap.get(conversation.participant2Id);
+
+    // Ensure participants exist in database
+    if (!participant1) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: `Participant 1 with ID ${conversation.participant1Id} not found`,
+      });
+    }
+
+    if (!participant2) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: `Participant 2 with ID ${conversation.participant2Id} not found`,
+      });
+    }
+
+    // If user deleted conversation and last message is before deletion, hide last message
+    let filteredLastMessage = lastMessage[0] ?? null;
     const isParticipant1 = conversation.participant1Id === userId;
     const userDeletedAt = isParticipant1
       ? conversation.participant1DeletedAt
       : conversation.participant2DeletedAt;
 
-    // If user deleted conversation and last message is before deletion, hide last message
-    let filteredLastMessage = lastMessage[0] ?? null;
     if (
       userDeletedAt &&
       filteredLastMessage &&
@@ -150,7 +168,7 @@ export async function getOrCreateConversation(
       filteredLastMessage = null;
     }
 
-    // Calculate unread count - count messages from other participant after user's last seen time
+    // Calculate unread count - optimized single query approach
     const userLastSeenAt = isParticipant1
       ? conversation.participant1LastSeenAt
       : conversation.participant2LastSeenAt;
@@ -159,60 +177,33 @@ export async function getOrCreateConversation(
       ? conversation.participant2Id
       : conversation.participant1Id;
 
-    let unreadCount = 0;
+    // Build conditions for unread count query
+    const unreadCountConditions = [
+      eq(messages.conversationId, conversation.id),
+      eq(messages.senderId, otherParticipantId),
+    ];
+
+    // Add timestamp conditions
     if (userLastSeenAt) {
-      const whereConditions = [
-        eq(messages.conversationId, conversation.id),
-        eq(messages.senderId, otherParticipantId),
-        gt(messages.createdAt, userLastSeenAt),
-      ];
-
-      if (userDeletedAt) {
-        whereConditions.push(gt(messages.createdAt, userDeletedAt));
-      }
-
-      const unreadMessages = await db
-        .select({ id: messages.id })
-        .from(messages)
-        .where(and(...whereConditions));
-      unreadCount = unreadMessages.length;
-    } else {
-      // If user has never seen messages, count all messages from other participant
-      const whereConditions = [
-        eq(messages.conversationId, conversation.id),
-        eq(messages.senderId, otherParticipantId),
-      ];
-
-      if (userDeletedAt) {
-        whereConditions.push(gt(messages.createdAt, userDeletedAt));
-      }
-
-      const unreadMessages = await db
-        .select({ id: messages.id })
-        .from(messages)
-        .where(and(...whereConditions));
-      unreadCount = unreadMessages.length;
+      unreadCountConditions.push(gt(messages.createdAt, userLastSeenAt));
     }
 
-    // Ensure participants exist in database
-    if (participant1.length === 0) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: `Participant 1 with ID ${conversation.participant1Id} not found`,
-      });
+    if (userDeletedAt) {
+      unreadCountConditions.push(gt(messages.createdAt, userDeletedAt));
     }
 
-    if (participant2.length === 0) {
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: `Participant 2 with ID ${conversation.participant2Id} not found`,
-      });
-    }
+    // Execute optimized unread count query
+    const [unreadCountResult] = await db
+      .select({ count: sql<number>`count(*)`.mapWith(Number) })
+      .from(messages)
+      .where(and(...unreadCountConditions));
+
+    const unreadCount = unreadCountResult?.count ?? 0;
 
     return {
       ...conversation,
-      participant1: participant1[0]!,
-      participant2: participant2[0]!,
+      participant1,
+      participant2,
       lastMessage: filteredLastMessage,
       unreadCount,
     };
@@ -232,10 +223,6 @@ export async function getUserConversations(
   limit = MAX_REALTIME_MESSAGES,
 ): Promise<ConversationWithParticipants[]> {
   try {
-    console.log(
-      `🔍 [getUserConversations] Starting optimization for user ${userId}`,
-    );
-
     // Get conversations where user is a participant
     const userConversations = await db
       .select()
@@ -253,22 +240,12 @@ export async function getUserConversations(
       return [];
     }
 
-    console.log(
-      `📊 [getUserConversations] Found ${userConversations.length} conversations`,
-    );
-
-    // ===== OPTIMIZED BATCH QUERIES TO ELIMINATE N+1 PROBLEMS =====
-
     // 1. Batch fetch all unique participant IDs
     const uniqueParticipantIds = Array.from(
       new Set([
         ...userConversations.map((conv) => conv.participant1Id),
         ...userConversations.map((conv) => conv.participant2Id),
       ]),
-    );
-
-    console.log(
-      `👥 [getUserConversations] Fetching ${uniqueParticipantIds.length} unique participants in 1 query`,
     );
 
     const allParticipants = await db
@@ -288,10 +265,7 @@ export async function getUserConversations(
     // 2. Get ALL latest messages for ALL conversations in a SINGLE query using window functions
     const conversationIds = userConversations.map((conv) => conv.id);
 
-    console.log(
-      `💬 [getUserConversations] Fetching latest messages for ${conversationIds.length} conversations in 1 query using window functions`,
-    );
-
+    // Simple window function query to get the latest message per conversation
     const latestMessagesQuery = db
       .select({
         conversationId: messages.conversationId,
@@ -312,12 +286,9 @@ export async function getUserConversations(
 
     // Execute the window function query and filter to get only the latest message per conversation
     const allMessagesWithRowNumbers = await latestMessagesQuery;
-    const latestMessages = allMessagesWithRowNumbers.filter(
-      (msg) => msg.rowNumber === 1,
-    );
 
-    console.log(
-      `✅ [getUserConversations] Found latest messages for ${latestMessages.length} conversations`,
+    const latestMessages = allMessagesWithRowNumbers.filter(
+      (msg) => Number(msg.rowNumber) === 1,
     );
 
     const lastMessagesByConversationId = new Map<string, Message | null>();
@@ -331,68 +302,104 @@ export async function getUserConversations(
       );
     });
 
-    // 3. Calculate unread counts for ALL conversations in a SINGLE aggregated query
-    // Use conditional aggregation to count unread messages for each conversation in one query
-    console.log(
-      `🔢 [getUserConversations] Calculating unread counts for ${conversationIds.length} conversations in 1 aggregated query`,
+    // 3. Calculate unread counts for ALL conversations using optimized batch approach
+    // Split into participant1 and participant2 queries for better performance
+    // Separate conversations based on user role for more efficient querying
+    const participant1Conversations = userConversations.filter(
+      (conv) => conv.participant1Id === userId,
+    );
+    const participant2Conversations = userConversations.filter(
+      (conv) => conv.participant2Id === userId,
     );
 
-    const unreadCountsQuery = db
-      .select({
-        conversationId: messages.conversationId,
-        unreadCount: sql<number>`count(*)`.mapWith(Number),
-      })
-      .from(messages)
-      .where(
-        and(
-          inArray(messages.conversationId, conversationIds),
-          // Complex condition to handle different user roles and timestamps for each conversation
-          sql`(
-            ${sql.join(
-              userConversations.map((conversation) => {
-                const isParticipant1 = conversation.participant1Id === userId;
-                const userLastSeenAt = isParticipant1
-                  ? conversation.participant1LastSeenAt
-                  : conversation.participant2LastSeenAt;
-                const userDeletedAt = isParticipant1
-                  ? conversation.participant1DeletedAt
-                  : conversation.participant2DeletedAt;
-                const otherParticipantId = isParticipant1
-                  ? conversation.participant2Id
-                  : conversation.participant1Id;
+    // Build efficient unread count queries using CTEs for better performance
+    const [participant1UnreadCounts, participant2UnreadCounts] =
+      await Promise.all([
+        // Query for conversations where user is participant1
+        participant1Conversations.length > 0
+          ? db
+              .select({
+                conversationId: messages.conversationId,
+                unreadCount: sql<number>`count(*)`.mapWith(Number),
+              })
+              .from(messages)
+              .innerJoin(
+                conversations,
+                eq(messages.conversationId, conversations.id),
+              )
+              .where(
+                and(
+                  inArray(
+                    messages.conversationId,
+                    participant1Conversations.map((c) => c.id),
+                  ),
+                  // Messages from participant2 (other user)
+                  eq(messages.senderId, conversations.participant2Id),
+                  // Messages newer than user's last seen (if exists)
+                  or(
+                    eq(conversations.participant1LastSeenAt, sql`null`),
+                    gt(
+                      messages.createdAt,
+                      conversations.participant1LastSeenAt,
+                    ),
+                  ),
+                  // Messages after user's deletion timestamp (if exists)
+                  or(
+                    eq(conversations.participant1DeletedAt, sql`null`),
+                    gt(messages.createdAt, conversations.participant1DeletedAt),
+                  ),
+                ),
+              )
+              .groupBy(messages.conversationId)
+          : Promise.resolve([]),
 
-                const conditions = [
-                  sql`${messages.conversationId} = ${conversation.id}`,
-                  sql`${messages.senderId} = ${otherParticipantId}`,
-                ];
+        // Query for conversations where user is participant2
+        participant2Conversations.length > 0
+          ? db
+              .select({
+                conversationId: messages.conversationId,
+                unreadCount: sql<number>`count(*)`.mapWith(Number),
+              })
+              .from(messages)
+              .innerJoin(
+                conversations,
+                eq(messages.conversationId, conversations.id),
+              )
+              .where(
+                and(
+                  inArray(
+                    messages.conversationId,
+                    participant2Conversations.map((c) => c.id),
+                  ),
+                  // Messages from participant1 (other user)
+                  eq(messages.senderId, conversations.participant1Id),
+                  // Messages newer than user's last seen (if exists)
+                  or(
+                    eq(conversations.participant2LastSeenAt, sql`null`),
+                    gt(
+                      messages.createdAt,
+                      conversations.participant2LastSeenAt,
+                    ),
+                  ),
+                  // Messages after user's deletion timestamp (if exists)
+                  or(
+                    eq(conversations.participant2DeletedAt, sql`null`),
+                    gt(messages.createdAt, conversations.participant2DeletedAt),
+                  ),
+                ),
+              )
+              .groupBy(messages.conversationId)
+          : Promise.resolve([]),
+      ]);
 
-                if (userLastSeenAt) {
-                  conditions.push(
-                    sql`${messages.createdAt} > ${userLastSeenAt}`,
-                  );
-                }
-
-                if (userDeletedAt) {
-                  conditions.push(
-                    sql`${messages.createdAt} > ${userDeletedAt}`,
-                  );
-                }
-
-                return sql`(${sql.join(conditions, sql` AND `)})`;
-              }),
-              sql` OR `,
-            )}
-          )`,
-        ),
-      )
-      .groupBy(messages.conversationId);
-
-    const unreadCountResults = await unreadCountsQuery;
+    // Combine results into a single map
     const unreadCountsMap = new Map<string, number>();
 
-    unreadCountResults.forEach((result) => {
-      unreadCountsMap.set(result.conversationId, result.unreadCount);
-    });
+    [...participant1UnreadCounts, ...participant2UnreadCounts].forEach(
+      (result) => {
+        unreadCountsMap.set(result.conversationId, result.unreadCount);
+      },
+    );
 
     // Fill in zero counts for conversations with no unread messages
     userConversations.forEach((conv) => {
@@ -400,10 +407,6 @@ export async function getUserConversations(
         unreadCountsMap.set(conv.id, 0);
       }
     });
-
-    console.log(
-      `🎯 [getUserConversations] OPTIMIZATION COMPLETE - Used only 4 total queries instead of ${2 + userConversations.length * 2} queries (eliminated ${userConversations.length * 2} N+1 queries)`,
-    );
 
     // 4. Combine all data
     const conversationsWithDetails = userConversations.map((conversation) => {
@@ -1128,3 +1131,13 @@ export async function markConversationAsRead(
     });
   }
 }
+
+// PERFORMANCE ANALYSIS:
+// Old approach: 1 complex query with dynamic OR conditions for each conversation
+// - Hard for query planner to optimize due to dynamic SQL generation
+// - Single large query with complex WHERE clause
+// New approach: 2 cleaner queries split by user role (participant1 vs participant2)
+// - Query planner can optimize each query independently
+// - Cleaner SQL with better index utilization
+// - More maintainable and readable code
+// - Better performance for large datasets
