@@ -6,8 +6,10 @@ import { ArrowLeft, Send } from "lucide-react";
 import React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
+import { PresenceIndicator } from "~/components/ui/presence-indicator";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useAuthenticatedUser } from "~/contexts/user-context";
+import { usePresence } from "~/hooks/use-presence";
 import { cn, getInitials, showErrorToast } from "~/lib/utils";
 import type { RouterOutputs } from "~/trpc/react";
 import { api } from "~/trpc/react";
@@ -74,6 +76,9 @@ export function ChatArea({
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
   const messagesEndRef = React.useRef<HTMLDivElement>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+  // Initialize presence tracking
+  const { isUserOnline } = usePresence();
 
   // Real-time message updates state with metadata for cleanup
   const [realtimeMessages, setRealtimeMessages] = React.useState<
@@ -464,6 +469,7 @@ export function ChatArea({
   }
 
   const otherParticipant = getOtherParticipant(conversation);
+  const isOtherUserOnline = isUserOnline(otherParticipant.id);
 
   return (
     <div className="flex h-screen flex-1 flex-col bg-background">
@@ -482,19 +488,27 @@ export function ChatArea({
             </Button>
           )}
 
-          {/* Single avatar for 1-on-1 conversation */}
-          <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
-            <AvatarImage
-              src={otherParticipant.imageUrl ?? undefined}
-              alt={otherParticipant.name}
-            />
-            <AvatarFallback>
-              {getInitials(otherParticipant.name)}
-            </AvatarFallback>
-          </Avatar>
+          {/* Avatar with presence indicator */}
+          <div className="relative">
+            <Avatar className="h-10 w-10 border-2 border-background shadow-sm">
+              <AvatarImage
+                src={otherParticipant.imageUrl ?? undefined}
+                alt={otherParticipant.name}
+              />
+              <AvatarFallback>
+                {getInitials(otherParticipant.name)}
+              </AvatarFallback>
+            </Avatar>
+            <PresenceIndicator isOnline={isOtherUserOnline} size="sm" />
+          </div>
 
           <div>
             <h3 className="font-semibold">{otherParticipant.username}</h3>
+            {isOtherUserOnline && (
+              <p className="text-sm text-green-600 dark:text-green-400">
+                Online
+              </p>
+            )}
           </div>
         </div>
       </div>

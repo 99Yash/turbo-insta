@@ -8,9 +8,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
+import { PresenceIndicator } from "~/components/ui/presence-indicator";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Skeleton } from "~/components/ui/skeleton";
 import { useAuthenticatedUser } from "~/contexts/user-context";
+import { usePresence } from "~/hooks/use-presence";
 import { cn, formatTimeToNow, getInitials } from "~/lib/utils";
 import type { ConversationWithParticipants } from "~/server/api/services/messages.service";
 import { api } from "~/trpc/react";
@@ -32,6 +34,9 @@ export function ConversationsSidebar({
   const client = useAbly();
   const router = useRouter();
   const utils = api.useUtils();
+
+  // Initialize presence tracking
+  const { isUserOnline } = usePresence();
 
   // Real-time conversation updates state
   const [realtimeUpdates, setRealtimeUpdates] = useState<
@@ -273,6 +278,7 @@ export function ConversationsSidebar({
               {conversations.map((conversation) => {
                 const otherParticipant = getOtherParticipant(conversation);
                 const isSelected = selectedConversationId === conversation.id;
+                const isOtherUserOnline = isUserOnline(otherParticipant.id);
 
                 return (
                   <button
@@ -303,8 +309,11 @@ export function ConversationsSidebar({
                         </AvatarFallback>
                       </Avatar>
 
-                      {/* Online status indicator */}
-                      <div className="absolute -bottom-1 -right-1 h-4 w-4 animate-online-pulse rounded-full border-2 border-background bg-green-500 shadow-sm"></div>
+                      {/* Real presence indicator */}
+                      <PresenceIndicator
+                        isOnline={isOtherUserOnline}
+                        size="md"
+                      />
                     </div>
 
                     <div className="flex-1 overflow-hidden">
