@@ -1,7 +1,7 @@
 import type * as Ably from "ably";
-import { useAbly } from "ably/react";
 import React from "react";
 import { z } from "zod";
+import { useAblyContext } from "~/lib/providers/ably-provider";
 import type { RouterOutputs } from "~/trpc/react";
 
 // Use inferred types from router outputs
@@ -66,7 +66,7 @@ export function useConversationSubscription({
   onMessageReceived,
   onReactionUpdated,
 }: UseConversationSubscriptionOptions): void {
-  const client = useAbly();
+  const client = useAblyContext();
 
   React.useEffect(() => {
     if (!conversationId || !client) {

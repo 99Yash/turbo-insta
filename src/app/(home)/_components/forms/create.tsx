@@ -300,6 +300,8 @@ export function Create({
     return getTotalImageCount() > 1;
   };
 
+  if (!user) return null;
+
   return (
     <>
       {!isEditMode && (
@@ -524,7 +526,7 @@ export function Create({
                     <div className="flex w-1/2 flex-col">
                       <div className="mb-4 flex items-center gap-2">
                         <UserIcon className="size-4 text-muted-foreground" />
-                        <span className="font-semibold">{user?.fullName}</span>
+                        <span className="font-semibold">{user.fullName}</span>
                       </div>
 
                       <Form {...form}>

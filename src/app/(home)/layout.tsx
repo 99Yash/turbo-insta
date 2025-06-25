@@ -2,6 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
+import * as React from "react";
 import { Skeleton } from "~/components/ui/skeleton";
 import { AppSidebar } from "./_components/sidebar/app-sidebar";
 import { SidebarContainer } from "./_components/sidebar/components";
@@ -115,23 +116,37 @@ export default function HomeLayout({
 }) {
   const { user, isLoaded, isSignedIn } = useUser();
   const pathname = usePathname();
+  const [showSkeleton, setShowSkeleton] = React.useState(true);
+
+  // Show skeleton for maximum 3 seconds, then always show content
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSkeleton(false);
+    }, 3000);
+
+    // Hide skeleton immediately if loaded
+    if (isLoaded) {
+      setShowSkeleton(false);
+      clearTimeout(timer);
+    }
+
+    return () => clearTimeout(timer);
+  }, [isLoaded]);
 
   const sidebarBreakpoint = pathname.startsWith("/messages") ? "sm" : "xl";
   const defaultOpen = pathname.startsWith("/messages") ? false : undefined;
 
   return (
     <SidebarContainer breakpoint={sidebarBreakpoint} defaultOpen={defaultOpen}>
-      {isLoaded && user && isSignedIn ? (
+      {showSkeleton ? (
+        <HomeLayoutSkeleton />
+      ) : isLoaded && user && isSignedIn ? (
         <>
           <AppSidebar />
           {children}
         </>
-      ) : // Show loading or render children without sidebar for unauthenticated states
-      // Pages will handle redirects appropriately
-      isLoaded ? (
-        children
       ) : (
-        <HomeLayoutSkeleton />
+        children
       )}
     </SidebarContainer>
   );

@@ -1,7 +1,6 @@
 "use client";
 
 import type * as Ably from "ably";
-import { useAbly } from "ably/react";
 import { CogIcon, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -23,6 +22,7 @@ import {
 } from "~/components/ui/sidebar";
 import { siteConfig } from "~/config/site";
 import { useUser } from "~/contexts/user-context";
+import { useAblyContext } from "~/lib/providers/ably-provider";
 import { cn, getInitials } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { NotificationsSidebar } from "../notifications/notifications-sidebar";
@@ -33,7 +33,7 @@ export function AppSidebar() {
   const pathname = usePathname();
   const [isNotificationsSidebarOpen, setIsNotificationsSidebarOpen] =
     React.useState(false);
-  const client = useAbly();
+  const client = useAblyContext();
 
   // Local state for real-time unread count updates (start with 0)
   const [unreadCount, setUnreadCount] = React.useState<number>(0);

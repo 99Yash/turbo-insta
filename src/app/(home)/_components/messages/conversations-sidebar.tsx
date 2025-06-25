@@ -1,7 +1,6 @@
 "use client";
 
 import type * as Ably from "ably";
-import { useAbly } from "ably/react";
 import { Pen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -14,6 +13,7 @@ import { Skeleton } from "~/components/ui/skeleton";
 import { useAuthenticatedUser } from "~/contexts/user-context";
 import { MAX_REALTIME_MESSAGES } from "~/hooks/use-chat-messages";
 import { usePresence } from "~/hooks/use-presence";
+import { useAblyContext } from "~/lib/providers/ably-provider";
 import { cn, formatTimeToNow, getInitials } from "~/lib/utils";
 import type { ConversationWithParticipants } from "~/server/api/services/messages.service";
 import { api } from "~/trpc/react";
@@ -32,7 +32,7 @@ export function ConversationsSidebar({
 }: ConversationsSidebarProps) {
   const user = useAuthenticatedUser();
   const [showNewMessageModal, setShowNewMessageModal] = useState(false);
-  const client = useAbly();
+  const client = useAblyContext();
   const router = useRouter();
   const utils = api.useUtils();
 
