@@ -1,9 +1,9 @@
 "use client";
 
 import type * as Ably from "ably";
-import { useAbly } from "ably/react";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthenticatedUser } from "~/contexts/user-context";
+import { useAbly } from "~/lib/providers/ably-provider";
 
 /**
  * Type for presence member data from Ably

@@ -2,48 +2,83 @@
 
 import { useAuth } from "@clerk/nextjs";
 import Ably from "ably";
-import { AblyProvider } from "ably/react";
 import * as React from "react";
+import { useMounted } from "~/hooks/use-mounted";
 
-const ablyClient = (userId: string) =>
-  new Ably.Realtime({
-    authCallback: (_data, callback) => {
-      fetch("/api/ably")
-        .then((response) => response.json())
-        .then((data) => callback(null, data as Ably.TokenRequest))
-        .catch((error) => callback(error as Ably.ErrorInfo | string, null));
-    },
-    /**
-     * Auto-connect in the browser because we don't have cookies in the next-server
-     * and we don't want ably to fire authCallback without cookies
-     * @see https://github.com/ably/ably-js/issues/1742
-     */
-    autoConnect: typeof window !== "undefined",
-    closeOnUnload: true, // immediate disconnect on page unload
-    clientId: userId,
-    transportParams: {
-      heartbeatInterval: 15000, // 15 seconds instead of default 30s for faster disconnect detection
-      remainPresentFor: 5000, // 5 seconds before removing from presence set after disconnect
-    },
-    disconnectedRetryTimeout: 1000, // Retry connection faster
-    suspendedRetryTimeout: 2000, // Retry when suspended faster
-  });
+// Create our own Ably context
+const AblyContext = React.createContext<Ably.Realtime | null>(null);
 
 export const AblyContextProvider = ({
   children,
 }: {
   children: React.ReactNode;
 }) => {
-  const { userId } = useAuth();
+  const isMounted = useMounted();
+  const { userId, isLoaded } = useAuth();
+  const [ablyClient, setAblyClient] = React.useState<Ably.Realtime | null>(
+    null,
+  );
 
-  const client = React.useMemo(() => {
-    if (!userId) return null;
-    return ablyClient(userId);
-  }, [userId]);
+  console.log("AblyContextProvider render:", {
+    isMounted,
+    isLoaded,
+    userId: !!userId,
+    hasClient: !!ablyClient,
+  });
 
-  if (!client) {
-    return <>{children}</>;
-  }
+  React.useEffect(() => {
+    console.log("AblyContextProvider useEffect triggered:", {
+      isMounted,
+      isLoaded,
+      userId: !!userId,
+    });
 
-  return <AblyProvider client={client}>{children}</AblyProvider>;
+    // Only proceed when mounted, auth is loaded, and we have a user
+    if (!isMounted || !isLoaded || !userId) {
+      console.log("AblyContextProvider: Not ready, skipping client creation");
+      return;
+    }
+
+    console.log("AblyContextProvider: Creating client...");
+
+    const createClient = async () => {
+      try {
+        console.log("AblyContextProvider: Starting client creation");
+        const client = new Ably.Realtime({
+          authUrl: "/api/ably",
+          autoConnect: true,
+          closeOnUnload: true,
+          clientId: userId,
+        });
+
+        console.log("AblyContextProvider: Client created successfully", client);
+        setAblyClient(client);
+      } catch (error) {
+        console.error("Failed to create Ably client:", error);
+      }
+    };
+
+    void createClient();
+
+    return () => {
+      console.log("AblyContextProvider: Cleaning up client");
+      setAblyClient((prevClient) => {
+        if (prevClient) {
+          prevClient.close();
+        }
+        return null;
+      });
+    };
+  }, [isMounted, isLoaded, userId]);
+
+  return (
+    <AblyContext.Provider value={ablyClient}>{children}</AblyContext.Provider>
+  );
+};
+
+// Custom hook to use Ably client
+export const useAbly = (): Ably.Realtime | null => {
+  const client = React.useContext(AblyContext);
+  console.log("useAbly called, client:", !!client);
+  return client;
 };

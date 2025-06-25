@@ -1,13 +1,13 @@
 "use client";
 
 import type * as Ably from "ably";
-import { useAbly } from "ably/react";
 import { Bell } from "lucide-react";
 import React from "react";
 import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useUser } from "~/contexts/user-context";
+import { useAbly } from "~/lib/providers/ably-provider";
 import { api } from "~/trpc/react";
 import { NotificationItem } from "./notification-item";
 
