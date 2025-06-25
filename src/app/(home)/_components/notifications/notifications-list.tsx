@@ -7,7 +7,7 @@ import { Icons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { useUser } from "~/contexts/user-context";
-import { useAbly } from "~/lib/providers/ably-provider";
+import { useAblyContext } from "~/lib/providers/ably-provider";
 import { api } from "~/trpc/react";
 import { NotificationItem } from "./notification-item";
 
@@ -24,7 +24,7 @@ export function NotificationsList({
 }: NotificationsListProps) {
   const utils = api.useUtils();
   const { user } = useUser();
-  const client = useAbly();
+  const client = useAblyContext();
 
   // Subscribe to websocket notifications for count updates
   React.useEffect(() => {

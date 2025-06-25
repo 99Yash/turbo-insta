@@ -3,7 +3,7 @@
 import type * as Ably from "ably";
 import { useCallback, useEffect, useState } from "react";
 import { useAuthenticatedUser } from "~/contexts/user-context";
-import { useAbly } from "~/lib/providers/ably-provider";
+import { useAblyContext } from "~/lib/providers/ably-provider";
 
 /**
  * Type for presence member data from Ably
@@ -20,7 +20,7 @@ type PresenceMember = {
  * Uses pure pub/sub events without intervals for true real-time updates
  */
 export function usePresence() {
-  const client = useAbly();
+  const client = useAblyContext();
   const user = useAuthenticatedUser();
   const [presenceMembers, setPresenceMembers] = useState<Set<string>>(
     new Set(),
