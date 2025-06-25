@@ -6,6 +6,7 @@ import * as React from "react";
 import { useMounted } from "~/hooks/use-mounted";
 
 const AblyContext = React.createContext<Ably.Realtime | null>(null);
+AblyContext.displayName = "AblyContext";
 
 export const AblyContextProvider = ({
   children,
