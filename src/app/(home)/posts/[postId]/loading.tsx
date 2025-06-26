@@ -35,16 +35,31 @@ export default function PostModalLoading() {
           </div>
 
           {/* Comments loading */}
-          <div className="px-2">
+          <div className="flex w-full flex-col gap-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="mb-4 flex items-start gap-2">
-                <Skeleton className="size-7 rounded-full" />
-                <div className="flex-1">
-                  <div className="flex gap-1">
-                    <Skeleton className="h-4 w-20" />
-                    <Skeleton className="h-4 w-40" />
+              <div
+                key={i}
+                className="group flex items-start px-3.5 py-4 text-sm"
+              >
+                <div className="flex items-start">
+                  <Skeleton className="mr-2 size-7 rounded-full" />
+                </div>
+                <div className="flex min-w-0 flex-1 flex-col">
+                  <div className="flex items-start justify-between">
+                    <div className="inline">
+                      <Skeleton className="mr-1 h-4 w-20" />
+                      <Skeleton className="h-4 w-40" />
+                    </div>
+                    <Skeleton className="h-3 w-3 rounded-full" />
                   </div>
-                  <Skeleton className="mt-1 h-3 w-16" />
+                  <div className="mt-1 flex items-center justify-between space-x-3 text-xs text-muted-foreground">
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-3 w-16" />
+                        <Skeleton className="h-3 w-12" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

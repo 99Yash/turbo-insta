@@ -143,6 +143,7 @@ export function RepliesList({ commentId }: RepliesListProps) {
 
                   <div className="flex flex-col items-center gap-1">
                     <button
+                      type="button"
                       className="flex flex-col items-center gap-1"
                       onClick={async () => {
                         await toggleLikeMutation.mutateAsync({
@@ -175,6 +176,7 @@ export function RepliesList({ commentId }: RepliesListProps) {
 
                     {isCurrentUser && (
                       <button
+                        type="button"
                         className="font-semibold opacity-0 transition-opacity duration-200 group-hover:opacity-100"
                         onClick={() => setReplyToDelete(reply.id)}
                       >

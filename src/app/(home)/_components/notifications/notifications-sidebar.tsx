@@ -55,7 +55,7 @@ export function NotificationsSidebar({
       {/* Backdrop */}
       <div
         className={cn(
-          "fixed inset-0 z-40 bg-black/20 backdrop-blur-sm transition-opacity duration-300 ease-out",
+          "fixed inset-0 z-10 bg-black/20 backdrop-blur-sm transition-opacity duration-300 ease-out",
           isOpen ? "opacity-100" : "pointer-events-none opacity-0",
         )}
         onClick={onClose}
@@ -66,7 +66,7 @@ export function NotificationsSidebar({
       <div
         id="notifications-sidebar"
         className={cn(
-          "fixed right-0 top-0 z-50 h-full bg-sidebar shadow-xl transition-transform duration-300 ease-out",
+          "fixed right-0 top-0 z-10 h-full bg-sidebar shadow-xl transition-transform duration-300 ease-out",
           "w-full max-w-md border-l border-border/40 sm:w-96",
           isOpen ? "translate-x-0" : "translate-x-full",
         )}
@@ -118,6 +118,7 @@ export function NotificationsSidebar({
               unreadCount={unreadCount}
               isOpen={isOpen}
               onUnreadCountChange={onUnreadCountChange}
+              onCloseSidebar={onClose}
             />
           )}
         </div>
