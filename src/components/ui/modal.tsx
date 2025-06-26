@@ -1,12 +1,23 @@
 "use client";
 
 import * as Dialog from "@radix-ui/react-dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useRouter } from "next/navigation";
 import { Drawer } from "vaul";
 import { useMediaQuery } from "~/hooks/use-media-query";
 import { cn } from "~/lib/utils";
-import { DialogContent, DialogOverlay } from "./dialog";
-import { DrawerContent, DrawerOverlay } from "./drawer";
+import {
+  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogTitle,
+} from "./dialog";
+import {
+  DrawerContent,
+  DrawerDescription,
+  DrawerOverlay,
+  DrawerTitle,
+} from "./drawer";
 
 export function Modal({
   children,
@@ -56,7 +67,15 @@ export function Modal({
       >
         <DrawerOverlay />
         <Drawer.Portal>
-          <DrawerContent className={cn(className)}>{children}</DrawerContent>
+          <VisuallyHidden asChild>
+            <>
+              <DrawerTitle>Modal</DrawerTitle>
+              <DrawerDescription>Modal</DrawerDescription>
+            </>
+          </VisuallyHidden>
+          <DrawerContent className={cn(className, "p-2")}>
+            {children}
+          </DrawerContent>
           <Drawer.Overlay />
         </Drawer.Portal>
       </Drawer.Root>
@@ -73,6 +92,12 @@ export function Modal({
       }}
     >
       <Dialog.Portal>
+        <VisuallyHidden asChild>
+          <>
+            <DialogTitle>Modal</DialogTitle>
+            <DialogDescription>Modal</DialogDescription>
+          </>
+        </VisuallyHidden>
         <DialogOverlay id="modal-backdrop" />
         <DialogContent
           onOpenAutoFocus={(e) => e.preventDefault()}
