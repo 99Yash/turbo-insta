@@ -15,12 +15,14 @@ interface NotificationsListProps {
   readonly unreadCount: number;
   readonly isOpen: boolean;
   readonly onUnreadCountChange?: (newCount: number) => void;
+  readonly onCloseSidebar?: () => void;
 }
 
 export function NotificationsList({
   unreadCount,
   isOpen,
   onUnreadCountChange,
+  onCloseSidebar,
 }: NotificationsListProps) {
   const utils = api.useUtils();
   const { user } = useUser();
@@ -174,6 +176,7 @@ export function NotificationsList({
                 key={notification.id}
                 notification={notification}
                 onMarkAsRead={handleMarkAsRead}
+                onCloseSidebar={onCloseSidebar}
               />
             ))}
 

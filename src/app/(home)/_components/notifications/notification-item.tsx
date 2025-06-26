@@ -11,11 +11,13 @@ import type { StoredFile } from "~/types";
 interface NotificationItemProps {
   readonly notification: RouterOutputs["notifications"]["getAll"]["notifications"][number];
   readonly onMarkAsRead?: (notificationId: string) => void;
+  readonly onCloseSidebar?: () => void;
 }
 
 export function NotificationItem({
   notification,
   onMarkAsRead,
+  onCloseSidebar,
 }: NotificationItemProps) {
   const getNotificationIcon = () => {
     switch (notification.type) {
@@ -104,6 +106,8 @@ export function NotificationItem({
     if (!notification.isRead && onMarkAsRead) {
       onMarkAsRead(notification.id);
     }
+    // Close the sidebar when navigating to a notification
+    onCloseSidebar?.();
   };
 
   // Helper function to get the first image from post

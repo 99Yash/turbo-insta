@@ -98,18 +98,27 @@ export function CommentsList({ postId, onReply }: CommentsListProps) {
 
   if (status === "pending") {
     return (
-      <div className="flex flex-col gap-4 px-3.5 py-4">
+      <div className="flex w-full flex-col gap-2">
         {Array.from({ length: 12 }).map((_, i) => (
-          <div key={i} className="flex items-start text-sm">
-            <Skeleton className="mr-2 size-7 rounded-full" />
-            <div className="flex-1 space-y-2">
-              <div className="flex items-center space-x-2">
-                <Skeleton className="h-3.5 w-40" />
-                <Skeleton className="h-3.5 w-56" />
+          <div key={i} className="group flex items-start px-3.5 py-4 text-sm">
+            <div className="flex items-start">
+              <Skeleton className="mr-2 size-7 rounded-full" />
+            </div>
+            <div className="flex min-w-0 flex-1 flex-col">
+              <div className="flex items-start justify-between">
+                <div className="inline">
+                  <Skeleton className="mr-1 h-4 w-20" />
+                  <Skeleton className="h-4 w-40" />
+                </div>
+                <Skeleton className="h-3 w-3 rounded-full" />
               </div>
-              <div className="flex space-x-3">
-                <Skeleton className="h-2.5 w-10" />
-                <Skeleton className="h-2.5 w-8" />
+              <div className="mt-1 flex items-center justify-between space-x-3 text-xs text-muted-foreground">
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-3 w-16" />
+                    <Skeleton className="h-3 w-12" />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -181,6 +190,7 @@ export function CommentsList({ postId, onReply }: CommentsListProps) {
                       />
                     </p>
                     <button
+                      type="button"
                       className="flex items-center gap-1 self-end"
                       onClick={async () => {
                         await toggleLikeMutation.mutateAsync({
@@ -210,6 +220,7 @@ export function CommentsList({ postId, onReply }: CommentsListProps) {
                       <div className="flex items-center gap-2">
                         <span>{formatTimeToNow(comment.createdAt)}</span>
                         <button
+                          type="button"
                           className="font-semibold"
                           onClick={() => {
                             if (onReply && comment.user?.username) {
@@ -221,6 +232,7 @@ export function CommentsList({ postId, onReply }: CommentsListProps) {
                         </button>
                         {isCurrentUser && (
                           <button
+                            type="button"
                             className="font-semibold opacity-0 transition-opacity duration-200 group-hover:opacity-100"
                             onClick={() => setCommentToDelete(comment.id)}
                           >
@@ -230,6 +242,7 @@ export function CommentsList({ postId, onReply }: CommentsListProps) {
                       </div>
                       {replyCount > 0 && (
                         <button
+                          type="button"
                           className="font-semibold text-muted-foreground"
                           onClick={() => toggleReplies(comment.id)}
                         >
@@ -285,12 +298,12 @@ export function CommentsList({ postId, onReply }: CommentsListProps) {
         }}
       >
         <div className="flex flex-col items-center gap-4">
-          <h3 className="text-xl font-semibold">Delete Comment</h3>
-          <p className="text-center text-muted-foreground">
+          <h3 className="text-lg font-semibold">Delete Comment</h3>
+          <p className="text-center text-sm text-muted-foreground">
             Are you sure you want to delete this comment? This action cannot be
             undone.
           </p>
-          <div className="mt-2 flex w-full gap-2">
+          <div className="mt-4 flex w-3/5 gap-2">
             <Button
               variant="outline"
               className="flex-1"
