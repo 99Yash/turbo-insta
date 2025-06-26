@@ -68,10 +68,10 @@ export function Modal({
         <DrawerOverlay />
         <Drawer.Portal>
           <VisuallyHidden asChild>
-            <>
+            <div className="sr-only">
               <DrawerTitle>Modal</DrawerTitle>
               <DrawerDescription>Modal</DrawerDescription>
-            </>
+            </div>
           </VisuallyHidden>
           <DrawerContent className={cn(className, "p-2")}>
             {children}
@@ -93,10 +93,10 @@ export function Modal({
     >
       <Dialog.Portal>
         <VisuallyHidden asChild>
-          <>
+          <div className="sr-only">
             <DialogTitle>Modal</DialogTitle>
             <DialogDescription>Modal</DialogDescription>
-          </>
+          </div>
         </VisuallyHidden>
         <DialogOverlay id="modal-backdrop" />
         <DialogContent
