@@ -76,7 +76,22 @@ export async function POST(req: NextRequest) {
 
         const name =
           `${first_name ?? ""} ${last_name ?? ""}`.trim() || "Anonymous";
-        const username = await generateUniqueUsername(name);
+
+        // Only generate new username if current user doesn't have one
+        const existingUser = await db.query.users.findFirst({
+          where: eq(users.id, clerkId),
+          columns: { username: true },
+        });
+
+        if (!existingUser) {
+          console.error("User not found in database:", clerkId);
+          return new Response("User not found", { status: 404 });
+        }
+
+        let username = existingUser.username;
+        if (!username) {
+          username = await generateUniqueUsername(name);
+        }
 
         try {
           await db
