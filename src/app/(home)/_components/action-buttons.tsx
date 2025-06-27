@@ -92,18 +92,31 @@ export function ActionButtons({ postId }: { postId: string }) {
     },
   });
 
+  const handleHeartClick = async () => {
+    await toggleLike.mutateAsync({
+      postId,
+      type: "post",
+    });
+
+    // Show tip toast if it hasn't been shown yet
+    toast.info("Tip: You can double click on posts to like them");
+  };
+
+  const handleCommentClick = () => {
+    if (pathname.includes("/posts")) {
+      document.getElementById("add-comment")?.focus();
+    } else {
+      router.push(`/posts/${postId}`);
+    }
+  };
+
   return (
     <div>
       <div className="flex w-full items-center justify-between">
         <div className="flex items-center gap-2.5">
           <Heart
             role="button"
-            onClick={async () =>
-              await toggleLike.mutateAsync({
-                postId,
-                type: "post",
-              })
-            }
+            onClick={handleHeartClick}
             className={cn(
               "size-6 transition-colors duration-200",
               isLiked
@@ -116,11 +129,7 @@ export function ActionButtons({ postId }: { postId: string }) {
           <span className="sr-only">Like</span>
           <MessageCircleIcon
             role="button"
-            onClick={() =>
-              pathname.includes("/posts")
-                ? document.getElementById("add-comment")?.focus()
-                : router.push(`/posts/${postId}`)
-            }
+            onClick={handleCommentClick}
             className="size-6 -rotate-90 transition-colors duration-200 hover:text-muted-foreground"
             aria-hidden="true"
             aria-label="Comment"

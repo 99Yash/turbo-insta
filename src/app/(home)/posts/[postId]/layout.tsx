@@ -1,14 +1,27 @@
 "use client";
 
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { Dialog, DialogContent } from "~/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "~/components/ui/dialog";
 
 export default function ModalLayout({ children }: React.PropsWithChildren) {
   const router = useRouter();
 
   return (
     <Dialog defaultOpen={true}>
+      <VisuallyHidden asChild>
+        <div className="sr-only">
+          <DialogTitle>Post</DialogTitle>
+          <DialogDescription>Post</DialogDescription>
+        </div>
+      </VisuallyHidden>
+
       <DialogContent
         onKeyDown={(e) => {
           if (e.key === "Escape") {

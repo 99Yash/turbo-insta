@@ -4,9 +4,12 @@ import { ChevronRightIcon } from "@radix-ui/react-icons";
 import useEmblaCarousel, {
   type UseEmblaCarouselType,
 } from "embla-carousel-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { Heart } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
 import { cn } from "~/lib/utils";
+import { api } from "~/trpc/react";
 import { type StoredFile } from "~/types";
 import { Icons } from "../icons";
 import { Button } from "../ui/button";
@@ -22,6 +25,7 @@ interface PostCarouselProps extends React.HTMLAttributes<HTMLDivElement> {
   options?: CarouselOptions;
   modal?: boolean;
   optimize?: boolean;
+  postId?: string;
 }
 
 export function PostCarousel({
@@ -30,6 +34,7 @@ export function PostCarousel({
   options,
   modal = false,
   optimize = true,
+  postId,
   ...props
 }: PostCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel(options);
@@ -42,9 +47,29 @@ export function PostCarousel({
   );
   const [containerHeight, setContainerHeight] = React.useState<number>(0);
   const imageRefs = React.useRef<Record<string, HTMLImageElement>>({});
+  const [showHeartAnimation, setShowHeartAnimation] = React.useState(false);
 
   const [prevBtnDisabled, setPrevBtnDisabled] = React.useState(true);
   const [nextBtnDisabled, setNextBtnDisabled] = React.useState(true);
+
+  // Like functionality for double-click (enabled when postId is provided and not in modal)
+  const enableDoubleClickLike = !!postId && !modal;
+  const utils = api.useUtils();
+  const { data: likesData } = api.posts.getLikes.useQuery(
+    { postId: postId! },
+    {
+      enabled: enableDoubleClickLike,
+      refetchOnWindowFocus: false,
+    },
+  );
+
+  const toggleLike = api.likes.toggle.useMutation({
+    async onSuccess() {
+      if (postId) {
+        await utils.posts.getLikes.invalidate({ postId });
+      }
+    },
+  });
 
   const scrollPrev = React.useCallback(
     () => emblaApi && emblaApi.scrollPrev(),
@@ -103,6 +128,29 @@ export function PostCarousel({
     [containerHeight],
   );
 
+  const handleDoubleClick = React.useCallback(async () => {
+    if (enableDoubleClickLike && postId) {
+      try {
+        const wasLiked = likesData?.hasLiked ?? false;
+        await toggleLike.mutateAsync({
+          postId,
+          type: "post" as const,
+        });
+
+        // Only show animation if we're going from unliked to liked
+        if (!wasLiked) {
+          setShowHeartAnimation(true);
+          // Hide the animation after it completes
+          setTimeout(() => {
+            setShowHeartAnimation(false);
+          }, 1000);
+        }
+      } catch (error) {
+        console.error("Error handling double click:", error);
+      }
+    }
+  }, [enableDoubleClickLike, postId, toggleLike, likesData?.hasLiked]);
+
   if (!files || files.length === 0) {
     return null;
   }
@@ -126,7 +174,11 @@ export function PostCarousel({
         <Icons.chevronLeft className="size-3" aria-hidden="true" />
         <span className="sr-only">Previous slide</span>
       </Button>
-      <div ref={emblaRef} className="overflow-hidden">
+      <div
+        ref={emblaRef}
+        className="overflow-hidden"
+        onDoubleClick={handleDoubleClick}
+      >
         <div
           className="flex touch-pan-y"
           style={{
@@ -231,6 +283,29 @@ export function PostCarousel({
           ))}
         </div>
       </div>
+
+      {/* Heart Animation Overlay */}
+      <AnimatePresence>
+        {showHeartAnimation && (
+          <motion.div
+            className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center"
+            initial={{ opacity: 0, scale: 0.5 }}
+            animate={{
+              opacity: [0, 1, 1, 0],
+              scale: [0.5, 1.2, 1, 1.3],
+            }}
+            exit={{ opacity: 0, scale: 0.5 }}
+            transition={{
+              duration: 1,
+              ease: "easeOut",
+              times: [0, 0.2, 0.8, 1],
+            }}
+          >
+            <Heart className="size-16 fill-rose-500 text-rose-500 drop-shadow-lg" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Button
         variant="ghost"
         size="icon"

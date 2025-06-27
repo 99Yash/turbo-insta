@@ -57,6 +57,7 @@ export function Post({ post, author }: PostProps) {
           <PostCarousel
             files={post.images}
             className="rounded-sm border border-muted-foreground/20"
+            postId={post.id}
           />
 
           <div className="flex flex-col gap-3 pt-3">

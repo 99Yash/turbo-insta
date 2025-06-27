@@ -5,11 +5,17 @@ import Link from "next/link";
 import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import { Dialog, DialogContent } from "~/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "~/components/ui/dialog";
 import { Book2Small, GridLayoutRows, Tag } from "~/components/ui/icons/nucleo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { getInitials } from "~/lib/utils";
 
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { type Post, type User } from "~/server/db/schema";
 import { api } from "~/trpc/react";
 import { ProfileEditForm } from "../forms/edit-profile";
@@ -247,6 +253,12 @@ export function ProfileView({
       {/* Edit Profile Modal */}
       {isCurrentUser && (
         <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+          <VisuallyHidden asChild>
+            <div className="sr-only">
+              <DialogTitle>Edit Profile</DialogTitle>
+              <DialogDescription>Edit Profile</DialogDescription>
+            </div>
+          </VisuallyHidden>
           <DialogContent className="sm:max-w-[600px]">
             <ProfileEditForm
               user={user}
