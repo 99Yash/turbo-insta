@@ -36,6 +36,8 @@ export const generateAltText = async (imagePath: string) => {
 };
 
 export async function generateUniqueUsername(name: string): Promise<string> {
+  console.info(`🎯 Generating username for: "${name}"`);
+
   const systemPrompt = `
     Generate a unique, memorable username based on the person's name.
     Rules:
@@ -55,33 +57,63 @@ export async function generateUniqueUsername(name: string): Promise<string> {
   const maxAttempts = 3;
 
   while (attempts < maxAttempts) {
-    const { text } = await generateText({
-      model: openai_4o_mini,
-      system: systemPrompt,
-      maxTokens: 9,
-      abortSignal: AbortSignal.timeout(10000), // Increased to 10 seconds for username generation
-      messages: [
-        {
-          role: "user",
-          content: `Generate a username for: ${name}`,
-        },
-      ],
-    });
+    try {
+      console.info(
+        `🔄 Username generation attempt ${attempts + 1}/${maxAttempts}`,
+      );
 
-    const username = text.trim().toLowerCase();
+      const { text } = await generateText({
+        model: openai_4o_mini,
+        system: systemPrompt,
+        maxTokens: 9,
+        abortSignal: AbortSignal.timeout(10000), // Increased to 10 seconds for username generation
+        messages: [
+          {
+            role: "user",
+            content: `Generate a username for: ${name}`,
+          },
+        ],
+      });
 
-    const existingUser = await db.query.users.findFirst({
-      where: eq(users.username, username),
-    });
+      const username = text.trim().toLowerCase();
+      console.info(`🎲 Generated candidate username: "${username}"`);
 
-    if (!existingUser) {
-      return username;
+      console.info("🔍 Checking if username is already taken...");
+      const existingUser = await db.query.users.findFirst({
+        where: eq(users.username, username),
+      });
+
+      if (!existingUser) {
+        console.info(`✅ Username "${username}" is available!`);
+        return username;
+      }
+
+      console.info(
+        `❌ Username "${username}" is already taken, trying again...`,
+      );
+      attempts++;
+    } catch (error) {
+      console.error(
+        `❌ Error in username generation attempt ${attempts + 1}:`,
+        error,
+      );
+      attempts++;
+
+      // If this is the last attempt, don't continue the loop
+      if (attempts >= maxAttempts) {
+        break;
+      }
     }
-
-    attempts++;
   }
 
   // If all attempts fail, generate a random username with timestamp
+  console.info("🔄 All AI attempts failed, generating fallback username...");
   const timestamp = Date.now().toString().slice(-4);
-  return `${name.toLowerCase().slice(0, 4)}${timestamp}`;
+  const fallbackUsername = `${name
+    .toLowerCase()
+    .replace(/[^a-z]/g, "")
+    .slice(0, 4)}${timestamp}`;
+  console.info(`🆘 Using fallback username: "${fallbackUsername}"`);
+
+  return fallbackUsername;
 }
