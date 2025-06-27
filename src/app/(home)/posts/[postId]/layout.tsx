@@ -18,7 +18,7 @@ export default function ModalLayout({ children }: React.PropsWithChildren) {
       <VisuallyHidden asChild>
         <div className="sr-only">
           <DialogTitle>Post</DialogTitle>
-          <DialogDescription>Post</DialogDescription>
+          <DialogDescription>View Post</DialogDescription>
         </div>
       </VisuallyHidden>
 
