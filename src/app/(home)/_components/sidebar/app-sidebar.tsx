@@ -1,5 +1,6 @@
 "use client";
 
+import { SignOutButton } from "@clerk/nextjs";
 import type * as Ably from "ably";
 import { CogIcon, LogOutIcon } from "lucide-react";
 import Link from "next/link";
@@ -104,10 +105,6 @@ export function AppSidebar() {
     },
   ];
 
-  if (!user) {
-    return null;
-  }
-
   return (
     <>
       <Sidebar
@@ -200,32 +197,34 @@ export function AppSidebar() {
           <SidebarGroup>
             <SidebarGroupLabel>Account</SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname.startsWith(`/${user?.username}`)}
-                    tooltip="Profile"
-                    className="mr-2 flex items-center gap-3 transition-all duration-200"
-                  >
-                    <Link
-                      href={`/${user.username}`}
-                      className="flex items-center gap-3"
+              {user && (
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === `/${user.username}`}
+                      tooltip="Profile"
+                      className="mr-2 flex items-center gap-3 transition-all duration-200"
                     >
-                      <Avatar className="size-5 border border-border/30">
-                        <AvatarImage
-                          src={user.imageUrl ?? ""}
-                          alt={user.name ?? ""}
-                        />
-                        <AvatarFallback className="text-xs">
-                          {getInitials(user.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium">{user.username}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
+                      <Link
+                        href={`/${user.username}`}
+                        className="flex items-center gap-3"
+                      >
+                        <Avatar className="size-5 border border-border/30">
+                          <AvatarImage
+                            src={user.imageUrl ?? undefined}
+                            alt={user.name}
+                          />
+                          <AvatarFallback className="text-xs">
+                            {getInitials(user.name)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">{user.username}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              )}
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
@@ -247,17 +246,12 @@ export function AppSidebar() {
             </SidebarMenuItem>
 
             <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname.startsWith("/signout")}
-                tooltip="Logout"
-                className="mt-2"
-              >
-                <Link href="/signout" className="flex items-center gap-3">
+              <SignOutButton redirectUrl="/signin">
+                <SidebarMenuButton tooltip="Logout" className="mt-2">
                   <LogOutIcon className="size-5" />
                   <span className="font-medium">Logout</span>
-                </Link>
-              </SidebarMenuButton>
+                </SidebarMenuButton>
+              </SignOutButton>
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>
