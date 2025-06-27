@@ -16,8 +16,16 @@ interface ProvidersProps {
 export async function Providers({ children }: ProvidersProps) {
   const { userId } = await auth();
 
+  // Always wrap with ClerkProvider, even when user is not signed in
   if (!userId) {
-    return <div className="h-full">{children}</div>;
+    return (
+      <ClerkProvider>
+        <ClientProviders initialUser={null}>
+          <div className="h-full">{children}</div>
+          <TailwindIndicator />
+        </ClientProviders>
+      </ClerkProvider>
+    );
   }
 
   const user = await getUserById(userId);

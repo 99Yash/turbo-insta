@@ -12,7 +12,7 @@ import { ThemeProvider } from "./theme-provider";
 
 interface ClientProvidersProps {
   readonly children: React.ReactNode;
-  readonly initialUser: Awaited<ReturnType<typeof getCachedUser>>;
+  readonly initialUser: Awaited<ReturnType<typeof getCachedUser>> | null;
 }
 
 /**
