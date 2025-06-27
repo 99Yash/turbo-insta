@@ -18,6 +18,8 @@ export function ActionButtons({ postId }: { postId: string }) {
   const [isBookmarked, setIsBookmarked] = React.useState(false);
   const [isShareOpen, setIsShareOpen] = React.useState(false);
 
+  const [hasShownTip, setHasShownTip] = React.useState(false);
+
   const router = useRouter();
   const pathname = usePathname();
 
@@ -98,8 +100,10 @@ export function ActionButtons({ postId }: { postId: string }) {
       type: "post",
     });
 
-    // Show tip toast if it hasn't been shown yet
-    toast.info("Tip: You can double click on posts to like them");
+    if (!hasShownTip) {
+      toast.info("Tip: You can double click on posts to like them");
+      setHasShownTip(true);
+    }
   };
 
   const handleCommentClick = () => {

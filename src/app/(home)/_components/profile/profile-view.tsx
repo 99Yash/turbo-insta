@@ -253,13 +253,13 @@ export function ProfileView({
       {/* Edit Profile Modal */}
       {isCurrentUser && (
         <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
-          <VisuallyHidden asChild>
-            <div className="sr-only">
-              <DialogTitle>Edit Profile</DialogTitle>
-              <DialogDescription>Edit Profile</DialogDescription>
-            </div>
-          </VisuallyHidden>
           <DialogContent className="sm:max-w-[600px]">
+            <VisuallyHidden asChild>
+              <div className="sr-only">
+                <DialogTitle>Edit Profile</DialogTitle>
+                <DialogDescription>Edit Profile</DialogDescription>
+              </div>
+            </VisuallyHidden>
             <ProfileEditForm
               user={user}
               onSuccess={() => setIsEditModalOpen(false)}

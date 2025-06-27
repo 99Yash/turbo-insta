@@ -8,7 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
-import { cn } from "~/lib/utils";
+import { cn, showErrorToast } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { type StoredFile } from "~/types";
 import { Icons } from "../icons";
@@ -65,9 +65,10 @@ export function PostCarousel({
 
   const toggleLike = api.likes.toggle.useMutation({
     async onSuccess() {
-      if (postId) {
-        await utils.posts.getLikes.invalidate({ postId });
-      }
+      await utils.posts.getLikes.invalidate({ postId });
+    },
+    onError(error) {
+      showErrorToast(error);
     },
   });
 
