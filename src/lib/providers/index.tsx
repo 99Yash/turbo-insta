@@ -28,7 +28,17 @@ export async function Providers({ children }: ProvidersProps) {
     );
   }
 
-  const user = await getUserById(userId);
+  console.log(`[Providers] Attempting to fetch user for userId: ${userId}`);
+
+  let user = null;
+  try {
+    user = await getUserById(userId);
+    console.log(`[Providers] Successfully fetched user: ${user.username}`);
+  } catch (error) {
+    console.log(`[Providers] Failed to fetch user from database:`, error);
+    // User might not exist in database yet (webhook hasn't processed)
+    // Continue with null user to prevent SSR error
+  }
 
   return (
     <ClerkProvider>

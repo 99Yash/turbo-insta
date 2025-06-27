@@ -109,11 +109,34 @@ export async function generateUniqueUsername(name: string): Promise<string> {
   // If all attempts fail, generate a random username with timestamp
   console.info("🔄 All AI attempts failed, generating fallback username...");
   const timestamp = Date.now().toString().slice(-4);
-  const fallbackUsername = `${name
+  const sanitizedName = name
     .toLowerCase()
     .replace(/[^a-z]/g, "")
-    .slice(0, 4)}${timestamp}`;
+    .slice(0, 4);
+
+  // Ensure we have at least some characters from the name
+  const namePrefix = sanitizedName || "user";
+  const fallbackUsername = `${namePrefix}${timestamp}`;
+
   console.info(`🆘 Using fallback username: "${fallbackUsername}"`);
+
+  // Double-check this username doesn't exist (very unlikely but just in case)
+  try {
+    const existingUser = await db.query.users.findFirst({
+      where: eq(users.username, fallbackUsername),
+    });
+
+    if (existingUser) {
+      // Add a random suffix if it somehow exists
+      const randomSuffix = Math.random().toString(36).substring(2, 4);
+      const finalUsername = `${fallbackUsername}${randomSuffix}`;
+      console.info(`🔄 Fallback username existed, using: "${finalUsername}"`);
+      return finalUsername;
+    }
+  } catch (error) {
+    console.error("❌ Error checking fallback username uniqueness:", error);
+    // Continue with the fallback username anyway
+  }
 
   return fallbackUsername;
 }

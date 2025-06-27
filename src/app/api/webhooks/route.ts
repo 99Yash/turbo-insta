@@ -6,17 +6,29 @@ import { generateUniqueUsername } from "~/lib/queries/ai";
 import { db } from "~/server/db";
 import { users } from "~/server/db/schema/users";
 
+// Add a GET endpoint for testing
+export async function GET() {
+  console.log(
+    `[Webhook] GET request received - webhook endpoint is accessible`,
+  );
+  return new Response("Webhook endpoint is working", { status: 200 });
+}
+
 export async function POST(req: NextRequest) {
+  console.log(`[Webhook] Received ${req.method} request to /api/webhooks`);
+
   if (req.method !== "POST") {
+    console.log(`[Webhook] Rejected non-POST request`);
     return new Response("Method not allowed", { status: 405 });
   }
 
   try {
+    console.log(`[Webhook] Attempting to verify webhook...`);
     // Verify the payload with the headers
     const evt = await verifyWebhook(req);
 
     console.info(
-      `Webhook with and ID of ${evt.data.id} and type of ${evt.type}`,
+      `[Webhook] Successfully verified webhook with ID ${evt.data.id} and type ${evt.type}`,
     );
 
     switch (evt.type) {
@@ -36,9 +48,13 @@ export async function POST(req: NextRequest) {
 
         const name =
           `${first_name ?? ""} ${last_name ?? ""}`.trim() || "Anonymous";
+
+        console.log(`[Webhook] Generating username for: ${name}`);
         const username = await generateUniqueUsername(name);
+        console.log(`[Webhook] Generated username: ${username}`);
 
         try {
+          console.log(`[Webhook] Inserting user into database...`);
           await db.insert(users).values({
             id: clerkId,
             email: email_addresses[0].email_address,
@@ -48,14 +64,20 @@ export async function POST(req: NextRequest) {
             isVerified: false,
           });
 
-          console.info(`Created user in database with username: ${username}`);
+          console.info(
+            `[Webhook] ✅ Successfully created user in database with username: ${username}`,
+          );
 
+          console.log(`[Webhook] Updating Clerk user with username...`);
           const cc = await clerkClient();
           await cc.users.updateUser(clerkId, {
             username,
           });
+          console.log(
+            `[Webhook] ✅ Successfully updated Clerk user with username`,
+          );
         } catch (error) {
-          console.error("Error creating user in database:", error);
+          console.error("[Webhook] ❌ Error creating user in database:", error);
           return new Response("Failed to create user", { status: 500 });
         }
         break;
@@ -124,9 +146,17 @@ export async function POST(req: NextRequest) {
         break;
     }
 
+    console.log(`[Webhook] ✅ Webhook processing completed successfully`);
     return new Response("Success", { status: 200 });
   } catch (error) {
-    console.error("Webhook processing error:", error);
+    console.error("[Webhook] ❌ Webhook processing error:", error);
+
+    // Log more details about the error
+    if (error instanceof Error) {
+      console.error("[Webhook] Error message:", error.message);
+      console.error("[Webhook] Error stack:", error.stack);
+    }
+
     return new Response("Internal server error", { status: 500 });
   }
 }

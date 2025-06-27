@@ -13,7 +13,8 @@ const config = {
     serverComponentsExternalPackages: ["ably"],
   },
   compiler: {
-    removeConsole: process.env.NODE_ENV === "production",
+    // Keep console logs for debugging webhooks in production
+    removeConsole: false,
   },
   images: {
     remotePatterns: [
