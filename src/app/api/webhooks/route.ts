@@ -15,20 +15,27 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  console.log(`[Webhook] Received ${req.method} request to /api/webhooks`);
+  // Force log to appear in Vercel by using console.error instead of console.log
+  console.error(
+    `[WEBHOOK] 🚨 POST request received at ${new Date().toISOString()}`,
+  );
+  console.error(
+    `[WEBHOOK] Headers:`,
+    Object.fromEntries(req.headers.entries()),
+  );
 
   if (req.method !== "POST") {
-    console.log(`[Webhook] Rejected non-POST request`);
+    console.error(`[WEBHOOK] Rejected non-POST request`);
     return new Response("Method not allowed", { status: 405 });
   }
 
   try {
-    console.log(`[Webhook] Attempting to verify webhook...`);
+    console.error(`[WEBHOOK] 🔍 Attempting to verify webhook...`);
     // Verify the payload with the headers
     const evt = await verifyWebhook(req);
 
-    console.info(
-      `[Webhook] Successfully verified webhook with ID ${evt.data.id} and type ${evt.type}`,
+    console.error(
+      `[WEBHOOK] ✅ Successfully verified webhook with ID ${evt.data.id} and type ${evt.type}`,
     );
 
     switch (evt.type) {
