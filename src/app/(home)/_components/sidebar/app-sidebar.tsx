@@ -1,6 +1,6 @@
 "use client";
 
-import { SignOutButton } from "@clerk/nextjs";
+import { SignOutButton, useUser } from "@clerk/nextjs";
 import type * as Ably from "ably";
 import { CogIcon, Heart, LogOutIcon } from "lucide-react";
 import Link from "next/link";
@@ -22,7 +22,6 @@ import {
   SidebarSeparator,
 } from "~/components/ui/sidebar";
 import { siteConfig } from "~/config/site";
-import { useUser } from "~/contexts/user-context";
 import { useAblyContext } from "~/lib/providers/ably-provider";
 import { cn, getInitials } from "~/lib/utils";
 import { api } from "~/trpc/react";
@@ -218,10 +217,10 @@ export function AppSidebar() {
                         <Avatar className="size-5 border border-border/30">
                           <AvatarImage
                             src={user.imageUrl ?? undefined}
-                            alt={user.name}
+                            alt={user.fullName ?? ""}
                           />
                           <AvatarFallback className="text-xs">
-                            {getInitials(user.name)}
+                            {getInitials(user.fullName)}
                           </AvatarFallback>
                         </Avatar>
                         <span className="font-medium">{user.username}</span>
