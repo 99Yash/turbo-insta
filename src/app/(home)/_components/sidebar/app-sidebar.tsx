@@ -6,7 +6,7 @@ import { CogIcon, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
-import { Icons, NucleoIcons } from "~/components/icons";
+import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   Sidebar,
@@ -178,7 +178,7 @@ export function AppSidebar() {
                     aria-haspopup="dialog"
                   >
                     <div className="relative">
-                      <NucleoIcons.Cards className="size-5" />
+                      <Icons.heart className="size-5" />
                       {count > 0 && (
                         <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
                           {count > 9 ? "9+" : count}
