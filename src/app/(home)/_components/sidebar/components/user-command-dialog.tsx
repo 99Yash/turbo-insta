@@ -1,5 +1,6 @@
 "use client";
 
+import { cva, type VariantProps } from "class-variance-authority";
 import { Search, User, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import * as React from "react";
@@ -13,6 +14,7 @@ import {
 } from "~/components/ui/command";
 import { useSidebar } from "~/components/ui/sidebar";
 import { useDebounce } from "~/hooks/use-debounce";
+import { cn } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 export interface UserOption {
@@ -23,13 +25,39 @@ export interface UserOption {
   readonly isVerified: boolean;
 }
 
+const triggerVariants = cva(
+  "flex items-center rounded-md border border-input bg-background transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+  {
+    variants: {
+      variant: {
+        collapsed: "h-10 w-10 justify-center",
+        expanded:
+          "h-10 w-full justify-between px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground",
+      },
+    },
+    defaultVariants: {
+      variant: "expanded",
+    },
+  },
+);
+
+export interface UserCommandDialogProps
+  extends VariantProps<typeof triggerVariants> {}
+
 export function UserCommandDialog() {
   const router = useRouter();
   const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState("");
 
-  const { state } = useSidebar();
+  const { state, isMobile } = useSidebar();
   const debouncedSearch = useDebounce(search, 300);
+
+  // Compute values directly from sidebar state
+  const isCollapsed = state === "collapsed";
+  const variant = isCollapsed ? "collapsed" : "expanded";
+  const showText = !isCollapsed;
+  const showKeyboardShortcut = !isCollapsed && !isMobile;
+  const title = isCollapsed ? "Search users (⌘K)" : undefined;
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -61,6 +89,10 @@ export function UserCommandDialog() {
     router.push(`/${user.username}`);
     setOpen(false);
   };
+
+  const handleTriggerClick = React.useCallback(() => {
+    setOpen(true);
+  }, []);
 
   const renderUserItem = (user: UserOption) => (
     <CommandItem
@@ -125,37 +157,29 @@ export function UserCommandDialog() {
     </CommandDialog>
   );
 
-  // Render icon-only trigger when sidebar is collapsed
-  if (state === "collapsed") {
-    return (
-      <>
-        <button
-          onClick={() => setOpen(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-md border border-input bg-background transition-colors hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
-          title="Search users (⌘K)"
-        >
-          <Search className="h-4 w-4" />
-        </button>
-        {renderCommandDialog()}
-      </>
-    );
-  }
-
-  // Render full input-styled trigger when sidebar is expanded
   return (
     <>
-      {/* Input-styled trigger */}
       <button
-        onClick={() => setOpen(true)}
-        className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground hover:bg-accent hover:text-accent-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+        type="button"
+        onClick={handleTriggerClick}
+        className={cn(triggerVariants({ variant }))}
+        title={title}
       >
-        <div className="flex items-center gap-2 text-muted-foreground">
+        {isCollapsed ? (
           <Search className="h-4 w-4" />
-          <span>Search users...</span>
-        </div>
-        <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
-          <span className="text-xs">⌘</span>K
-        </kbd>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Search className="h-4 w-4" />
+              {showText && <span>Search users...</span>}
+            </div>
+            {showKeyboardShortcut && (
+              <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground opacity-100">
+                <span className="text-xs">⌘</span>K
+              </kbd>
+            )}
+          </>
+        )}
       </button>
       {renderCommandDialog()}
     </>

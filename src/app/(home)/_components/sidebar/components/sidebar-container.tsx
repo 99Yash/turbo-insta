@@ -44,9 +44,13 @@ export function SidebarContainer({
   });
 
   // Update sidebar state when breakpoint changes (responsive behavior)
-  // Only apply responsive behavior if no explicit defaultOpen was provided
+  // or when defaultOpen prop changes during navigation
   React.useEffect(() => {
-    if (defaultOpen === undefined) {
+    if (defaultOpen !== undefined) {
+      // Explicit defaultOpen value provided - use it
+      setSidebarOpen(defaultOpen);
+    } else {
+      // No explicit defaultOpen - use responsive behavior
       setSidebarOpen(isAboveBreakpoint);
     }
   }, [isAboveBreakpoint, defaultOpen]);
