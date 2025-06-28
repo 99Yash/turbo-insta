@@ -1,16 +1,20 @@
 import * as React from "react";
 
-import { type UploadFilesOptions } from "uploadthing/types";
 import { type RepligramFileRouter } from "~/app/api/uploadthing/core";
 import { uploadFiles } from "~/lib/uploadthing";
 import { showErrorToast } from "~/lib/utils";
 import { type StoredFile } from "~/types";
 
-interface UseUploadProps
-  extends Pick<
-    UploadFilesOptions<RepligramFileRouter, keyof RepligramFileRouter>,
-    "headers" | "onUploadBegin" | "onUploadProgress" | "skipPolling"
-  > {
+interface UseUploadProps {
+  headers?: HeadersInit | (() => HeadersInit);
+  onUploadBegin?: ({ file }: { file: string }) => void;
+  onUploadProgress?: ({
+    file,
+    progress,
+  }: {
+    file: File;
+    progress: number;
+  }) => void;
   defaultUploadedFiles?: StoredFile[];
 }
 
@@ -35,7 +39,7 @@ export function useUpload(
           setProgresses((prev) => {
             return {
               ...prev,
-              [file]: progress,
+              [file.name]: progress,
             };
           });
         },

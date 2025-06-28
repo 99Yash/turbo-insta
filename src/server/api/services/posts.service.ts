@@ -1,6 +1,7 @@
 import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import { and, count, desc, eq, inArray, lt, or } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
+import { env } from "~/env";
 import { generateAltText } from "~/lib/queries/ai";
 import { db } from "~/server/db";
 import { bookmarks, comments, likes, posts, users } from "~/server/db/schema";
@@ -22,7 +23,7 @@ import {
 } from "../schema/user.schema";
 
 export const utapi = new UTApi({
-  apiKey: process.env.UPLOADTHING_SECRET,
+  token: env.UPLOADTHING_TOKEN,
 });
 
 export async function createPost(input: CreatePostInput, userId: string) {
