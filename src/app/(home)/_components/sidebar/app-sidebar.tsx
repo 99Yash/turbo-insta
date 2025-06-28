@@ -22,7 +22,7 @@ import {
   SidebarSeparator,
 } from "~/components/ui/sidebar";
 import { siteConfig } from "~/config/site";
-import { useAuthenticatedUser } from "~/contexts/user-context";
+import { useUser } from "~/contexts/user-context";
 import { useAblyContext } from "~/lib/providers/ably-provider";
 import { cn, getInitials } from "~/lib/utils";
 import { api } from "~/trpc/react";
@@ -31,7 +31,7 @@ import { UserCommandDialog } from "./components/user-command-dialog";
 
 export function AppSidebar() {
   const { isLoaded } = useAuth();
-  const user = useAuthenticatedUser();
+  const { user, isLoading: isUserLoading } = useUser();
   const pathname = usePathname();
   const [isNotificationsSidebarOpen, setIsNotificationsSidebarOpen] =
     React.useState(false);
@@ -43,23 +43,24 @@ export function AppSidebar() {
   // Get initial unread count once on mount
   const { refetch: fetchInitialCount } =
     api.notifications.getUnreadCount.useQuery(undefined, {
+      enabled: !!user, // Only fetch when user exists
       refetchOnWindowFocus: false,
     });
 
   // Fetch initial count once when user is available
   React.useEffect(() => {
-    if (isLoaded && user) {
+    if (isLoaded && user && !isUserLoading) {
       void fetchInitialCount().then((result) => {
         if (result.data !== undefined) {
           setUnreadCount(result.data);
         }
       });
     }
-  }, [isLoaded, user, fetchInitialCount]);
+  }, [isLoaded, user, isUserLoading, fetchInitialCount]);
 
   // Subscribe to websocket notifications for real-time count updates
   React.useEffect(() => {
-    if (!isLoaded || !user || !client) return;
+    if (!isLoaded || !user || !client || isUserLoading) return;
 
     const channelName = `notifications:${user.id}`;
     const channel = client.channels.get(channelName);
@@ -81,12 +82,36 @@ export function AppSidebar() {
     return () => {
       void channel.unsubscribe("notification", handler);
     };
-  }, [isLoaded, user, client]);
+  }, [isLoaded, user, client, isUserLoading]);
 
   // Handle when notifications are marked as read
   const handleUnreadCountChange = React.useCallback((newCount: number) => {
     setUnreadCount(newCount);
   }, []);
+
+  // Show loading skeleton if user is still loading
+  if (isUserLoading || !user) {
+    return (
+      <Sidebar variant="floating" collapsible="icon">
+        <SidebarHeader>
+          <div className="flex items-center gap-2 px-3 py-2">
+            <div className="h-8 w-8 animate-pulse rounded bg-muted" />
+            <div className="h-5 w-24 animate-pulse rounded bg-muted" />
+          </div>
+        </SidebarHeader>
+        <SidebarContent>
+          <div className="space-y-2 p-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-10 w-full animate-pulse rounded bg-muted"
+              />
+            ))}
+          </div>
+        </SidebarContent>
+      </Sidebar>
+    );
+  }
 
   // Use the real-time unread count
   const count = unreadCount;

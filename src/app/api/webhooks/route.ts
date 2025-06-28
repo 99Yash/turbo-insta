@@ -6,37 +6,15 @@ import { generateUniqueUsername } from "~/lib/queries/ai";
 import { db } from "~/server/db";
 import { users } from "~/server/db/schema/users";
 
-// Add a GET endpoint for testing
-export async function GET() {
-  console.log(
-    `[Webhook] GET request received - webhook endpoint is accessible`,
-  );
-  return new Response("Webhook endpoint is working", { status: 200 });
-}
-
 export async function POST(req: NextRequest) {
-  // Force log to appear in Vercel by using console.error instead of console.log
-  console.error(
-    `[WEBHOOK] 🚨 POST request received at ${new Date().toISOString()}`,
-  );
-  console.error(
-    `[WEBHOOK] Headers:`,
-    Object.fromEntries(req.headers.entries()),
-  );
-
   if (req.method !== "POST") {
     console.error(`[WEBHOOK] Rejected non-POST request`);
     return new Response("Method not allowed", { status: 405 });
   }
 
   try {
-    console.error(`[WEBHOOK] 🔍 Attempting to verify webhook...`);
     // Verify the payload with the headers
     const evt = await verifyWebhook(req);
-
-    console.error(
-      `[WEBHOOK] ✅ Successfully verified webhook with ID ${evt.data.id} and type ${evt.type}`,
-    );
 
     switch (evt.type) {
       case "user.created": {
@@ -56,12 +34,13 @@ export async function POST(req: NextRequest) {
         const name =
           `${first_name ?? ""} ${last_name ?? ""}`.trim() || "Anonymous";
 
-        console.log(`[Webhook] Generating username for: ${name}`);
         const username = await generateUniqueUsername(name);
-        console.log(`[Webhook] Generated username: ${username}`);
 
         try {
-          console.log(`[Webhook] Inserting user into database...`);
+          console.log(
+            `[Webhook] Creating user in database: ${clerkId} (${name})`,
+          );
+
           await db.insert(users).values({
             id: clerkId,
             email: email_addresses[0].email_address,
@@ -71,20 +50,20 @@ export async function POST(req: NextRequest) {
             isVerified: false,
           });
 
-          console.info(
-            `[Webhook] ✅ Successfully created user in database with username: ${username}`,
+          console.log(
+            `[Webhook] ✅ User created successfully in database: ${username}`,
           );
 
-          console.log(`[Webhook] Updating Clerk user with username...`);
           const cc = await clerkClient();
           await cc.users.updateUser(clerkId, {
             username,
           });
+
           console.log(
-            `[Webhook] ✅ Successfully updated Clerk user with username`,
+            `[Webhook] ✅ Clerk user updated with username: ${username}`,
           );
-        } catch (error) {
-          console.error("[Webhook] ❌ Error creating user in database:", error);
+        } catch (e) {
+          console.error("[Webhook] ❌ Error creating user in database:", e);
           return new Response("Failed to create user", { status: 500 });
         }
         break;

@@ -1,14 +1,43 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
+import { useUser as useClerkUser } from "@clerk/nextjs";
+import { useUser as useDbUser } from "~/contexts/user-context";
 import { Create } from "./forms/create";
 import { InfinitePosts } from "./infinite-posts";
 import { CenteredLayout } from "./sidebar/components";
 
 export function HomePageClient() {
-  const { user, isLoaded } = useUser();
+  const { user: clerkUser, isLoaded: clerkLoaded } = useClerkUser();
+  const { user: dbUser, isLoading: isDbUserLoading } = useDbUser();
 
-  if (!isLoaded || !user) {
+  // Show loading if Clerk is loading or if we're fetching database user
+  if (!clerkLoaded || (!dbUser && isDbUserLoading)) {
+    return (
+      <CenteredLayout maxWidth="max-w-[470px]">
+        <div className="flex flex-col items-center justify-center py-16">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+          <p className="mt-4 text-sm text-muted-foreground">
+            Loading your profile...
+          </p>
+        </div>
+      </CenteredLayout>
+    );
+  }
+
+  // If Clerk user exists but no database user and not loading, something went wrong
+  if (clerkUser && !dbUser && !isDbUserLoading) {
+    return (
+      <CenteredLayout maxWidth="max-w-[470px]">
+        <div className="flex flex-col items-center justify-center py-16">
+          <p className="text-sm text-muted-foreground">
+            Having trouble loading your profile. Please refresh the page.
+          </p>
+        </div>
+      </CenteredLayout>
+    );
+  }
+
+  if (!clerkUser || !dbUser) {
     return null;
   }
 

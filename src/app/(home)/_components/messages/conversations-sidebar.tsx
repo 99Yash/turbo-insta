@@ -10,7 +10,7 @@ import { Button } from "~/components/ui/button";
 import { PresenceIndicator } from "~/components/ui/presence-indicator";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { Skeleton } from "~/components/ui/skeleton";
-import { useAuthenticatedUser } from "~/contexts/user-context";
+import { useUser } from "~/contexts/user-context";
 import { MAX_REALTIME_MESSAGES } from "~/hooks/use-chat-messages";
 import { usePresence } from "~/hooks/use-presence";
 import { useAblyContext } from "~/lib/providers/ably-provider";
@@ -30,7 +30,7 @@ export function ConversationsSidebar({
   onConversationSelect,
   selectedConversationId,
 }: ConversationsSidebarProps) {
-  const user = useAuthenticatedUser();
+  const { user, isLoading: isUserLoading } = useUser();
   const [showNewMessageModal, setShowNewMessageModal] = useState(false);
   const client = useAblyContext();
   const router = useRouter();
@@ -166,6 +166,32 @@ export function ConversationsSidebar({
     },
     [user?.id],
   );
+
+  // Show loading state if user is still loading
+  if (isUserLoading || !user) {
+    return (
+      <div className="flex h-screen w-full flex-col border-r border-border/40 bg-background sm:w-80 lg:w-96">
+        <div className="flex shrink-0 items-center justify-between border-b border-border/40 bg-background/80 p-4 backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 animate-pulse rounded-full bg-muted" />
+            <div className="h-6 w-24 animate-pulse rounded bg-muted" />
+          </div>
+          <div className="h-10 w-10 animate-pulse rounded-full bg-muted" />
+        </div>
+        <div className="flex-1 space-y-3 p-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <div className="h-12 w-12 animate-pulse rounded-full bg-muted" />
+              <div className="flex-1 space-y-2">
+                <div className="h-4 w-3/4 animate-pulse rounded bg-muted" />
+                <div className="h-3 w-1/2 animate-pulse rounded bg-muted" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen w-full flex-col border-r border-border/40 bg-background sm:w-80 lg:w-96">

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useAuthenticatedUser } from "~/contexts/user-context";
+import { useUser } from "~/contexts/user-context";
 import { useChatMessages } from "~/hooks/use-chat-messages";
 import type { RouterOutputs } from "~/trpc/react";
 import { api } from "~/trpc/react";
@@ -16,8 +16,8 @@ type ConversationWithParticipants =
   RouterOutputs["messages"]["getOrCreateConversation"];
 
 interface ChatAreaProps {
-  readonly conversation?: ConversationWithParticipants;
-  readonly onUserSelect?: (userId: string) => void;
+  readonly conversation?: ConversationWithParticipants | null;
+  readonly onUserSelect: (userId: string) => void;
   readonly onBack?: () => void;
 }
 
@@ -26,7 +26,7 @@ export function ChatArea({
   onUserSelect,
   onBack,
 }: ChatAreaProps) {
-  const user = useAuthenticatedUser();
+  const { user, isLoading: isUserLoading } = useUser();
   const [showNewMessageModal, setShowNewMessageModal] = React.useState(false);
   const [messageText, setMessageText] = React.useState("");
   const scrollAreaRef = React.useRef<HTMLDivElement>(null);
@@ -194,7 +194,7 @@ export function ChatArea({
 
   const handleUserSelect = React.useCallback(
     (userId: string) => {
-      onUserSelect?.(userId);
+      onUserSelect(userId);
     },
     [onUserSelect],
   );
@@ -224,6 +224,15 @@ export function ChatArea({
     sendMessage,
     isSendingMessage,
   ]);
+
+  // Show loading state if user is still loading
+  if (isUserLoading || !user) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   // Empty state when no conversation is selected
   if (!conversation) {

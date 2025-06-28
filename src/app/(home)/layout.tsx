@@ -3,105 +3,40 @@
 import { useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import * as React from "react";
+import { Icons } from "~/components/icons";
 import { Skeleton } from "~/components/ui/skeleton";
+import {
+  ErrorBoundary,
+  LoadingErrorFallback,
+} from "~/components/utils/error-boundary";
 import { AppSidebar } from "./_components/sidebar/app-sidebar";
-import { SidebarContainer } from "./_components/sidebar/components";
+import { SidebarContainer } from "./_components/sidebar/components/sidebar-container";
 
 function HomeLayoutSkeleton() {
   return (
     <div className="flex h-screen w-full">
-      {/* Sidebar Skeleton */}
-      <div className="bg-sidebar-background flex h-full w-[280px] flex-col border-r border-border/40 px-4 py-4">
-        {/* Header */}
-        <div className="mb-6 flex items-center gap-2 px-2">
-          <Skeleton className="size-8 rounded-md" />
+      {/* Sidebar skeleton */}
+      <div className="w-80 border-r border-border/40 bg-background">
+        <div className="flex h-16 items-center gap-2 border-b border-border/40 px-4">
+          <Skeleton className="h-8 w-8 rounded" />
           <Skeleton className="h-6 w-32" />
         </div>
-
-        {/* Search/Command */}
-        <div className="mb-4">
-          <Skeleton className="h-10 w-full rounded-md" />
-        </div>
-
-        {/* Navigation Group */}
-        <div className="mb-4">
-          <Skeleton className="mb-2 h-4 w-20" />
-          <div className="space-y-1">
-            <div className="flex items-center gap-3 rounded-md px-2 py-2">
-              <Skeleton className="size-5 rounded-md" />
-              <Skeleton className="h-4 w-16" />
-            </div>
-            <div className="flex items-center gap-3 rounded-md px-2 py-2">
-              <Skeleton className="size-5 rounded-md" />
-              <Skeleton className="h-4 w-20" />
-            </div>
-            <div className="flex items-center gap-3 rounded-md px-2 py-2">
-              <Skeleton className="size-5 rounded-md" />
+        <div className="space-y-3 p-4">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-3">
+              <Skeleton className="h-6 w-6" />
               <Skeleton className="h-4 w-24" />
             </div>
-          </div>
-        </div>
-
-        {/* Separator */}
-        <Skeleton className="mb-4 h-px w-full" />
-
-        {/* Secondary Group */}
-        <div className="mb-6">
-          <Skeleton className="mb-2 h-4 w-16" />
-          <div className="space-y-1">
-            <div className="flex items-center gap-3 rounded-md px-2 py-2">
-              <Skeleton className="size-5 rounded-md" />
-              <Skeleton className="h-4 w-20" />
-            </div>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="mt-auto">
-          <div className="flex items-center gap-3 rounded-md px-2 py-2">
-            <Skeleton className="size-8 rounded-full" />
-            <div className="flex flex-1 flex-col gap-1">
-              <Skeleton className="h-3 w-24" />
-              <Skeleton className="h-3 w-32" />
-            </div>
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* Main Content Skeleton */}
-      <div className="min-w-0 flex-1 bg-background">
-        <div className="flex justify-center">
-          <div className="w-full max-w-[470px] p-4">
-            <div className="space-y-6">
-              {/* Header area */}
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-8 w-32" />
-                <Skeleton className="size-8 rounded-full" />
-              </div>
-
-              {/* Post skeletons */}
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="space-y-3 rounded-lg border p-4">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="size-10 rounded-full" />
-                    <div className="space-y-2">
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-3 w-20" />
-                    </div>
-                  </div>
-                  <Skeleton className="aspect-square w-full rounded-lg" />
-                  <div className="space-y-2">
-                    <div className="flex gap-4">
-                      <Skeleton className="h-6 w-6" />
-                      <Skeleton className="h-6 w-6" />
-                      <Skeleton className="h-6 w-6" />
-                    </div>
-                    <Skeleton className="h-4 w-24" />
-                    <Skeleton className="h-4 w-full" />
-                  </div>
-                </div>
-              ))}
-            </div>
+      {/* Main content skeleton */}
+      <div className="flex-1">
+        <div className="flex h-full items-center justify-center">
+          <div className="flex flex-col items-center gap-4">
+            <Icons.spinner className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="text-sm text-muted-foreground">Loading...</p>
           </div>
         </div>
       </div>
@@ -137,17 +72,22 @@ export default function HomeLayout({
   const defaultOpen = pathname.startsWith("/messages") ? false : undefined;
 
   return (
-    <SidebarContainer breakpoint={sidebarBreakpoint} defaultOpen={defaultOpen}>
-      {showSkeleton ? (
-        <HomeLayoutSkeleton />
-      ) : isLoaded && user && isSignedIn ? (
-        <>
-          <AppSidebar />
-          {children}
-        </>
-      ) : (
-        children
-      )}
-    </SidebarContainer>
+    <ErrorBoundary fallback={LoadingErrorFallback}>
+      <SidebarContainer
+        breakpoint={sidebarBreakpoint}
+        defaultOpen={defaultOpen}
+      >
+        {showSkeleton ? (
+          <HomeLayoutSkeleton />
+        ) : isLoaded && user && isSignedIn ? (
+          <>
+            <AppSidebar />
+            {children}
+          </>
+        ) : (
+          children
+        )}
+      </SidebarContainer>
+    </ErrorBoundary>
   );
 }

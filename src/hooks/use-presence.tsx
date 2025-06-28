@@ -2,7 +2,7 @@
 
 import type * as Ably from "ably";
 import { useCallback, useEffect, useState } from "react";
-import { useAuthenticatedUser } from "~/contexts/user-context";
+import { useUser } from "~/contexts/user-context";
 import { useAblyContext } from "~/lib/providers/ably-provider";
 
 /**
@@ -21,7 +21,7 @@ type PresenceMember = {
  */
 export function usePresence() {
   const client = useAblyContext();
-  const user = useAuthenticatedUser();
+  const { user, isLoading: isUserLoading } = useUser();
   const [presenceMembers, setPresenceMembers] = useState<Set<string>>(
     new Set(),
   );
@@ -29,11 +29,13 @@ export function usePresence() {
 
   // Enhanced presence data with activity tracking
   const getPresenceData = useCallback(() => {
+    if (!user) return null;
+
     return {
-      userId: user?.id,
-      username: user?.username,
-      name: user?.name,
-      imageUrl: user?.imageUrl,
+      userId: user.id,
+      username: user.username,
+      name: user.name,
+      imageUrl: user.imageUrl,
       lastActive: new Date().toISOString(),
       isVisible: !document.hidden,
       userAgent: navigator.userAgent,
@@ -42,21 +44,23 @@ export function usePresence() {
 
   // Update presence data immediately when needed
   const updatePresence = useCallback(async () => {
-    if (!client || !user || !isEntered) return;
+    if (!client || !user || !isEntered || isUserLoading) return;
 
     try {
+      const presenceData = getPresenceData();
+      if (!presenceData) return;
+
       const presenceChannel = client.channels.get("global-presence");
-      await presenceChannel.presence.update(getPresenceData());
+      await presenceChannel.presence.update(presenceData);
       console.log("🔄 [usePresence] Updated presence data");
     } catch (error) {
       console.error("❌ [usePresence] Failed to update presence:", error);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [client, user, isEntered]);
+  }, [client, user, isEntered, isUserLoading, getPresenceData]);
 
   // Enter presence channel and set up real-time event handlers
   useEffect(() => {
-    if (!client || !user || isEntered) return;
+    if (!client || !user || isEntered || isUserLoading) return;
 
     const presenceChannel = client.channels.get("global-presence");
 
@@ -158,11 +162,11 @@ export function usePresence() {
           });
       }
     };
-  }, [client, user, isEntered, updatePresence, getPresenceData]);
+  }, [client, user, isEntered, isUserLoading, updatePresence, getPresenceData]);
 
   // Subscribe to presence events for real-time updates
   useEffect(() => {
-    if (!client || !user) return;
+    if (!client || !user || isUserLoading) return;
 
     const presenceChannel = client.channels.get("global-presence");
 
@@ -231,7 +235,7 @@ export function usePresence() {
       presenceChannel.presence.unsubscribe(handlePresenceMessage);
       console.log("🔇 [usePresence] Unsubscribed from presence events");
     };
-  }, [client, user]);
+  }, [client, user, isUserLoading]);
 
   /**
    * Check if a specific user is currently online/present
