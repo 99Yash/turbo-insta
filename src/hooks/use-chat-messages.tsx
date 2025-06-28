@@ -10,6 +10,12 @@ import { api } from "~/trpc/react";
 type MessageWithSender =
   RouterOutputs["messages"]["getConversationMessages"]["messages"][number];
 
+type ReactionUpdate = {
+  readonly messageId: string;
+  readonly reactions: MessageWithSender["reactions"];
+  readonly updatedAt: number;
+};
+
 interface UseChatMessagesProps {
   readonly conversationId?: string;
   readonly limit?: number;
@@ -42,6 +48,11 @@ export function useChatMessages({
     Map<string, MessageWithSender & { addedAt: number }>
   >(new Map());
 
+  // Real-time reaction updates state - separate from messages
+  const [realtimeReactions, setRealtimeReactions] = React.useState<
+    Map<string, ReactionUpdate>
+  >(new Map());
+
   /**
    * Cleans up old and excess messages from the realtime messages map
    */
@@ -65,6 +76,25 @@ export function useChatMessages({
       const cleanedMap = new Map(limitedEntries);
 
       return cleanedMap;
+    },
+    [],
+  );
+
+  /**
+   * Cleans up old reaction updates
+   */
+  const cleanupRealtimeReactions = React.useCallback(
+    (currentMap: Map<string, ReactionUpdate>) => {
+      const now = Date.now();
+      const entries = Array.from(currentMap.entries());
+
+      // Filter out reaction updates that are too old
+      const recentEntries = entries.filter(
+        ([, reactionUpdate]) =>
+          now - reactionUpdate.updatedAt <= MAX_MESSAGE_AGE_MS,
+      );
+
+      return new Map(recentEntries);
     },
     [],
   );
@@ -103,11 +133,22 @@ export function useChatMessages({
       messagesMap.set(msg.id, msg);
     });
 
-    // Apply real-time updates (strip addedAt metadata when deriving final messages)
+    // Apply real-time message updates (strip addedAt metadata when deriving final messages)
     realtimeMessages.forEach((updateWithMeta, id) => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { addedAt, ...update } = updateWithMeta;
       messagesMap.set(id, update as MessageWithSender);
+    });
+
+    // Apply real-time reaction updates to ALL messages
+    realtimeReactions.forEach((reactionUpdate, messageId) => {
+      const message = messagesMap.get(messageId);
+      if (message) {
+        messagesMap.set(messageId, {
+          ...message,
+          reactions: reactionUpdate.reactions,
+        });
+      }
     });
 
     const finalMessages = Array.from(messagesMap.values()).sort((a, b) => {
@@ -115,14 +156,15 @@ export function useChatMessages({
     });
 
     return finalMessages;
-  }, [messagesData?.pages, realtimeMessages]);
+  }, [messagesData?.pages, realtimeMessages, realtimeReactions]);
 
-  // Clear real-time messages when conversation changes
+  // Clear real-time state when conversation changes
   React.useEffect(() => {
     setRealtimeMessages(new Map());
+    setRealtimeReactions(new Map());
   }, [conversationId]);
 
-  // Periodic cleanup of old real-time messages
+  // Periodic cleanup of old real-time data
   React.useEffect(() => {
     const interval = setInterval(() => {
       setRealtimeMessages((prev) => {
@@ -130,10 +172,16 @@ export function useChatMessages({
         const cleaned = cleanupRealtimeMessages(prev);
         return cleaned.size !== prev.size ? cleaned : prev;
       });
+
+      setRealtimeReactions((prev) => {
+        if (prev.size === 0) return prev;
+        const cleaned = cleanupRealtimeReactions(prev);
+        return cleaned.size !== prev.size ? cleaned : prev;
+      });
     }, 30000); // Clean up every 30 seconds
 
     return () => clearInterval(interval);
-  }, [cleanupRealtimeMessages]);
+  }, [cleanupRealtimeMessages, cleanupRealtimeReactions]);
 
   // Handle real-time message updates
   const handleMessageReceived = React.useCallback(
@@ -155,60 +203,64 @@ export function useChatMessages({
 
   const handleReactionUpdated = React.useCallback(
     (reactionData: ReactionEventData) => {
-      if (reactionData.messageId) {
+      if (!reactionData.messageId) return;
+
+      setRealtimeReactions((prev) => {
+        const newMap = new Map(prev);
+
+        // Get current reactions for this message
+        const currentUpdate = newMap.get(reactionData.messageId);
+        let currentReactions = currentUpdate?.reactions ?? [];
+
+        // If we don't have real-time reaction state for this message,
+        // try to get the current reactions from the messages
+        if (!currentUpdate) {
+          // Find the message in server data or real-time messages
+          const allServerMessages =
+            messagesData?.pages?.flatMap((page) => page.messages) ?? [];
+          const serverMessage = allServerMessages.find(
+            (msg) => msg.id === reactionData.messageId,
+          );
+          const realtimeMessage = realtimeMessages.get(reactionData.messageId);
+
+          if (serverMessage) {
+            currentReactions = [...serverMessage.reactions];
+          } else if (realtimeMessage) {
+            currentReactions = [...realtimeMessage.reactions];
+          }
+        }
+
         if (reactionData.type === "reaction_added") {
-          // Add reaction to the message
-          setRealtimeMessages((prev) => {
-            const newMap = new Map(prev);
+          // Remove any existing reaction from this user first, then add the new one
+          const updatedReactions = [
+            ...currentReactions.filter(
+              (r) => r.userId !== reactionData.reaction.userId,
+            ),
+            reactionData.reaction,
+          ];
 
-            // Find the message to update (from real-time state only)
-            // If the message isn't in real-time state, the server will handle the reaction
-            // and it will be included in future fetches
-            const messageToUpdate = newMap.get(reactionData.messageId);
-
-            if (messageToUpdate) {
-              const updatedMessage = {
-                ...messageToUpdate,
-                reactions: [
-                  // Remove any existing reaction from this user first
-                  ...messageToUpdate.reactions.filter(
-                    (r) => r.userId !== reactionData.reaction.userId,
-                  ),
-                  // Add the new reaction
-                  reactionData.reaction,
-                ],
-                addedAt: messageToUpdate.addedAt, // Preserve the addedAt timestamp
-              };
-              newMap.set(reactionData.messageId, updatedMessage);
-            }
-
-            return newMap;
+          newMap.set(reactionData.messageId, {
+            messageId: reactionData.messageId,
+            reactions: updatedReactions,
+            updatedAt: Date.now(),
           });
         } else if (reactionData.type === "reaction_removed") {
           // Remove user's reaction from the message
-          setRealtimeMessages((prev) => {
-            const newMap = new Map(prev);
+          const updatedReactions = currentReactions.filter(
+            (r) => r.userId !== reactionData.userId,
+          );
 
-            // Find the message to update (from real-time state only)
-            const messageToUpdate = newMap.get(reactionData.messageId);
-
-            if (messageToUpdate) {
-              const updatedMessage = {
-                ...messageToUpdate,
-                reactions: messageToUpdate.reactions.filter(
-                  (r) => r.userId !== reactionData.userId,
-                ),
-                addedAt: messageToUpdate.addedAt, // Preserve the addedAt timestamp
-              };
-              newMap.set(reactionData.messageId, updatedMessage);
-            }
-
-            return newMap;
+          newMap.set(reactionData.messageId, {
+            messageId: reactionData.messageId,
+            reactions: updatedReactions,
+            updatedAt: Date.now(),
           });
         }
-      }
+
+        return newMap;
+      });
     },
-    [],
+    [messagesData?.pages, realtimeMessages],
   );
 
   // Use custom hook for real-time subscription

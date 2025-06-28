@@ -1,5 +1,6 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
+import { ably } from "~/lib/ably";
 import { db } from "~/server/db";
 import {
   commentLikes,
@@ -78,11 +79,14 @@ async function togglePostLike({
     .from(likes)
     .where(and(eq(likes.userId, userId), eq(likes.postId, postId)));
 
+  let isLiked: boolean;
+
   if (existingLike) {
     // Remove like
     await db
       .delete(likes)
       .where(and(eq(likes.userId, userId), eq(likes.postId, postId)));
+    isLiked = false;
   } else {
     // Add like
     const [newLike] = await db
@@ -92,6 +96,8 @@ async function togglePostLike({
         postId,
       })
       .returning();
+
+    isLiked = true;
 
     // Create notification for post owner (if not liking own post)
     if (newLike && postWithOwner.postOwnerId !== userId) {
@@ -107,6 +113,34 @@ async function togglePostLike({
         console.error("Failed to create like notification:", notificationError);
       }
     }
+  }
+
+  // Get updated like count and publish real-time update
+  try {
+    const [likeCount] = await db
+      .select({ count: count() })
+      .from(likes)
+      .where(eq(likes.postId, postId));
+
+    const channelName = `likes:post:${postId}`;
+    await ably.channels.get(channelName).publish("like_update", {
+      type: "post_like_toggled",
+      postId,
+      userId,
+      isLiked,
+      count: likeCount?.count ?? 0,
+      timestamp: new Date(),
+    });
+
+    console.log(`✅ Published post like update to channel: ${channelName}`, {
+      postId,
+      userId,
+      isLiked,
+      count: likeCount?.count ?? 0,
+    });
+  } catch (ablyError) {
+    console.error("❌ Failed to publish post like update to Ably:", ablyError);
+    // Don't throw error, like was still toggled successfully
   }
 }
 
@@ -146,6 +180,8 @@ async function toggleCommentLike({
       ),
     );
 
+  let isLiked: boolean;
+
   if (existingLike) {
     // Remove like
     await db
@@ -156,6 +192,7 @@ async function toggleCommentLike({
           eq(commentLikes.commentId, commentId),
         ),
       );
+    isLiked = false;
   } else {
     // Add like
     const [newLike] = await db
@@ -165,6 +202,8 @@ async function toggleCommentLike({
         commentId,
       })
       .returning();
+
+    isLiked = true;
 
     // Create notification for comment owner (if not liking own comment)
     if (newLike && commentWithOwner.commentOwnerId !== userId) {
@@ -183,6 +222,37 @@ async function toggleCommentLike({
         );
       }
     }
+  }
+
+  // Get updated like count and publish real-time update
+  try {
+    const [likeCount] = await db
+      .select({ count: count() })
+      .from(commentLikes)
+      .where(eq(commentLikes.commentId, commentId));
+
+    const channelName = `likes:comment:${commentId}`;
+    await ably.channels.get(channelName).publish("like_update", {
+      type: "comment_like_toggled",
+      commentId,
+      userId,
+      isLiked,
+      count: likeCount?.count ?? 0,
+      timestamp: new Date(),
+    });
+
+    console.log(`✅ Published comment like update to channel: ${channelName}`, {
+      commentId,
+      userId,
+      isLiked,
+      count: likeCount?.count ?? 0,
+    });
+  } catch (ablyError) {
+    console.error(
+      "❌ Failed to publish comment like update to Ably:",
+      ablyError,
+    );
+    // Don't throw error, like was still toggled successfully
   }
 }
 
@@ -222,6 +292,8 @@ async function toggleReplyLike({
       ),
     );
 
+  let isLiked: boolean;
+
   if (existingLike) {
     // Remove like
     await db
@@ -232,6 +304,7 @@ async function toggleReplyLike({
           eq(commentReplyLikes.commentReplyId, commentReplyId),
         ),
       );
+    isLiked = false;
   } else {
     // Add like
     const [newLike] = await db
@@ -241,6 +314,8 @@ async function toggleReplyLike({
         commentReplyId,
       })
       .returning();
+
+    isLiked = true;
 
     // Create notification for reply owner (if not liking own reply)
     if (newLike && commentReplyWithOwner.commentReplyOwnerId !== userId) {
@@ -259,5 +334,33 @@ async function toggleReplyLike({
         );
       }
     }
+  }
+
+  // Get updated like count and publish real-time update
+  try {
+    const [likeCount] = await db
+      .select({ count: count() })
+      .from(commentReplyLikes)
+      .where(eq(commentReplyLikes.commentReplyId, commentReplyId));
+
+    const channelName = `likes:reply:${commentReplyId}`;
+    await ably.channels.get(channelName).publish("like_update", {
+      type: "reply_like_toggled",
+      commentReplyId,
+      userId,
+      isLiked,
+      count: likeCount?.count ?? 0,
+      timestamp: new Date(),
+    });
+
+    console.log(`✅ Published reply like update to channel: ${channelName}`, {
+      commentReplyId,
+      userId,
+      isLiked,
+      count: likeCount?.count ?? 0,
+    });
+  } catch (ablyError) {
+    console.error("❌ Failed to publish reply like update to Ably:", ablyError);
+    // Don't throw error, like was still toggled successfully
   }
 }

@@ -8,6 +8,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Heart } from "lucide-react";
 import Image from "next/image";
 import * as React from "react";
+import { usePostLikes } from "~/hooks/use-post-likes";
 import { cn, showErrorToast } from "~/lib/utils";
 import { api } from "~/trpc/react";
 import { type StoredFile } from "~/types";
@@ -25,7 +26,7 @@ interface PostCarouselProps extends React.HTMLAttributes<HTMLDivElement> {
   options?: CarouselOptions;
   modal?: boolean;
   optimize?: boolean;
-  postId?: string;
+  postId: string;
 }
 
 export function PostCarousel({
@@ -37,7 +38,12 @@ export function PostCarousel({
   postId,
   ...props
 }: PostCarouselProps) {
-  const [emblaRef, emblaApi] = useEmblaCarousel(options);
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "center",
+    skipSnaps: false,
+    ...options,
+  });
+
   const [selectedIndex, setSelectedIndex] = React.useState(0);
   const [loadingStates, setLoadingStates] = React.useState<
     Record<string, boolean>
@@ -45,8 +51,10 @@ export function PostCarousel({
   const [errorStates, setErrorStates] = React.useState<Record<string, boolean>>(
     {},
   );
-  const [containerHeight, setContainerHeight] = React.useState<number>(0);
+
   const imageRefs = React.useRef<Record<string, HTMLImageElement>>({});
+  const [containerHeight, setContainerHeight] = React.useState(0);
+
   const [showHeartAnimation, setShowHeartAnimation] = React.useState(false);
 
   const [prevBtnDisabled, setPrevBtnDisabled] = React.useState(true);
@@ -55,20 +63,30 @@ export function PostCarousel({
   // Like functionality for double-click (enabled when postId is provided and not in modal)
   const enableDoubleClickLike = !!postId && !modal;
   const utils = api.useUtils();
+
   const { data: likesData } = api.posts.getLikes.useQuery(
-    { postId: postId! },
+    { postId },
     {
       enabled: enableDoubleClickLike,
       refetchOnWindowFocus: false,
     },
   );
 
+  // Use real-time post likes hook
+  const { isLiked, optimisticToggle } = usePostLikes({
+    postId,
+    initialCount: likesData?.count ?? 0,
+    initialIsLiked: likesData?.hasLiked ?? false,
+  });
+
   const toggleLike = api.likes.toggle.useMutation({
-    async onSuccess() {
-      await utils.posts.getLikes.invalidate({ postId });
-    },
     onError(error) {
       showErrorToast(error);
+      // Revert optimistic update on error
+      optimisticToggle();
+    },
+    onSuccess() {
+      void utils.posts.getLikes.invalidate({ postId });
     },
   });
 
@@ -132,7 +150,11 @@ export function PostCarousel({
   const handleDoubleClick = React.useCallback(async () => {
     if (enableDoubleClickLike && postId) {
       try {
-        const wasLiked = likesData?.hasLiked ?? false;
+        const wasLiked = isLiked;
+
+        // Optimistic update for immediate feedback
+        optimisticToggle();
+
         await toggleLike.mutateAsync({
           postId,
           type: "post" as const,
@@ -150,7 +172,7 @@ export function PostCarousel({
         console.error("Error handling double click:", error);
       }
     }
-  }, [enableDoubleClickLike, postId, toggleLike, likesData?.hasLiked]);
+  }, [enableDoubleClickLike, postId, toggleLike, isLiked, optimisticToggle]);
 
   if (!files || files.length === 0) {
     return null;
