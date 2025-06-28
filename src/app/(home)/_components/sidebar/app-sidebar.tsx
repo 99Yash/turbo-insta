@@ -141,9 +141,12 @@ export function AppSidebar() {
         <SidebarHeader className="p-4">
           <Link
             href="/"
-            className="flex items-center gap-2 px-2 text-xl font-bold transition-colors hover:text-primary"
+            className="flex items-center gap-2 px-2 text-xl font-bold transition-colors hover:text-primary group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:px-0"
           >
-            <Icons.logo aria-hidden="true" />
+            <Icons.logo
+              aria-hidden="true"
+              className="size-6 group-data-[collapsible=icon]:size-5"
+            />
             <span className="transition-opacity duration-200 group-data-[collapsible=icon]:hidden">
               {siteConfig.name}
             </span>
