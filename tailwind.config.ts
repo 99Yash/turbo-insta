@@ -176,6 +176,10 @@ const config = {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.5" },
         },
+        "caret-blink": {
+          "0%, 70%, 100%": { opacity: "1" },
+          "20%, 50%": { opacity: "0" },
+        },
       },
       animation: {
         shine: "shine 2s ease-in-out infinite",
@@ -197,6 +201,7 @@ const config = {
         "slide-up": "slide-up 0.8s ease-out forwards",
         "message-entrance": "message-slide-in 0.2s ease-out",
         "online-pulse": "online-pulse 2s ease-in-out infinite",
+        "caret-blink": "caret-blink 1.25s ease-out infinite",
       },
       transitionDelay: {
         "0": "0ms",

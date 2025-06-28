@@ -105,18 +105,22 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   const safeSize = size ?? "md";
   const safeVariant = variant ?? "spinner";
 
-  const sizeClasses = {
-    sm: "w-4 h-4",
-    md: "w-6 h-6",
-    lg: "w-8 h-8",
-    xl: "w-12 h-12",
+  // Helper function to get pixel values for Icons.loading component
+  const getSizePixels = (size: string) => {
+    const sizeMap = {
+      sm: { width: 16, height: 16 },
+      md: { width: 24, height: 24 },
+      lg: { width: 32, height: 32 },
+      xl: { width: 48, height: 48 },
+    };
+    return sizeMap[size as keyof typeof sizeMap];
   };
 
   if (safeVariant === "dots") {
     return (
       <div
         className={cn(
-          loadingSpinnerVariants({ variant: safeVariant }),
+          loadingSpinnerVariants({ variant: safeVariant, size: safeSize }),
           className,
         )}
       >
@@ -125,7 +129,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
             key={i}
             className={cn(
               "motion-safe:animate-loading-dots rounded-full bg-primary motion-reduce:animate-none",
-              sizeClasses[safeSize],
+              loadingSpinnerVariants({ size: safeSize, variant: "spinner" }),
             )}
             style={{
               animationDelay: `${i * 0.16}s`,
@@ -171,7 +175,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       <div
         className={cn(
           "rounded-full bg-primary motion-safe:animate-pulse motion-reduce:animate-none",
-          sizeClasses[safeSize],
+          loadingSpinnerVariants({ size: safeSize, variant: "spinner" }),
           className,
         )}
       />
@@ -183,7 +187,7 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
       <div
         className={cn(
           "motion-safe:animate-loading-breathe rounded-full bg-gradient-to-br from-primary/60 to-primary motion-reduce:animate-none",
-          sizeClasses[safeSize],
+          loadingSpinnerVariants({ size: safeSize, variant: "spinner" }),
           className,
         )}
       />
@@ -191,16 +195,9 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
   }
 
   // Default spinner - use the flexible Icons.loading component
-  const sizeMap = {
-    sm: { width: 16, height: 16 },
-    md: { width: 24, height: 24 },
-    lg: { width: 32, height: 32 },
-    xl: { width: 48, height: 48 },
-  };
-
   return (
     <Icons.loading
-      {...sizeMap[safeSize]}
+      {...getSizePixels(safeSize)}
       className={cn("text-primary", className)}
     />
   );

@@ -1,7 +1,6 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "~/lib/utils";
 
-// CVA variants for skeleton components
 const skeletonVariants = cva("rounded-md transition-all", {
   variants: {
     variant: {
