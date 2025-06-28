@@ -1,14 +1,10 @@
 "use client";
 
-import {
-  BookmarkIcon,
-  Heart,
-  Link as LinkIcon,
-  MessageCircleIcon,
-} from "lucide-react";
+import { BookmarkIcon, Heart, MessageCircleIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";
+import { Icons } from "~/components/icons";
 import { cn, showErrorToast } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
@@ -139,13 +135,13 @@ export function ActionButtons({ postId }: { postId: string }) {
           />
           <span className="sr-only">Comment</span>
 
-          <LinkIcon
+          <Icons.share
             role="button"
             onClick={() => {
               void navigator.clipboard.writeText(
                 `${window.location.origin}/posts/${postId}`,
               );
-              toast.success("Link copied to clipboard.");
+              toast.info("Link copied to clipboard.");
             }}
             className="size-6 transition-colors duration-200 hover:text-muted-foreground"
             aria-hidden="true"
