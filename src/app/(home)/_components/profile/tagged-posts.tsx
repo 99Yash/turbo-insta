@@ -1,6 +1,6 @@
 "use client";
 
-import { Tag } from "~/components/ui/icons/nucleo";
+import { Tag } from "~/components/icons";
 
 interface TaggedPostsProps {
   username: string;

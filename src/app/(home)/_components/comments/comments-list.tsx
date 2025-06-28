@@ -3,10 +3,9 @@
 import { Heart, MoreHorizontal, Plus, Trash2 } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import { Icons, LucideIcons } from "~/components/icons";
+import { Icons, Loading, LucideIcons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
-import { Loading } from "~/components/ui/icons";
 import { MentionText } from "~/components/ui/mention-parser";
 import { Modal } from "~/components/ui/modal";
 import { Skeleton } from "~/components/ui/skeleton";

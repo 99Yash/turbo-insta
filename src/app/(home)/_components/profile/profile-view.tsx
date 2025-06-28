@@ -3,6 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import * as React from "react";
+import { Book2Small, GridLayoutRows, Tag } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { Button } from "~/components/ui/button";
 import {
@@ -11,7 +12,6 @@ import {
   DialogDescription,
   DialogTitle,
 } from "~/components/ui/dialog";
-import { Book2Small, GridLayoutRows, Tag } from "~/components/ui/icons/nucleo";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { getInitials } from "~/lib/utils";
 

@@ -15,6 +15,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { FileUploader } from "~/components/file-uploader";
+import { CircleInfo, Loading, Sparkle3 } from "~/components/icons";
 import {
   Accordion,
   AccordionContent,
@@ -29,8 +30,6 @@ import {
   FormItem,
   FormMessage,
 } from "~/components/ui/form";
-import { Loading } from "~/components/ui/icons";
-import { CircleInfo, Sparkle3 } from "~/components/ui/icons/nucleo";
 import { Input } from "~/components/ui/input";
 import { Modal } from "~/components/ui/modal";
 import { Textarea } from "~/components/ui/textarea";

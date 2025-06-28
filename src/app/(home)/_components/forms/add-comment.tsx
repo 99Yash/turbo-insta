@@ -5,13 +5,13 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { Loading } from "~/components/icons";
 import {
   AutosizeTextarea,
   type AutosizeTextAreaRef,
 } from "~/components/ui/autosize-textarea";
 import { Button } from "~/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "~/components/ui/form";
-import { Loading } from "~/components/ui/icons";
 import { cn, showErrorToast } from "~/lib/utils";
 import { MAX_COMMENT_CHAR_LENGTH } from "~/server/api/schema/comments.schema";
 import { api } from "~/trpc/react";

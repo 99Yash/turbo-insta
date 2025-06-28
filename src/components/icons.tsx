@@ -5,13 +5,27 @@ import {
   HomeIcon,
   ImageIcon,
 } from "@radix-ui/react-icons";
+import {
+  BookOpen,
+  CircleAlert,
+  CloudUpload,
+  Grid3X3,
+  Sparkles,
+  Tag,
+} from "lucide-react";
 import { cn } from "~/lib/utils";
 
 export * as RadixIcons from "@radix-ui/react-icons";
 export * as LucideIcons from "lucide-react";
-export * as NucleoIcons from "./ui/icons/nucleo";
+export { CloudUpload, Tag };
 
 export type IconProps = React.HTMLAttributes<SVGElement>;
+
+// Missing nucleo icons using lucide-react equivalents
+export const Book2Small = BookOpen;
+export const CircleInfo = CircleAlert;
+export const GridLayoutRows = Grid3X3;
+export const Sparkle3 = Sparkles;
 
 export const Icons = {
   logo: (props: IconProps) => (
@@ -580,4 +594,49 @@ export const Icons = {
   placeholder: ImageIcon,
   settings: GearIcon,
   chevronLeft: ChevronLeftIcon,
+  loading: ({
+    width = 24,
+    height = 24,
+    dur = "0.75s",
+    ...props
+  }: React.SVGProps<SVGSVGElement> & { dur?: string }) => (
+    <svg
+      className="fill-current"
+      width={width}
+      height={height}
+      viewBox="0 0 24 24"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <circle cx="4" cy="12" r="3">
+        <animate
+          id="a"
+          begin="0;b.end-0.25s"
+          attributeName="r"
+          dur={dur}
+          values="3;.2;3"
+        />
+      </circle>
+      <circle cx="12" cy="12" r="3">
+        <animate
+          begin="a.end-0.6s"
+          attributeName="r"
+          dur={dur}
+          values="3;.2;3"
+        />
+      </circle>
+      <circle cx="20" cy="12" r="3">
+        <animate
+          id="b"
+          begin="a.end-0.45s"
+          attributeName="r"
+          dur={dur}
+          values="3;.2;3"
+        />
+      </circle>
+    </svg>
+  ),
 };
+
+// Export the Loading component separately for backward compatibility
+export const Loading = Icons.loading;

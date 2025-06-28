@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import * as React from "react";
+import { Loading } from "~/components/icons";
 import { Button } from "~/components/ui/button";
-import { Loading } from "~/components/ui/icons";
 import { Modal } from "~/components/ui/modal";
 import { showErrorToast } from "~/lib/utils";
 import { api } from "~/trpc/react";

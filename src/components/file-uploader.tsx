@@ -8,8 +8,8 @@ import Dropzone, {
 import { toast } from "sonner";
 import { useControllableState } from "~/hooks/use-controllable-state";
 import { cn, formatBytes, isFileWithPreview, isImageUrl } from "~/lib/utils";
+import { CloudUpload } from "./icons";
 import { Button } from "./ui/button";
-import { CloudUpload } from "./ui/icons/nucleo";
 import { Progress } from "./ui/progress";
 import { ScrollArea } from "./ui/scroll-area";
 
