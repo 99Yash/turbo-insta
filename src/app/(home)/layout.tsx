@@ -35,7 +35,7 @@ function HomeLayoutSkeleton() {
       <div className="flex-1">
         <div className="flex h-full items-center justify-center">
           <div className="flex flex-col items-center gap-4">
-            <Icons.spinner className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Icons.spinner className="size-8 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">Loading...</p>
           </div>
         </div>

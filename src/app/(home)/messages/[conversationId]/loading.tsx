@@ -28,7 +28,7 @@ export default function ConversationLoading() {
 
       {/* Chat area skeleton */}
       <div className="flex flex-1 items-center justify-center">
-        <Icons.spinner className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Icons.spinner className="size-8 text-muted-foreground" />
       </div>
     </div>
   );

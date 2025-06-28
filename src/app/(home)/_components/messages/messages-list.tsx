@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { ScrollArea } from "~/components/ui/scroll-area";
 import { getInitials } from "~/lib/utils";
@@ -92,7 +93,7 @@ export function MessagesList({
           <div className="flex justify-center py-2">
             {isFetchingNextPage ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+                <Icons.spinner className="size-4" />
                 Loading more messages...
               </div>
             ) : (
@@ -107,7 +108,7 @@ export function MessagesList({
 
         {isLoadingMessages ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
+            <Icons.spinner className="size-8 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">Loading messages...</p>
           </div>
         ) : messages.length === 0 ? (

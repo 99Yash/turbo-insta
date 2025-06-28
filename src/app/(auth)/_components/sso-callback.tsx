@@ -24,7 +24,7 @@ export function SSOCallback({ searchParams }: SSOCallbackProps) {
       aria-describedby="loading-description"
       className="flex items-center justify-center"
     >
-      <Icons.spinner className="size-16 animate-spin" aria-hidden="true" />
+      <Icons.spinner className="size-16" aria-hidden="true" />
     </div>
   );
 }

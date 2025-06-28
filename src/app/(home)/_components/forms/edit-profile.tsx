@@ -254,9 +254,7 @@ export function ProfileEditForm({
             disabled={isPending || isUploading || !form.formState.isDirty}
             className="gap-1"
           >
-            {(isPending || isUploading) && (
-              <Icons.spinner className="h-4 w-4 animate-spin" />
-            )}
+            {(isPending || isUploading) && <Icons.spinner className="size-4" />}
             Save Changes
           </Button>
         </div>

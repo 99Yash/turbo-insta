@@ -1,6 +1,7 @@
 "use client";
 
 import { useUser as useClerkUser } from "@clerk/nextjs";
+import { Icons } from "~/components/icons";
 import { useUser as useDbUser } from "~/contexts/user-context";
 import { Create } from "./forms/create";
 import { InfinitePosts } from "./infinite-posts";
@@ -15,7 +16,7 @@ export function HomePageClient() {
     return (
       <CenteredLayout maxWidth="max-w-[470px]">
         <div className="flex flex-col items-center justify-center py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+          <Icons.spinner className="size-8 text-muted-foreground" />
           <p className="mt-4 text-sm text-muted-foreground">
             Loading your profile...
           </p>

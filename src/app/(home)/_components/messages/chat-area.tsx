@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { Icons } from "~/components/icons";
 import { useUser } from "~/contexts/user-context";
 import { useChatMessages } from "~/hooks/use-chat-messages";
 import type { RouterOutputs } from "~/trpc/react";
@@ -229,7 +230,7 @@ export function ChatArea({
   if (isUserLoading || !user) {
     return (
       <div className="flex h-full w-full items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
+        <Icons.spinner className="size-8 text-muted-foreground" />
       </div>
     );
   }

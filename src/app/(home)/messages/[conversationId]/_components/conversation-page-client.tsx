@@ -1,6 +1,7 @@
 "use client";
 
 import { notFound, useRouter } from "next/navigation";
+import { Icons } from "~/components/icons";
 import { MAX_REALTIME_MESSAGES } from "~/hooks/use-chat-messages";
 import type { ConversationWithParticipants } from "~/server/api/services/messages.service";
 import { api } from "~/trpc/react";
@@ -91,7 +92,7 @@ export function ConversationPageClient({
         {/* Show loading state for chat area */}
         <div className="flex flex-1 items-center justify-center bg-background">
           <div className="text-center">
-            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-red-500 border-t-transparent"></div>
+            <Icons.spinner className="size-8 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">
               Loading conversation...
             </p>
