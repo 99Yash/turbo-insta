@@ -1,8 +1,7 @@
 "use client";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Heart } from "lucide-react";
 import * as React from "react";
-import { NucleoIcons } from "~/components/icons";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/lib/utils";
 import { NotificationsList } from "./notifications-list";
@@ -95,7 +94,7 @@ export function NotificationsSidebar({
             id="notifications-sidebar-title"
             className="flex items-center gap-1.5 text-lg font-semibold text-sidebar-foreground"
           >
-            <NucleoIcons.Cards className="size-5" />
+            <Heart className="size-5" />
             Notifications
           </h2>
           {unreadCount > 0 && (

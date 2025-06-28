@@ -1,12 +1,12 @@
 "use client";
 
-import { SignOutButton } from "@clerk/nextjs";
+import { SignOutButton, useAuth } from "@clerk/nextjs";
 import type * as Ably from "ably";
-import { CogIcon, LogOutIcon } from "lucide-react";
+import { CogIcon, Heart, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
-import { Icons, NucleoIcons } from "~/components/icons";
+import { Icons } from "~/components/icons";
 import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import {
   Sidebar,
@@ -22,7 +22,7 @@ import {
   SidebarSeparator,
 } from "~/components/ui/sidebar";
 import { siteConfig } from "~/config/site";
-import { useUser } from "~/contexts/user-context";
+import { useAuthenticatedUser } from "~/contexts/user-context";
 import { useAblyContext } from "~/lib/providers/ably-provider";
 import { cn, getInitials } from "~/lib/utils";
 import { api } from "~/trpc/react";
@@ -30,7 +30,8 @@ import { NotificationsSidebar } from "../notifications/notifications-sidebar";
 import { UserCommandDialog } from "./components/user-command-dialog";
 
 export function AppSidebar() {
-  const { user } = useUser();
+  const { isLoaded } = useAuth();
+  const user = useAuthenticatedUser();
   const pathname = usePathname();
   const [isNotificationsSidebarOpen, setIsNotificationsSidebarOpen] =
     React.useState(false);
@@ -47,18 +48,18 @@ export function AppSidebar() {
 
   // Fetch initial count once when user is available
   React.useEffect(() => {
-    if (user) {
+    if (isLoaded && user) {
       void fetchInitialCount().then((result) => {
         if (result.data !== undefined) {
           setUnreadCount(result.data);
         }
       });
     }
-  }, [user, fetchInitialCount]);
+  }, [isLoaded, user, fetchInitialCount]);
 
   // Subscribe to websocket notifications for real-time count updates
   React.useEffect(() => {
-    if (!user || !client) return;
+    if (!isLoaded || !user || !client) return;
 
     const channelName = `notifications:${user.id}`;
     const channel = client.channels.get(channelName);
@@ -80,7 +81,7 @@ export function AppSidebar() {
     return () => {
       void channel.unsubscribe("notification", handler);
     };
-  }, [user, client]);
+  }, [isLoaded, user, client]);
 
   // Handle when notifications are marked as read
   const handleUnreadCountChange = React.useCallback((newCount: number) => {
@@ -178,7 +179,12 @@ export function AppSidebar() {
                     aria-haspopup="dialog"
                   >
                     <div className="relative">
-                      <NucleoIcons.Cards className="size-5" />
+                      <Heart
+                        className={cn(
+                          "size-[18px]",
+                          count > 0 && "text-rose-500",
+                        )}
+                      />
                       {count > 0 && (
                         <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
                           {count > 9 ? "9+" : count}

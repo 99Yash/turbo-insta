@@ -3,8 +3,7 @@
 import { Heart, MessageCircle } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Icons } from "~/components/icons";
-import { GridLayoutRows } from "~/components/ui/icons/nucleo";
+import { GridLayoutRows, Icons } from "~/components/icons";
 import { type Post } from "~/server/db/schema";
 
 interface ProfilePostsProps {

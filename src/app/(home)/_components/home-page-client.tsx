@@ -1,14 +1,14 @@
 "use client";
 
-import { useUser } from "~/contexts/user-context";
+import { useUser } from "@clerk/nextjs";
 import { Create } from "./forms/create";
 import { InfinitePosts } from "./infinite-posts";
 import { CenteredLayout } from "./sidebar/components";
 
 export function HomePageClient() {
-  const { user, isLoading } = useUser();
+  const { user, isLoaded } = useUser();
 
-  if (isLoading || !user) {
+  if (!isLoaded || !user) {
     return null;
   }
 
