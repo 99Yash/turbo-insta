@@ -77,14 +77,58 @@ const config = {
       },
       keyframes: {
         shine: {
-          "0%": { backgroundPosition: "200% 0" },
-          "25%": { backgroundPosition: "-200% 0" },
-          "100%": { backgroundPosition: "-200% 0" },
+          "0%": { backgroundPosition: "-200% 0" },
+          "100%": { backgroundPosition: "200% 0" },
+        },
+        "shimmer-slide": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
         },
         gradientFlow: {
           "0%": { "background-position": "0% 50%" },
           "50%": { "background-position": "100% 50%" },
           "100%": { "background-position": "0% 50%" },
+        },
+        "skeleton-wave": {
+          "0%": { transform: "translateX(-100%)" },
+          "50%": { transform: "translateX(100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
+        "loading-dots": {
+          "0%, 80%, 100%": { transform: "scale(0)", opacity: "0.5" },
+          "40%": { transform: "scale(1)", opacity: "1" },
+        },
+        "loading-bars": {
+          "0%, 40%, 100%": { transform: "scaleY(0.4)" },
+          "20%": { transform: "scaleY(1)" },
+        },
+        "loading-breathe": {
+          "0%, 100%": { opacity: "0.4", transform: "scale(1)" },
+          "50%": { opacity: "0.8", transform: "scale(1.02)" },
+        },
+        "content-placeholder": {
+          "0%": { backgroundPosition: "-468px 0" },
+          "100%": { backgroundPosition: "468px 0" },
+        },
+        "fade-in-up": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(10px)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0)",
+          },
+        },
+        "stagger-in": {
+          "0%": {
+            opacity: "0",
+            transform: "translateY(20px) scale(0.95)",
+          },
+          "100%": {
+            opacity: "1",
+            transform: "translateY(0) scale(1)",
+          },
         },
         "accordion-down": {
           from: {
@@ -134,9 +178,16 @@ const config = {
         },
       },
       animation: {
-        shine: "shine 3s ease-out infinite",
-        "gradient-flow":
-          "gradientFlow 10s ease 0s infinite normal none running",
+        shine: "shine 2s ease-in-out infinite",
+        "shimmer-slide": "shimmer-slide 2s ease-in-out infinite",
+        "skeleton-wave": "skeleton-wave 1.6s ease-in-out infinite",
+        "loading-dots": "loading-dots 1.4s ease-in-out infinite",
+        "loading-bars": "loading-bars 1.2s ease-in-out infinite",
+        "loading-breathe": "loading-breathe 3s ease-in-out infinite",
+        "content-placeholder": "content-placeholder 1.2s ease-in-out infinite",
+        "fade-in-up": "fade-in-up 0.6s ease-out forwards",
+        "stagger-in": "stagger-in 0.8s ease-out forwards",
+        "gradient-flow": "gradientFlow 8s ease 0s infinite normal none running",
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "star-movement-bottom":
