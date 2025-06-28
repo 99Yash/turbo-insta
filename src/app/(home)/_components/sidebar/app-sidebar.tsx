@@ -179,7 +179,10 @@ export function AppSidebar() {
                   >
                     <div className="relative">
                       <Heart
-                        className={cn("size-5", count > 0 && "text-rose-500")}
+                        className={cn(
+                          "size-[18px]",
+                          count > 0 && "text-rose-500",
+                        )}
                       />
                       {count > 0 && (
                         <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-xs font-medium text-white">
