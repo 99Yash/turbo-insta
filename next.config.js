@@ -3,6 +3,7 @@
  * for Docker builds.
  */
 import createJiti from "jiti";
+import process from "node:process";
 import { fileURLToPath } from "node:url";
 
 createJiti(fileURLToPath(import.meta.url))("./src/env.ts");
@@ -13,8 +14,7 @@ const config = {
     serverComponentsExternalPackages: ["ably"],
   },
   compiler: {
-    // Keep console logs for debugging webhooks in production
-    removeConsole: false,
+    removeConsole: process.env.NODE_ENV === "production",
   },
   images: {
     remotePatterns: [

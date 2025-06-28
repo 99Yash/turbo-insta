@@ -5,24 +5,24 @@ import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
 import { toast } from "sonner";
 import { Icons } from "~/components/icons";
+import { usePostLikes } from "~/hooks/use-post-likes";
 import { cn, showErrorToast } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 export function ActionButtons({ postId }: { postId: string }) {
   const utils = api.useUtils();
-  const [isLiked, setIsLiked] = React.useState(false);
   const [isBookmarked, setIsBookmarked] = React.useState(false);
-
   const [hasShownTip, setHasShownTip] = React.useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
 
+  // Get initial likes data
   const {
     data: likesData,
-    isLoading,
-    isError,
-    error,
+    isLoading: isLikesLoading,
+    isError: isLikesError,
+    error: likesError,
   } = api.posts.getLikes.useQuery(
     {
       postId,
@@ -31,6 +31,13 @@ export function ActionButtons({ postId }: { postId: string }) {
       refetchOnWindowFocus: false,
     },
   );
+
+  // Use real-time post likes hook
+  const { likeCount, isLiked, optimisticToggle } = usePostLikes({
+    postId,
+    initialCount: likesData?.count ?? 0,
+    initialIsLiked: likesData?.hasLiked ?? false,
+  });
 
   const {
     data: bookmarkData,
@@ -47,13 +54,11 @@ export function ActionButtons({ postId }: { postId: string }) {
   );
 
   React.useEffect(() => {
-    if (isLoading) return;
-    if (isError) {
-      showErrorToast(error);
-    } else if (likesData) {
-      setIsLiked(likesData.hasLiked);
+    if (isLikesLoading) return;
+    if (isLikesError) {
+      showErrorToast(likesError);
     }
-  }, [isError, error, isLoading, likesData]);
+  }, [isLikesError, likesError, isLikesLoading]);
 
   React.useEffect(() => {
     if (isBookmarkLoading) return;
@@ -66,13 +71,10 @@ export function ActionButtons({ postId }: { postId: string }) {
   }, [isBookmarkError, bookmarkError, isBookmarkLoading, bookmarkData]);
 
   const toggleLike = api.likes.toggle.useMutation({
-    async onSuccess() {
-      await utils.posts.getLikes.invalidate({
-        postId,
-      });
-    },
     onError(error) {
       showErrorToast(error);
+      // Revert optimistic update on error
+      optimisticToggle();
     },
   });
 
@@ -90,6 +92,9 @@ export function ActionButtons({ postId }: { postId: string }) {
   });
 
   const handleHeartClick = async () => {
+    // Optimistic update for immediate feedback
+    optimisticToggle();
+
     await toggleLike.mutateAsync({
       postId,
       type: "post",
@@ -170,8 +175,8 @@ export function ActionButtons({ postId }: { postId: string }) {
       </div>
 
       <p className="mt-3.5 text-sm font-bold">
-        {likesData
-          ? `${likesData.count} ${likesData.count === 1 ? "like" : "likes"}`
+        {likeCount > 0
+          ? `${likeCount} ${likeCount === 1 ? "like" : "likes"}`
           : "\u00A0"}
       </p>
     </div>
