@@ -101,7 +101,9 @@ export function ActionButtons({ postId }: { postId: string }) {
     });
 
     if (!hasShownTip) {
-      toast.info("Tip: You can double click on posts to like them");
+      toast.info("Tip: You can double click on posts to like them", {
+        duration: 2000,
+      });
       setHasShownTip(true);
     }
   };

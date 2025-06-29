@@ -51,7 +51,6 @@ function Skeleton({
   );
 }
 
-// CVA variants for specialized skeleton components
 const skeletonAvatarVariants = cva("rounded-full", {
   variants: {
     size: {
