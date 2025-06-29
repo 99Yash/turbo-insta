@@ -1,6 +1,5 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
-import { eq } from "drizzle-orm";
 import { type NextRequest } from "next/server";
 import { generateUniqueUsername } from "~/lib/queries/ai";
 import { checkWebhookRateLimit, webhookConstants } from "~/lib/unkey";
@@ -289,79 +288,8 @@ export async function POST(req: NextRequest) {
         }
         break;
       }
-      case "user.updated": {
-        const {
-          id: clerkId,
-          email_addresses,
-          first_name,
-          last_name,
-          image_url,
-        } = evt.data;
-
-        if (!email_addresses?.[0]?.email_address) {
-          console.error(
-            `[WEBHOOK] No email address found for user: ${clerkId}`,
-          );
-          return new Response("No email address found", { status: 400 });
-        }
-
-        const name =
-          `${first_name ?? ""} ${last_name ?? ""}`.trim() || "Anonymous";
-
-        // Only generate new username if current user doesn't have one
-        const existingUser = await db.query.users.findFirst({
-          where: eq(users.id, clerkId),
-          columns: { username: true },
-        });
-
-        if (!existingUser) {
-          console.error(`[WEBHOOK] User not found in database: ${clerkId}`);
-          return new Response("User not found", { status: 404 });
-        }
-
-        let username = existingUser.username;
-        if (!username) {
-          const failedAttempts =
-            fallbackRateLimitStore.get(`${ip}:failed`)?.count ?? 0;
-
-          if (failedAttempts > 5 || isSuspiciousIP(ip)) {
-            username = await generateFallbackUsername(name);
-          } else {
-            try {
-              username = await generateUniqueUsername(name);
-            } catch (aiError) {
-              console.warn(
-                `[WEBHOOK] AI username generation failed, using fallback:`,
-                aiError,
-              );
-              username = await generateFallbackUsername(name);
-            }
-          }
-        }
-
-        try {
-          await db
-            .update(users)
-            .set({
-              email: email_addresses[0].email_address,
-              name,
-              username,
-              imageUrl: image_url,
-            })
-            .where(eq(users.id, clerkId));
-
-          console.log(`[WEBHOOK] ✅ Updated user: ${username}`);
-
-          const cc = await clerkClient();
-          await cc.users.updateUser(clerkId, {
-            username,
-          });
-        } catch (error) {
-          console.error(`[WEBHOOK] ❌ Error updating user:`, error);
-          return new Response("Failed to update user", { status: 500 });
-        }
+      case "user.updated":
         break;
-      }
       case "user.deleted":
         console.log(
           `[WEBHOOK] User deletion event received (no action needed)`,
