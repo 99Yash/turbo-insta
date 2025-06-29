@@ -119,6 +119,9 @@ importers:
       '@trpc/server':
         specifier: ^11.4.3
         version: 11.4.3(typescript@5.8.3)
+      '@unkey/ratelimit':
+        specifier: ^2.0.0
+        version: 2.0.0(zod@3.25.67)
       '@uploadthing/react':
         specifier: ^7.3.2
         version: 7.3.2(next@14.2.30(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(uploadthing@7.7.3(express@4.21.1)(next@14.2.30(@opentelemetry/api@1.9.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(tailwindcss@3.4.17))
@@ -1688,6 +1691,19 @@ packages:
 
   '@ungap/structured-clone@1.2.0':
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
+
+  '@unkey/api@2.0.0-alpha.7':
+    resolution: {integrity: sha512-iiA+PVXn5T3dlZT8woKrnr0kB15XLtmkFWHV2+ox+980W/7vQLP1gdgcU/lrX/qA09Z+0w0wN+n0C88RLd4nvw==}
+    hasBin: true
+    peerDependencies:
+      '@modelcontextprotocol/sdk': ^1.5.0
+      zod: '>= 3'
+    peerDependenciesMeta:
+      '@modelcontextprotocol/sdk':
+        optional: true
+
+  '@unkey/ratelimit@2.0.0':
+    resolution: {integrity: sha512-QwOBO7n7BngOZ8yknh4KyHVFweBYk9gVED33y7BpBZMLXnBeLnc2ttMXqTUH7b5rhyQkqnWrqHw4fbxLu8UnkQ==}
 
   '@uploadthing/mime-types@0.3.5':
     resolution: {integrity: sha512-iYOmod80XXOSe4NVvaUG9FsS91YGPUaJMTBj52Nwu0G2aTzEN6Xcl0mG1rWqXJ4NUH8MzjVqg+tQND5TPkJWhg==}
@@ -5300,6 +5316,17 @@ snapshots:
       eslint-visitor-keys: 4.2.1
 
   '@ungap/structured-clone@1.2.0': {}
+
+  '@unkey/api@2.0.0-alpha.7(zod@3.25.67)':
+    dependencies:
+      zod: 3.25.67
+
+  '@unkey/ratelimit@2.0.0(zod@3.25.67)':
+    dependencies:
+      '@unkey/api': 2.0.0-alpha.7(zod@3.25.67)
+    transitivePeerDependencies:
+      - '@modelcontextprotocol/sdk'
+      - zod
 
   '@uploadthing/mime-types@0.3.5': {}
 
