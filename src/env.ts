@@ -21,6 +21,7 @@ export const env = createEnv({
     OPENAI_API_KEY: z.string(),
     GOOGLE_GENERATIVE_AI_API_KEY: z.string(),
     ABLY_API_KEY: z.string(),
+    UNKEY_ROOT_KEY: z.string(),
   },
 
   /**
@@ -52,6 +53,7 @@ export const env = createEnv({
     NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
     ABLY_API_KEY: process.env.ABLY_API_KEY,
+    UNKEY_ROOT_KEY: process.env.UNKEY_ROOT_KEY,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
