@@ -10,7 +10,7 @@ import { users } from "~/server/db/schema/users";
 
 // Initialize Unkey rate limiting
 const ratelimit = new Ratelimit({
-  rootKey: env.UNKEY_ROOT_KEY, // Add this to your .env file
+  rootKey: env.UNKEY_ROOT_KEY,
   namespace: "webhook",
   limit: 10,
   duration: "1m", // 10 requests per minute
@@ -27,9 +27,10 @@ const suspiciousRatelimit = new Ratelimit({
 // Request size limit (1MB)
 const MAX_REQUEST_SIZE = 1024 * 1024;
 
-// In-memory suspicious IP tracking (fallback)
-const suspiciousIPs = new Set<string>();
+// In-memory suspicious IP tracking with timestamps for cleanup
+const suspiciousIPs = new Map<string, { markedAt: number; attempts: number }>();
 const SUSPICIOUS_THRESHOLD = 20; // Block after 20 failed attempts in 24h
+const SUSPICIOUS_IP_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 
 // Fallback rate limiting store for when Unkey fails
 const fallbackRateLimitStore = new Map<
@@ -70,11 +71,24 @@ function isFallbackRateLimited(ip: string): boolean {
   return false;
 }
 
+function isSuspiciousIP(ip: string): boolean {
+  const suspiciousData = suspiciousIPs.get(ip);
+  if (!suspiciousData) return false;
+
+  // Check if the suspicious marking has expired
+  const now = Date.now();
+  if (now > suspiciousData.markedAt + SUSPICIOUS_IP_EXPIRY) {
+    suspiciousIPs.delete(ip);
+    return false;
+  }
+
+  return true;
+}
+
 function trackSuspiciousActivity(ip: string, reason: string): void {
   console.warn(`[WEBHOOK SECURITY] Suspicious activity from ${ip}: ${reason}`);
 
-  // For now, we'll use simple in-memory tracking
-  // In production, you might want to use a database or Redis
+  // Track failed attempts in fallback store
   const key = `${ip}:failed`;
   const existing = fallbackRateLimitStore.get(key);
   const count = (existing?.count ?? 0) + 1;
@@ -85,7 +99,11 @@ function trackSuspiciousActivity(ip: string, reason: string): void {
   });
 
   if (count >= SUSPICIOUS_THRESHOLD) {
-    suspiciousIPs.add(ip);
+    const currentSuspicious = suspiciousIPs.get(ip);
+    suspiciousIPs.set(ip, {
+      markedAt: Date.now(),
+      attempts: (currentSuspicious?.attempts ?? 0) + 1,
+    });
     console.error(
       `[WEBHOOK SECURITY] IP ${ip} marked as suspicious after ${count} failed attempts`,
     );
@@ -148,7 +166,7 @@ export async function POST(req: NextRequest) {
 
   try {
     // Early security checks
-    if (suspiciousIPs.has(ip)) {
+    if (isSuspiciousIP(ip)) {
       console.error(
         `[WEBHOOK SECURITY] Blocked request from suspicious IP: ${ip}`,
       );
@@ -156,10 +174,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Check rate limiting with Unkey
-    const isSuspiciousIP =
-      suspiciousIPs.has(ip) ||
+    const isIPSuspicious =
+      isSuspiciousIP(ip) ||
       (fallbackRateLimitStore.get(`${ip}:failed`)?.count ?? 0) > 5;
-    const rateLimitResult = await checkRateLimit(ip, isSuspiciousIP);
+    const rateLimitResult = await checkRateLimit(ip, isIPSuspicious);
 
     if (!rateLimitResult.success) {
       trackSuspiciousActivity(ip, "Rate limit exceeded");
@@ -242,7 +260,7 @@ export async function POST(req: NextRequest) {
         const failedAttempts =
           fallbackRateLimitStore.get(`${ip}:failed`)?.count ?? 0;
 
-        if (failedAttempts > 5 || isSuspiciousIP) {
+        if (failedAttempts > 5 || isSuspiciousIP(ip)) {
           console.warn(
             `[WEBHOOK] Using fallback username generation for IP ${ip} due to previous failures or suspicious activity`,
           );
@@ -324,7 +342,7 @@ export async function POST(req: NextRequest) {
           const failedAttempts =
             fallbackRateLimitStore.get(`${ip}:failed`)?.count ?? 0;
 
-          if (failedAttempts > 5 || isSuspiciousIP) {
+          if (failedAttempts > 5 || isSuspiciousIP(ip)) {
             username = await generateFallbackUsername(name);
           } else {
             try {
@@ -409,14 +427,31 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// Cleanup function to prevent memory leaks from fallback store
+// Cleanup function to prevent memory leaks from both stores
 setInterval(
   () => {
     const now = Date.now();
+
+    // Clean up expired fallback rate limit entries
     for (const [key, record] of fallbackRateLimitStore.entries()) {
       if (now > record.resetTime) {
         fallbackRateLimitStore.delete(key);
       }
+    }
+
+    // Clean up expired suspicious IP entries
+    for (const [ip, suspiciousData] of suspiciousIPs.entries()) {
+      if (now > suspiciousData.markedAt + SUSPICIOUS_IP_EXPIRY) {
+        suspiciousIPs.delete(ip);
+      }
+    }
+
+    // Log cleanup stats occasionally (every 6th run = 30 minutes)
+    const cleanupCount = (now / (5 * 60 * 1000)) % 6;
+    if (Math.floor(cleanupCount) === 0) {
+      console.log(
+        `[WEBHOOK CLEANUP] Stores status - Rate limit entries: ${fallbackRateLimitStore.size}, Suspicious IPs: ${suspiciousIPs.size}`,
+      );
     }
   },
   5 * 60 * 1000,
