@@ -45,8 +45,8 @@ export const webhookConfig: WebhookConfig = {
     },
     // Suspicious IP rate limiting (more restrictive)
     suspicious: {
-      limit: 3, // Only 3 requests per hour for suspicious IPs
-      windowHours: 1, // 1 hour window
+      limit: 3, // Only 3 requests per year for suspicious IPs
+      windowHours: 8760, // 1 year window (365 days * 24 hours)
     },
     // Fallback rate limiting (when Unkey is unavailable)
     fallback: {
@@ -56,7 +56,7 @@ export const webhookConfig: WebhookConfig = {
   },
   security: {
     suspiciousThreshold: 20, // Mark IP as suspicious after 20 failed attempts
-    suspiciousExpiryHours: 24, // Suspicious marking expires after 24 hours
+    suspiciousExpiryHours: 8760, // Suspicious marking expires after 1 year
     maxRequestSizeMB: 1, // Maximum 1MB request payload
   },
   maintenance: {
