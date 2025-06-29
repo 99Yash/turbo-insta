@@ -1,44 +1,33 @@
 import { clerkClient } from "@clerk/nextjs/server";
 import { verifyWebhook } from "@clerk/nextjs/webhooks";
-import { Ratelimit } from "@unkey/ratelimit";
 import { eq } from "drizzle-orm";
 import { type NextRequest } from "next/server";
-import { env } from "~/env";
 import { generateUniqueUsername } from "~/lib/queries/ai";
+import { checkWebhookRateLimit, webhookConstants } from "~/lib/unkey";
 import { db } from "~/server/db";
 import { users } from "~/server/db/schema/users";
 
-// Initialize Unkey rate limiting
-const ratelimit = new Ratelimit({
-  rootKey: env.UNKEY_ROOT_KEY,
-  namespace: "webhook",
-  limit: 10,
-  duration: "1m", // 10 requests per minute
-});
-
-// Suspicious activity rate limiter (more restrictive)
-const suspiciousRatelimit = new Ratelimit({
-  rootKey: env.UNKEY_ROOT_KEY,
-  namespace: "webhook-suspicious",
-  limit: 3,
-  duration: "1h", // Only 3 requests per hour for suspicious IPs
-});
-
-// Request size limit (1MB)
-const MAX_REQUEST_SIZE = 1024 * 1024;
+// Extract configuration constants
+const {
+  maxRequestSizeBytes: MAX_REQUEST_SIZE,
+  suspiciousThreshold: SUSPICIOUS_THRESHOLD,
+  suspiciousExpiryMs: SUSPICIOUS_IP_EXPIRY,
+  fallbackRateLimit: {
+    windowMs: RATE_LIMIT_WINDOW,
+    maxRequests: RATE_LIMIT_MAX_REQUESTS,
+  },
+  cleanupIntervalMs: CLEANUP_INTERVAL,
+  config,
+} = webhookConstants;
 
 // In-memory suspicious IP tracking with timestamps for cleanup
 const suspiciousIPs = new Map<string, { markedAt: number; attempts: number }>();
-const SUSPICIOUS_THRESHOLD = 20; // Block after 20 failed attempts in 24h
-const SUSPICIOUS_IP_EXPIRY = 24 * 60 * 60 * 1000; // 24 hours
 
 // Fallback rate limiting store for when Unkey fails
 const fallbackRateLimitStore = new Map<
   string,
   { count: number; resetTime: number }
 >();
-const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
-const RATE_LIMIT_MAX_REQUESTS = 10;
 
 function getRealIP(request: NextRequest): string {
   const forwarded = request.headers.get("x-forwarded-for");
@@ -105,7 +94,7 @@ function trackSuspiciousActivity(ip: string, reason: string): void {
       attempts: (currentSuspicious?.attempts ?? 0) + 1,
     });
     console.error(
-      `[WEBHOOK SECURITY] IP ${ip} marked as suspicious after ${count} failed attempts`,
+      `[WEBHOOK SECURITY] IP ${ip} marked as suspicious after ${count} failed attempts (threshold: ${SUSPICIOUS_THRESHOLD})`,
     );
   }
 }
@@ -120,15 +109,8 @@ async function checkRateLimit(
   reset: Date;
 }> {
   try {
-    const rateLimiter = isSuspicious ? suspiciousRatelimit : ratelimit;
-    const result = await rateLimiter.limit(ip);
-
-    return {
-      success: result.success,
-      limit: result.limit,
-      remaining: result.remaining,
-      reset: new Date(result.reset),
-    };
+    // Use the Unkey rate limiting utility
+    return await checkWebhookRateLimit(ip, isSuspicious);
   } catch (error) {
     console.warn(
       `[WEBHOOK] Unkey rate limiting failed, using fallback:`,
@@ -428,31 +410,28 @@ export async function POST(req: NextRequest) {
 }
 
 // Cleanup function to prevent memory leaks from both stores
-setInterval(
-  () => {
-    const now = Date.now();
+setInterval(() => {
+  const now = Date.now();
 
-    // Clean up expired fallback rate limit entries
-    for (const [key, record] of fallbackRateLimitStore.entries()) {
-      if (now > record.resetTime) {
-        fallbackRateLimitStore.delete(key);
-      }
+  // Clean up expired fallback rate limit entries
+  for (const [key, record] of fallbackRateLimitStore.entries()) {
+    if (now > record.resetTime) {
+      fallbackRateLimitStore.delete(key);
     }
+  }
 
-    // Clean up expired suspicious IP entries
-    for (const [ip, suspiciousData] of suspiciousIPs.entries()) {
-      if (now > suspiciousData.markedAt + SUSPICIOUS_IP_EXPIRY) {
-        suspiciousIPs.delete(ip);
-      }
+  // Clean up expired suspicious IP entries
+  for (const [ip, suspiciousData] of suspiciousIPs.entries()) {
+    if (now > suspiciousData.markedAt + SUSPICIOUS_IP_EXPIRY) {
+      suspiciousIPs.delete(ip);
     }
+  }
 
-    // Log cleanup stats occasionally (every 6th run = 30 minutes)
-    const cleanupCount = (now / (5 * 60 * 1000)) % 6;
-    if (Math.floor(cleanupCount) === 0) {
-      console.log(
-        `[WEBHOOK CLEANUP] Stores status - Rate limit entries: ${fallbackRateLimitStore.size}, Suspicious IPs: ${suspiciousIPs.size}`,
-      );
-    }
-  },
-  5 * 60 * 1000,
-); // Cleanup every 5 minutes
+  // Log cleanup stats occasionally (every 6th run)
+  const cleanupCount = (now / CLEANUP_INTERVAL) % 6;
+  if (Math.floor(cleanupCount) === 0) {
+    console.log(
+      `[WEBHOOK CLEANUP] Stores status - Rate limit entries: ${fallbackRateLimitStore.size}, Suspicious IPs: ${suspiciousIPs.size} (Interval: ${config.maintenance.cleanupIntervalMinutes}min)`,
+    );
+  }
+}, CLEANUP_INTERVAL); // Cleanup interval configurable via webhook config
