@@ -58,6 +58,7 @@ export default function HomeLayout({
 
   const sidebarBreakpoint = pathname.startsWith("/messages") ? "sm" : "xl";
   const defaultOpen = pathname.startsWith("/messages") ? false : undefined;
+  const isAuthenticated = isLoaded && user && isSignedIn;
 
   return (
     <ErrorBoundary fallback={LoadingErrorFallback}>
@@ -67,12 +68,13 @@ export default function HomeLayout({
       >
         {showSkeleton ? (
           <HomeLayoutSkeleton />
-        ) : isLoaded && user && isSignedIn ? (
+        ) : isAuthenticated ? (
           <>
             <AppSidebar />
             {children}
           </>
         ) : (
+          // For unauthenticated users, show content without sidebar
           children
         )}
       </SidebarContainer>
