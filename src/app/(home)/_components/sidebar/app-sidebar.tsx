@@ -2,7 +2,7 @@
 
 import { SignOutButton, useAuth } from "@clerk/nextjs";
 import type * as Ably from "ably";
-import { CogIcon, Heart, LogOutIcon } from "lucide-react";
+import { Heart, LogOutIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as React from "react";
@@ -265,20 +265,6 @@ export function AppSidebar() {
 
         <SidebarFooter className="border-t border-border/40 p-2">
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton
-                asChild
-                isActive={pathname.startsWith("/settings")}
-                tooltip="Settings"
-                className="transition-all duration-200"
-              >
-                <Link href="/settings" className="flex items-center gap-3">
-                  <CogIcon className="size-5" />
-                  <span className="font-medium">Settings</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-
             <SidebarMenuItem>
               <SignOutButton redirectUrl="/signin">
                 <SidebarMenuButton tooltip="Logout" className="mt-2">
