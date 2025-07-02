@@ -52,12 +52,24 @@ export function UserCommandDialog() {
   const { state, isMobile } = useSidebar();
   const debouncedSearch = useDebounce(search, 300);
 
-  // Compute values directly from sidebar state
-  const isCollapsed = state === "collapsed";
-  const variant = isCollapsed ? "collapsed" : "expanded";
-  const showText = !isCollapsed;
-  const showKeyboardShortcut = !isCollapsed && !isMobile;
-  const title = isCollapsed ? "Search users (⌘K)" : undefined;
+  // Determine if the sidebar itself is visually collapsed (icon-only) **on desktop**.
+  // On mobile, the sidebar is rendered in a Sheet that always has enough space,
+  // so we want the full search bar regardless of the internal `state` value.
+  const isCollapsedDesktop = state === "collapsed" && !isMobile;
+
+  // Choose the button variant:
+  //   • Expanded on mobile for better UX.
+  //   • Collapsed/expanded on desktop based on the actual sidebar state.
+  const variant = isCollapsedDesktop ? "collapsed" : "expanded";
+
+  // Show placeholder text only when the button is in its expanded form.
+  const showText = variant === "expanded";
+
+  // Show the ⌘K shortcut hint only when there's enough room (expanded *and* desktop).
+  const showKeyboardShortcut = variant === "expanded" && !isMobile;
+
+  // Tooltip title only needed for the icon-only button.
+  const title = variant === "collapsed" ? "Search users (⌘K)" : undefined;
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -165,7 +177,7 @@ export function UserCommandDialog() {
         className={cn(triggerVariants({ variant }))}
         title={title}
       >
-        {isCollapsed ? (
+        {isCollapsedDesktop ? (
           <Search className="h-4 w-4" />
         ) : (
           <>
