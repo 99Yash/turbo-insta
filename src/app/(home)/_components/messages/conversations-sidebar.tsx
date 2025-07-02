@@ -1,7 +1,7 @@
 "use client";
 
 import type * as Ably from "ably";
-import { Pen } from "lucide-react";
+import { ArrowLeft, Pen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Icons } from "~/components/icons";
@@ -197,7 +197,18 @@ export function ConversationsSidebar({
     <div className="flex h-screen w-full flex-col border-r border-border/40 bg-background sm:w-80 lg:w-96">
       {/* Header - Enhanced styling */}
       <div className="flex shrink-0 items-center justify-between border-b border-border/40 bg-background/80 p-4 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 lg:gap-3">
+          {/* Back button – only visible on mobile */}
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label="Back"
+            onClick={() => router.push("/")}
+            className="lg:hidden"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </Button>
+
           {/* User avatar */}
           <Avatar className="h-10 w-10 border-2 border-background shadow-md">
             <AvatarImage src={user.imageUrl ?? undefined} alt={user.name} />
