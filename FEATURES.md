@@ -1,15 +1,6 @@
-# TurboInsta Features
+# Features
 
 A full-stack, real-time Instagram clone built with modern technologies including the T3 stack, shadcn/ui, Drizzle ORM, and Ably for real-time functionality.
-
-## 🔐 Authentication & User Management
-
-- **OAuth Sign-in/Sign-up** - Seamless authentication flow
-- **SSO Callback Handling** - Secure OAuth callback processing
-- **User Profiles** - Complete profile management system
-- **Profile Editing** - Update user information and settings
-- **User Context System** - Global user state management
-- **Protected Routes** - Authentication-based route protection
 
 ## 🤖 AI-Powered Features
 
@@ -26,7 +17,6 @@ A full-stack, real-time Instagram clone built with modern technologies including
 - **Alt Text Support** - AI-generated or custom user-provided alt text for accessibility
 - **Image Carousel** - Multiple image support per post
 - **File Upload** - Drag-and-drop image uploading with UploadThing
-- **Infinite Scroll** - Seamless feed loading
 - **Post Actions** - Like, comment, share functionality
 
 ## 💬 Comments & Interactions
