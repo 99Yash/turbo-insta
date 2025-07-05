@@ -353,25 +353,7 @@ export async function toggleFollow(
  */
 export async function getUsersByUsername(query: string) {
   try {
-    const searchResults = await db
-      .select({
-        id: users.id,
-        name: users.name,
-        username: users.username,
-        imageUrl: users.imageUrl,
-        isVerified: users.isVerified,
-      })
-      .from(users)
-      .where(
-        or(
-          ilike(users.username, `%${query}%`),
-          ilike(users.name, `%${query}%`),
-        ),
-      )
-      .limit(LIMITS.GET_USERS_BY_USERNAME)
-      .orderBy(users.username);
-
-    return searchResults;
+    return await searchUsers(query, 0, LIMITS.GET_USERS_BY_USERNAME);
   } catch (e) {
     throw new TRPCError({
       code: getTRPCErrorFromUnknown(e).code,
