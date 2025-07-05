@@ -59,7 +59,7 @@ export const userRouter = createTRPCRouter({
   getUsersByUsername: publicProcedure
     .input(getUsersByUsernameSchema)
     .query(async ({ input }) => {
-      const users = await getUsersByUsername(input.query, input.limit);
+      const users = await getUsersByUsername(input.query);
       return users;
     }),
 

@@ -1,5 +1,6 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
 import { and, count, desc, eq, inArray, lt, or } from "drizzle-orm";
+import { LIMITS } from "~/lib/constants";
 import { db } from "~/server/db";
 import {
   commentLikes,
@@ -77,7 +78,7 @@ export async function createComment(
 export async function getComments(input: WithOptionalUserId<GetCommentsInput>) {
   try {
     const { postId, cursor, userId } = input;
-    const limit = 10;
+    const limit = LIMITS.GET_COMMENTS;
 
     const postComments = await db
       .select()
@@ -275,7 +276,6 @@ export async function createReply(input: WithUser<typeof createReplySchema>) {
 export async function getReplies(input: WithOptionalUserId<GetRepliesInput>) {
   try {
     const { commentId, cursor, userId } = input;
-    const limit = 4; // Default limit of 4 as requested
 
     const replies = await db
       .select()
@@ -297,7 +297,7 @@ export async function getReplies(input: WithOptionalUserId<GetRepliesInput>) {
         ),
       )
       .orderBy(desc(commentReplies.createdAt), desc(commentReplies.id))
-      .limit(limit + 1);
+      .limit(LIMITS.GET_REPLIES + 1);
 
     const userIds = [...new Set(replies.map((reply) => reply.userId))];
 
@@ -366,7 +366,7 @@ export async function getReplies(input: WithOptionalUserId<GetRepliesInput>) {
     });
 
     let nextCursor: typeof cursor | undefined = undefined;
-    if (replies.length > limit) {
+    if (replies.length > LIMITS.GET_REPLIES) {
       const nextItem = replies.pop()!;
       nextCursor = {
         id: nextItem.id,

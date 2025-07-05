@@ -1,6 +1,7 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
 import { and, eq, ilike, inArray, or } from "drizzle-orm";
 import { ably } from "~/lib/ably";
+import { LIMITS } from "~/lib/constants";
 import { DISALLOWED_USERNAMES } from "~/lib/utils";
 import { db } from "~/server/db";
 import { follows, users } from "~/server/db/schema/users";
@@ -348,10 +349,9 @@ export async function toggleFollow(
 /**
  * Get users by username or name with enhanced search
  * @param query The search query to match against username or name
- * @param limitCount The maximum number of results to return
  * @returns Array of matching users
  */
-export async function getUsersByUsername(query: string, limitCount = 5) {
+export async function getUsersByUsername(query: string) {
   try {
     const searchResults = await db
       .select({
@@ -368,7 +368,7 @@ export async function getUsersByUsername(query: string, limitCount = 5) {
           ilike(users.name, `%${query}%`),
         ),
       )
-      .limit(limitCount)
+      .limit(LIMITS.GET_USERS_BY_USERNAME)
       .orderBy(users.username);
 
     return searchResults;

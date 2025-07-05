@@ -65,7 +65,6 @@ export const getBookmarkStatusSchema = z.object({
 export type GetBookmarkStatusInput = z.infer<typeof getBookmarkStatusSchema>;
 
 export const getUserBookmarksSchema = z.object({
-  limit: z.number().min(1).max(100).default(12),
   cursor: z
     .object({
       id: z.string(),

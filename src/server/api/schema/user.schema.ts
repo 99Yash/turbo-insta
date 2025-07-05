@@ -63,7 +63,6 @@ export type ToggleFollowInput = z.infer<typeof toggleFollowSchema>;
 
 export const getUsersByUsernameSchema = z.object({
   query: z.string().min(1).max(50),
-  limit: z.number().min(1).max(20).default(5),
 });
 
 export type GetUsersByUsernameInput = z.infer<typeof getUsersByUsernameSchema>;
