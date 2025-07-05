@@ -266,7 +266,7 @@ export function AppSidebar() {
         <SidebarFooter className="border-t border-border/40 p-2">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SignOutButton redirectUrl="/signin">
+              <SignOutButton redirectUrl="/">
                 <SidebarMenuButton tooltip="Logout" className="mt-2">
                   <LogOutIcon className="size-5" />
                   <span className="font-medium">Logout</span>

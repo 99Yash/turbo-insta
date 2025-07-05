@@ -2,6 +2,7 @@ import { getTRPCErrorFromUnknown, TRPCError } from "@trpc/server";
 import { and, count, desc, eq, inArray, lt, or } from "drizzle-orm";
 import { UTApi } from "uploadthing/server";
 import { env } from "~/env";
+import { LIMITS } from "~/lib/constants";
 import { generateAltText } from "~/lib/queries/ai";
 import { db } from "~/server/db";
 import { bookmarks, comments, likes, posts, users } from "~/server/db/schema";
@@ -293,7 +294,7 @@ export async function getUserTopPosts(userId: string) {
 }
 
 export async function getPosts(input: GetPostsInput) {
-  const limit = 8;
+  const limit = LIMITS.GET_POSTS;
   const { cursor } = input;
 
   try {
@@ -465,7 +466,8 @@ export async function getUserBookmarks(
   input: GetUserBookmarksInput,
   userId: string,
 ) {
-  const { limit, cursor } = input;
+  const { cursor } = input;
+  const limit = LIMITS.GET_USER_BOOKMARKED_POSTS;
 
   try {
     const items = await db

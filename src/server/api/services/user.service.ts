@@ -346,41 +346,6 @@ export async function toggleFollow(
 }
 
 /**
- * Get users by username or name with enhanced search
- * @param query The search query to match against username or name
- * @param limitCount The maximum number of results to return
- * @returns Array of matching users
- */
-export async function getUsersByUsername(query: string, limitCount = 5) {
-  try {
-    const searchResults = await db
-      .select({
-        id: users.id,
-        name: users.name,
-        username: users.username,
-        imageUrl: users.imageUrl,
-        isVerified: users.isVerified,
-      })
-      .from(users)
-      .where(
-        or(
-          ilike(users.username, `%${query}%`),
-          ilike(users.name, `%${query}%`),
-        ),
-      )
-      .limit(limitCount)
-      .orderBy(users.username);
-
-    return searchResults;
-  } catch (e) {
-    throw new TRPCError({
-      code: getTRPCErrorFromUnknown(e).code,
-      message: getTRPCErrorFromUnknown(e).message,
-    });
-  }
-}
-
-/**
  * Search users by username or name with pagination support
  * @param query The search query to match against username or name
  * @param offset The number of results to skip
