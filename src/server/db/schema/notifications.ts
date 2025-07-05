@@ -1,4 +1,3 @@
-import { generateId } from "ai";
 import { relations } from "drizzle-orm";
 import {
   boolean,
@@ -8,6 +7,7 @@ import {
   text,
   varchar,
 } from "drizzle-orm/pg-core";
+import { createId } from "~/lib/utils";
 import { commentReplies, comments } from "./comments";
 import { commentLikes, commentReplyLikes, likes } from "./likes";
 import { posts } from "./posts";
@@ -28,7 +28,7 @@ export const notifications = pgTable(
   "notifications",
   {
     id: varchar("id")
-      .$defaultFn(() => generateId())
+      .$defaultFn(() => createId())
       .primaryKey(),
     // The user who will receive the notification
     recipientId: varchar("recipient_id")

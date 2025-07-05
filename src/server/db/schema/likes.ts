@@ -1,6 +1,7 @@
 import { generateId } from "ai";
 import { relations } from "drizzle-orm";
 import { index, pgTable, varchar } from "drizzle-orm/pg-core";
+import { createId } from "~/lib/utils";
 import { commentReplies, comments } from "./comments";
 import { posts } from "./posts";
 import { users } from "./users";
@@ -10,7 +11,7 @@ export const likes = pgTable(
   "likes",
   {
     id: varchar("id")
-      .$defaultFn(() => generateId())
+      .$defaultFn(() => createId())
       .primaryKey(),
     userId: varchar("user_id", { length: 32 })
       .references(() => users.id, { onDelete: "cascade" })

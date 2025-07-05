@@ -1,4 +1,3 @@
-import { generateId } from "ai";
 import { relations } from "drizzle-orm";
 import {
   boolean,
@@ -8,6 +7,7 @@ import {
   unique,
   varchar,
 } from "drizzle-orm/pg-core";
+import { createId } from "~/lib/utils";
 import { commentReplies, comments } from "./comments";
 import { commentLikes, likes } from "./likes";
 import { bookmarks, posts } from "./posts";
@@ -36,7 +36,7 @@ export const follows = pgTable(
   "follows",
   {
     id: varchar("id")
-      .$defaultFn(() => generateId())
+      .$defaultFn(() => createId())
       .primaryKey(),
     followerId: varchar("follower_id")
       .notNull()

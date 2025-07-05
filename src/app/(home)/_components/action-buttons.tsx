@@ -11,8 +11,8 @@ import { cn, showErrorToast } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 export function ActionButtons({ postId }: { postId: string }) {
-  const { userId } = useAuth();
   const utils = api.useUtils();
+  const { userId } = useAuth();
   const [isBookmarked, setIsBookmarked] = React.useState(false);
   const [hasShownTip, setHasShownTip] = React.useState(false);
 
@@ -76,8 +76,10 @@ export function ActionButtons({ postId }: { postId: string }) {
   const toggleLike = api.likes.toggle.useMutation({
     onError(error) {
       showErrorToast(error);
-      // Revert optimistic update on error
-      optimisticToggle();
+      // Revert optimistic update on error, only if it was applied
+      if (userId) {
+        optimisticToggle();
+      }
     },
   });
 
@@ -95,8 +97,10 @@ export function ActionButtons({ postId }: { postId: string }) {
   });
 
   const handleHeartClick = async () => {
-    // Optimistic update for immediate feedback
-    optimisticToggle();
+    // Apply optimistic update only when the user is logged in
+    if (userId) {
+      optimisticToggle();
+    }
 
     await toggleLike.mutateAsync({
       postId,

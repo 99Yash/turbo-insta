@@ -1,6 +1,6 @@
-import { generateId } from "ai";
 import { relations } from "drizzle-orm";
 import { index, json, pgTable, varchar } from "drizzle-orm/pg-core";
+import { createId } from "~/lib/utils";
 import { type StoredFile } from "~/types";
 import { comments } from "./comments";
 import { likes } from "./likes";
@@ -11,7 +11,7 @@ export const posts = pgTable(
   "posts",
   {
     id: varchar("id")
-      .$defaultFn(() => generateId())
+      .$defaultFn(() => createId())
       .primaryKey(),
     title: varchar("title", { length: 256 }),
     images: json("images").$type<StoredFile[]>().notNull(),
@@ -39,7 +39,7 @@ export const bookmarks = pgTable(
   "bookmarks",
   {
     id: varchar("id")
-      .$defaultFn(() => generateId())
+      .$defaultFn(() => createId())
       .primaryKey(),
     userId: varchar("user_id", { length: 32 })
       .references(() => users.id, { onDelete: "cascade" })
