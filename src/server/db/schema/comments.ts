@@ -1,4 +1,3 @@
-import { generateId } from "ai";
 import { relations } from "drizzle-orm";
 import { index, pgTable, varchar } from "drizzle-orm/pg-core";
 import { createId } from "~/lib/utils";
@@ -22,9 +21,7 @@ export const comments = pgTable(
       .notNull(),
     ...lifecycleDates,
   },
-  (example) => ({
-    postId: index("post_id_idx").on(example.postId),
-  }),
+  (example) => [index("post_id_idx").on(example.postId)],
 );
 
 export const commentRelations = relations(comments, ({ one, many }) => ({
@@ -44,7 +41,7 @@ export const commentReplies = pgTable(
   "comment_replies",
   {
     id: varchar("id")
-      .$defaultFn(() => generateId())
+      .$defaultFn(() => createId())
       .primaryKey(),
     text: varchar("text", { length: 1024 }),
     userId: varchar("user_id", { length: 32 })
@@ -55,10 +52,10 @@ export const commentReplies = pgTable(
       .notNull(),
     ...lifecycleDates,
   },
-  (example) => ({
-    commentId: index("comment_id_reply_idx").on(example.commentId),
-    userId: index("user_id_reply_idx").on(example.userId),
-  }),
+  (example) => [
+    index("comment_id_reply_idx").on(example.commentId),
+    index("user_id_reply_idx").on(example.userId),
+  ],
 );
 
 export const commentReplyRelations = relations(commentReplies, ({ one }) => ({

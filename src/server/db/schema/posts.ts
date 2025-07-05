@@ -20,10 +20,10 @@ export const posts = pgTable(
       .notNull(), // clerk user id
     ...lifecycleDates,
   },
-  (example) => ({
-    titleIndex: index("title_idx").on(example.title),
-    userIdIndex: index("user_id_idx").on(example.userId),
-  }),
+  (example) => [
+    index("title_idx").on(example.title),
+    index("user_id_idx").on(example.userId),
+  ],
 );
 
 export const postRelations = relations(posts, ({ many, one }) => ({
@@ -49,10 +49,10 @@ export const bookmarks = pgTable(
       .notNull(),
     ...lifecycleDates,
   },
-  (example) => ({
-    userIdIndex: index("bookmark_user_id_idx").on(example.userId),
-    postIdIndex: index("bookmark_post_id_idx").on(example.postId),
-  }),
+  (example) => [
+    index("bookmark_user_id_idx").on(example.userId),
+    index("bookmark_post_id_idx").on(example.postId),
+  ],
 );
 
 export const postBookmarks = relations(bookmarks, ({ one }) => ({

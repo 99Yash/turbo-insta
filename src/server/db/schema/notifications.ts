@@ -1,10 +1,10 @@
 import { relations } from "drizzle-orm";
 import {
-  boolean,
   index,
   pgEnum,
   pgTable,
   text,
+  timestamp,
   varchar,
 } from "drizzle-orm/pg-core";
 import { createId } from "~/lib/utils";
@@ -14,7 +14,7 @@ import { posts } from "./posts";
 import { follows, users } from "./users";
 import { lifecycleDates } from "./utils";
 
-export const notificationTypeEnum = pgEnum("notification_type", [
+export const availableNotifications = pgEnum("notification_type", [
   "like",
   "comment",
   "reply",
@@ -22,6 +22,7 @@ export const notificationTypeEnum = pgEnum("notification_type", [
   "comment_like",
   "reply_like",
   "mention",
+  "message",
 ]);
 
 export const notifications = pgTable(
@@ -38,9 +39,8 @@ export const notifications = pgTable(
     actorId: varchar("actor_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    type: notificationTypeEnum("type").notNull(),
-    isRead: boolean("is_read").default(false).notNull(),
-    // Optional references to related entities
+    type: availableNotifications("type").notNull(),
+    readAt: timestamp("read_at"),
     postId: varchar("post_id").references(() => posts.id, {
       onDelete: "cascade",
     }),
@@ -72,17 +72,13 @@ export const notifications = pgTable(
     message: text("message"),
     ...lifecycleDates,
   },
-  (notification) => ({
-    recipientIndex: index("notification_recipient_idx").on(
-      notification.recipientId,
-    ),
-    actorIndex: index("notification_actor_idx").on(notification.actorId),
-    typeIndex: index("notification_type_idx").on(notification.type),
-    isReadIndex: index("notification_read_idx").on(notification.isRead),
-    createdAtIndex: index("notification_created_at_idx").on(
-      notification.createdAt,
-    ),
-  }),
+  (notification) => [
+    index("notification_recipient_idx").on(notification.recipientId),
+    index("notification_actor_idx").on(notification.actorId),
+    index("notification_type_idx").on(notification.type),
+    index("notification_read_idx").on(notification.readAt),
+    index("notification_created_at_idx").on(notification.createdAt),
+  ],
 );
 
 export const notificationRelations = relations(notifications, ({ one }) => ({

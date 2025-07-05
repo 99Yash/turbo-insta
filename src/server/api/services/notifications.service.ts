@@ -1,5 +1,5 @@
 import { TRPCError, getTRPCErrorFromUnknown } from "@trpc/server";
-import { and, count, desc, eq, gt, inArray, lt, or } from "drizzle-orm";
+import { and, count, desc, eq, gt, inArray, isNull, lt, or } from "drizzle-orm";
 import { ably } from "~/lib/ably";
 import { db } from "~/server/db";
 import {
@@ -179,7 +179,7 @@ export async function createNotification(
       recipientId: input.recipientId,
       actorId: input.actorId,
       message: input.message,
-      isRead: false,
+      // readAt left undefined/null means unread
     };
 
     let notificationData: NewNotification;
@@ -442,7 +442,7 @@ export async function markNotificationsAsRead(
 
     const result = await db
       .update(notifications)
-      .set({ isRead: true })
+      .set({ readAt: new Date() })
       .where(whereCondition);
 
     return { count: Number(result.count) };
@@ -467,7 +467,7 @@ export async function getUnreadNotificationCount(
       .where(
         and(
           eq(notifications.recipientId, userId),
-          eq(notifications.isRead, false),
+          isNull(notifications.readAt),
         ),
       );
 
