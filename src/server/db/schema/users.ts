@@ -25,11 +25,11 @@ export const users = pgTable(
     isVerified: boolean("is_verified").default(false).notNull(),
     ...lifecycleDates,
   },
-  (user) => ({
-    emailIndex: index("email_idx").on(user.email),
-    usernameIndex: index("username_idx").on(user.username),
-    nameIndex: index("name_idx").on(user.name),
-  }),
+  (user) => [
+    index("email_idx").on(user.email),
+    index("username_idx").on(user.username),
+    index("name_idx").on(user.name),
+  ],
 );
 
 export const follows = pgTable(
@@ -46,14 +46,11 @@ export const follows = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     ...lifecycleDates,
   },
-  (follow) => ({
-    followerIndex: index("follower_idx").on(follow.followerId),
-    followingIndex: index("following_idx").on(follow.followingId),
-    uniqueFollowRelation: unique("unique_follow_relation").on(
-      follow.followerId,
-      follow.followingId,
-    ),
-  }),
+  (follow) => [
+    index("follower_idx").on(follow.followerId),
+    index("following_idx").on(follow.followingId),
+    unique("unique_follow_relation").on(follow.followerId, follow.followingId),
+  ],
 );
 
 export const userRelations = relations(users, ({ many }) => ({

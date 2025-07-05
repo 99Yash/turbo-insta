@@ -103,7 +103,7 @@ export function NotificationItem({
   };
 
   const handleMarkAsRead = () => {
-    if (!notification.isRead && onMarkAsRead) {
+    if (!notification.readAt && onMarkAsRead) {
       onMarkAsRead(notification.id);
     }
     // Close the sidebar when navigating to a notification
@@ -148,7 +148,7 @@ export function NotificationItem({
       onClick={handleMarkAsRead}
       className={cn(
         "group flex items-start gap-2 rounded-lg p-2 transition-all hover:bg-muted/50",
-        !notification.isRead ? "bg-primary/5" : "",
+        !notification.readAt ? "bg-primary/5" : "",
       )}
     >
       {/* Avatar with icon */}

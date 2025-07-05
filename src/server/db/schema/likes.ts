@@ -1,4 +1,3 @@
-import { generateId } from "ai";
 import { relations } from "drizzle-orm";
 import { index, pgTable, varchar } from "drizzle-orm/pg-core";
 import { createId } from "~/lib/utils";
@@ -21,10 +20,10 @@ export const likes = pgTable(
       .notNull(),
     ...lifecycleDates,
   },
-  (example) => ({
-    postId: index("post_id_like_idx").on(example.postId),
-    userId: index("user_id_like_idx").on(example.userId),
-  }),
+  (example) => [
+    index("post_id_like_idx").on(example.postId),
+    index("user_id_like_idx").on(example.userId),
+  ],
 );
 
 export const likeRelations = relations(likes, ({ one }) => ({
@@ -42,7 +41,7 @@ export const commentLikes = pgTable(
   "comment_likes",
   {
     id: varchar("id")
-      .$defaultFn(() => generateId())
+      .$defaultFn(() => createId())
       .primaryKey(),
     userId: varchar("user_id", { length: 32 })
       .references(() => users.id, { onDelete: "cascade" })
@@ -52,9 +51,7 @@ export const commentLikes = pgTable(
       .notNull(),
     ...lifecycleDates,
   },
-  (example) => ({
-    commentId: index("comment_id_like_idx").on(example.commentId),
-  }),
+  (example) => [index("comment_id_like_idx").on(example.commentId)],
 );
 
 export const commentLikeRelations = relations(commentLikes, ({ one }) => ({
@@ -72,7 +69,7 @@ export const commentReplyLikes = pgTable(
   "comment_reply_likes",
   {
     id: varchar("id")
-      .$defaultFn(() => generateId())
+      .$defaultFn(() => createId())
       .primaryKey(),
     userId: varchar("user_id", { length: 32 })
       .references(() => users.id, { onDelete: "cascade" })
@@ -82,11 +79,7 @@ export const commentReplyLikes = pgTable(
       .notNull(),
     ...lifecycleDates,
   },
-  (example) => ({
-    commentReplyId: index("comment_reply_id_like_idx").on(
-      example.commentReplyId,
-    ),
-  }),
+  (example) => [index("comment_reply_id_like_idx").on(example.commentReplyId)],
 );
 
 export const commentReplyLikeRelations = relations(
