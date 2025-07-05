@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "next build",
-    "preinstall": "pnpm dlx drizzle-kit generate && pnpm dlx drizzle-kit push",
+    "postinstall": "pnpm dlx drizzle-kit generate && pnpm dlx drizzle-kit push",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
