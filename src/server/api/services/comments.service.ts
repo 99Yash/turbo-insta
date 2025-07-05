@@ -17,7 +17,7 @@ import {
   type deleteCommentSchema,
   type deleteReplySchema,
 } from "../schema/comments.schema";
-import { type WithUser, type WithUserId } from "../schema/user.schema";
+import { type WithOptionalUserId, type WithUser } from "../schema/user.schema";
 import { createNotification } from "./notifications.service";
 
 export async function createComment(
@@ -74,7 +74,7 @@ export async function createComment(
   }
 }
 
-export async function getComments(input: WithUserId<GetCommentsInput>) {
+export async function getComments(input: WithOptionalUserId<GetCommentsInput>) {
   try {
     const { postId, cursor, userId } = input;
     const limit = 10;
@@ -272,7 +272,7 @@ export async function createReply(input: WithUser<typeof createReplySchema>) {
   }
 }
 
-export async function getReplies(input: WithUserId<GetRepliesInput>) {
+export async function getReplies(input: WithOptionalUserId<GetRepliesInput>) {
   try {
     const { commentId, cursor, userId } = input;
     const limit = 4; // Default limit of 4 as requested
