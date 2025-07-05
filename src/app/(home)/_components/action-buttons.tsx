@@ -179,11 +179,11 @@ export function ActionButtons({ postId }: { postId: string }) {
         <span className="sr-only">Bookmark</span>
       </div>
 
-      <p className="mt-3.5 text-sm font-bold">
-        {likeCount > 0
-          ? `${likeCount} ${likeCount === 1 ? "like" : "likes"}`
-          : "\u00A0"}
-      </p>
+      {likeCount > 0 && (
+        <p className="mt-3.5 text-sm font-bold">
+          {`${likeCount} ${likeCount === 1 ? "like" : "likes"}`}
+        </p>
+      )}
     </div>
   );
 }
