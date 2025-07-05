@@ -1,5 +1,6 @@
 "use client";
 
+import { useAuth } from "@clerk/nextjs";
 import { BookmarkIcon, Heart, MessageCircleIcon } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import * as React from "react";
@@ -10,6 +11,7 @@ import { cn, showErrorToast } from "~/lib/utils";
 import { api } from "~/trpc/react";
 
 export function ActionButtons({ postId }: { postId: string }) {
+  const { userId } = useAuth();
   const utils = api.useUtils();
   const [isBookmarked, setIsBookmarked] = React.useState(false);
   const [hasShownTip, setHasShownTip] = React.useState(false);
@@ -49,6 +51,7 @@ export function ActionButtons({ postId }: { postId: string }) {
       postId,
     },
     {
+      enabled: !!userId,
       refetchOnWindowFocus: false,
     },
   );

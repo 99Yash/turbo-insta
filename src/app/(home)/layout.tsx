@@ -41,19 +41,10 @@ export default function HomeLayout({
   const pathname = usePathname();
   const [showSkeleton, setShowSkeleton] = React.useState(true);
 
-  // Show skeleton for maximum 3 seconds, then always show content
   React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSkeleton(false);
-    }, 3000);
-
-    // Hide skeleton immediately if loaded
     if (isLoaded) {
       setShowSkeleton(false);
-      clearTimeout(timer);
     }
-
-    return () => clearTimeout(timer);
   }, [isLoaded]);
 
   const sidebarBreakpoint = pathname.startsWith("/messages") ? "sm" : "xl";
