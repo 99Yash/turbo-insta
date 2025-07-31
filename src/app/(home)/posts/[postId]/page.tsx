@@ -68,6 +68,7 @@ export default async function PostModalPage({ params }: PostModalPageProps) {
     <HydrateClient>
       <div className="flex h-[calc(100vh-4rem)] w-full rounded-none">
         <div className="relative flex-1 basis-0 border-none">
+          <p className="sr-only">41763e78-4775-4fe6-8b5f-45973a535e0d</p>
           <PostCarousel
             postId={post.id}
             files={post.images}
