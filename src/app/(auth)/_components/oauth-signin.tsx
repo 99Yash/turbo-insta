@@ -17,17 +17,15 @@ const oauthProviders = [
 
 export function OAuthSignIn() {
   const [loading, setLoading] = React.useState<OAuthStrategy | null>(null);
-  const { signIn, isLoaded: signInLoaded } = useSignIn();
+  const { signIn } = useSignIn();
 
   async function oauthSignIn(provider: OAuthStrategy) {
-    if (!signInLoaded) return null;
-
     try {
       setLoading(provider);
-      await signIn.authenticateWithRedirect({
+      await signIn.sso({
         strategy: provider,
-        redirectUrl: "/sso-callback",
-        redirectUrlComplete: "/",
+        redirectUrl: "/",
+        redirectCallbackUrl: "/sso-callback",
       });
     } catch (err) {
       setLoading(null);

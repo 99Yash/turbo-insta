@@ -36,7 +36,7 @@ function getRealIP(request: NextRequest): string {
     return forwarded.split(",")[0]?.trim() ?? "unknown";
   }
 
-  return realIP ?? request.ip ?? "unknown";
+  return realIP ?? "unknown";
 }
 
 function isFallbackRateLimited(ip: string): boolean {

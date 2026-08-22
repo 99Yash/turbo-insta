@@ -16,7 +16,6 @@ type SetStateFn<T> = (prevState?: T) => T;
 function useControllableState<T>({
   prop,
   defaultProp,
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
   onChange = () => {},
 }: UseControllableStateParams<T>) {
   const [uncontrolledProp, setUncontrolledProp] = useUncontrolledState({

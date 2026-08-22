@@ -1,0 +1,22 @@
+allowBuilds:
+  '@clerk/shared': true
+  esbuild: true
+  msgpackr-extract: true
+  unrs-resolver: true
+minimumReleaseAgeExclude:
+  - '@ai-sdk/gateway@4.0.61'
+  - '@next/env@16.3.2'
+  - '@next/eslint-plugin-next@16.3.2'
+  - '@next/swc-darwin-arm64@16.3.2'
+  - '@next/swc-darwin-x64@16.3.2'
+  - '@next/swc-linux-arm64-gnu@16.3.2'
+  - '@next/swc-linux-arm64-musl@16.3.2'
+  - '@next/swc-linux-x64-gnu@16.3.2'
+  - '@next/swc-linux-x64-musl@16.3.2'
+  - '@next/swc-win32-arm64-msvc@16.3.2'
+  - '@next/swc-win32-x64-msvc@16.3.2'
+  - ai@7.0.76
+  - eslint-config-next@16.3.2
+  - eslint@10.9.0
+  - next@16.3.2
+  - react-hook-form@7.86.0

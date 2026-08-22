@@ -5,7 +5,7 @@ import * as React from "react";
  * More about ResizeObserver: https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver
  */
 export function useResizeObserver(
-  elementRef: React.RefObject<Element>,
+  elementRef: React.RefObject<Element | null>,
 ): ResizeObserverEntry | undefined {
   const [entry, setEntry] = React.useState<ResizeObserverEntry>();
 

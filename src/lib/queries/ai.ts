@@ -65,7 +65,7 @@ export async function generateUniqueUsername(name: string): Promise<string> {
       const { text } = await generateText({
         model: openai_4o_mini,
         system: systemPrompt,
-        maxTokens: 9,
+        maxOutputTokens: 9,
         abortSignal: AbortSignal.timeout(10000), // Increased to 10 seconds for username generation
         messages: [
           {

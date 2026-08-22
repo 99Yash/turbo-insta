@@ -23,8 +23,8 @@ interface MessagesListProps {
   readonly onScroll: (event: React.UIEvent<HTMLDivElement>) => void;
   readonly onAddReaction: (messageId: string, emoji: string) => void;
   readonly onRemoveReaction: (messageId: string) => void;
-  readonly scrollAreaRef: React.RefObject<HTMLDivElement>;
-  readonly messagesEndRef: React.RefObject<HTMLDivElement>;
+  readonly scrollAreaRef: React.RefObject<HTMLDivElement | null>;
+  readonly messagesEndRef: React.RefObject<HTMLDivElement | null>;
 }
 
 export function MessagesList({

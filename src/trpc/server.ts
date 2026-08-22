@@ -15,13 +15,14 @@ import { createQueryClient } from "./query-client";
  * This wraps the `createTRPCContext` helper and provides the required context for the tRPC API when
  * handling a tRPC call from a React Server Component.
  */
-const createContext = React.cache(() => {
-  const heads = new Headers(headers());
+const createContext = React.cache(async () => {
+  const req = new NextRequest(getBaseUrl(), { headers: await headers() });
+  const heads = new Headers(req.headers);
   heads.set("x-trpc-source", "rsc");
 
   return createTRPCContext({
     headers: heads,
-    auth: getAuth(new NextRequest(getBaseUrl(), { headers: headers() })),
+    auth: getAuth(req),
   });
 });
 

@@ -21,7 +21,7 @@ export const updateUserProfileSchema = z.object({
   imageUrl: z.string().url().nullable(),
 });
 
-export function withUser<T extends z.AnyZodObject>(schema: T) {
+export function withUser<T extends z.ZodObject<Record<string, z.ZodType>>>(schema: T) {
   return z.object({
     ...schema.shape,
     ...userSchema.shape,
@@ -32,22 +32,22 @@ export function withUser<T extends z.AnyZodObject>(schema: T) {
   >;
 }
 
-export function withOptionalUser<T extends z.AnyZodObject>(schema: T) {
+export function withOptionalUser<T extends z.ZodObject<Record<string, z.ZodType>>>(schema: T) {
   return z.object({
     ...schema.shape,
     ...optionalUserSchema.shape,
   }) as z.ZodObject<
     {
-      userId: z.ZodOptional<z.ZodString>;
+      userId: z.ZodNullable<z.ZodOptional<z.ZodString>>;
     } & T["shape"]
   >;
 }
 
-export type WithUser<T extends z.AnyZodObject> = z.infer<
+export type WithUser<T extends z.ZodObject<Record<string, z.ZodType>>> = z.infer<
   ReturnType<typeof withUser<T>>
 >;
 
-export type WithOptionalUser<T extends z.AnyZodObject> = z.infer<
+export type WithOptionalUser<T extends z.ZodObject<Record<string, z.ZodType>>> = z.infer<
   ReturnType<typeof withOptionalUser<T>>
 >;
 

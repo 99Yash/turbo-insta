@@ -1,6 +1,8 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "uploadthing/tw/v4";
+@config "../../tailwind.config.ts";
+
+@custom-variant dark (&:is(.dark *));
 
 @layer base {
   :root {
