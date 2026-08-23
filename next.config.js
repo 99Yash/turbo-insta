@@ -10,9 +10,7 @@ createJiti(fileURLToPath(import.meta.url))("./src/env.ts");
 
 /** @type {import("next").NextConfig} */
 const config = {
-  experimental: {
-    serverComponentsExternalPackages: ["ably"],
-  },
+  serverExternalPackages: ["ably"],
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
   },
